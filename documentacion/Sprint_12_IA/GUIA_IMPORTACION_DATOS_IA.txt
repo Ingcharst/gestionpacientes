@@ -1,0 +1,130 @@
+# GUÍA DE IMPORTACIÓN DE DATOS PARA IA
+# Sistema TEA Management - Recomendador de Grupos
+
+## 🎯 OBJETIVO
+Importar datos históricos de pacientes, valoraciones y asignaciones para entrenar modelo de IA.
+
+## 📋 TABLAS CRÍTICAS (En orden de importación)
+
+### 1. PACIENTES (apps.procedimientos.Paciente)
+**Campos mínimos requeridos:**
+- nombres, apellidos
+- tipo_documento, numero_documento
+- fecha_nacimiento
+- genero
+- numero_admision (ADM-YYYYMMDD-####)
+- diagnostico_principal
+- estado (ACTIVO recomendado)
+- fecha_ingreso
+
+**Campos opcionales:**
+- ciudad, telefono, email
+- nombre_responsable, telefono_responsable
+- alergias, medicamentos, eps
+
+### 2. VALORACIONES INICIALES (apps.procedimientos.ValoracionInicial)
+**Campos críticos para IA:**
+- paciente (FK a Paciente)
+- profesional (FK a Usuario - puede ser un usuario genérico)
+- fecha_valoracion
+- motivo_consulta
+- diagnostico_profesional
+- diagnostico_cie10 (IMPORTANTE para IA)
+- problemas_detectados (JSON) ⭐ CRÍTICO
+- nivel_funcionalidad (INDEPENDIENTE/SEMI_DEPENDIENTE/DEPENDIENTE)
+- numero_sesiones_recomendado
+- completada = True
+
+**Estructura JSON problemas_detectados:**
+```json
+[
+  {
+    "tipo": "LENGUAJE",
+    "descripcion": "Retraso en desarrollo del habla",
+    "severidad": "MODERADA",
+    "observaciones": "Requiere intervención temprana"
+  },
+  {
+    "tipo": "SOCIAL",
+    "descripcion": "Dificultad interacción con pares",
+    "severidad": "SEVERA",
+    "observaciones": ""
+  }
+]
+```
+
+### 3. TERAPIAS (apps.procedimientos.Terapia)
+**Campos requeridos:**
+- nombre (ej: "Fonoaudiología", "Terapia Ocupacional")
+- codigo (ej: "FONO", "TO")
+- descripcion
+- activo = True
+
+### 4. GRUPOS TERAPÉUTICOS (apps.grupos.GrupoTerapeutico)
+**Campos requeridos:**
+- nombre (ej: "Fonoaudiología Grupo A")
+- terapia (FK a Terapia)
+- capacidad_maxima
+- hora_inicio, hora_fin
+- dias_semana (JSON: ["Lunes", "Miércoles", "Viernes"])
+- activo = True
+
+### 5. ASIGNACIONES (apps.grupos.AsignacionGrupo) ⭐ MÁS IMPORTANTE
+**Campos críticos:**
+- paciente (FK a Paciente)
+- grupo (FK a GrupoTerapeutico)
+- numero_terapias_asignadas
+- dias_asistencia (JSON)
+- fecha_inicio_asignacion
+- estado = 'ACTIVA'
+- asignado_por (FK a Usuario - puede ser genérico)
+
+**Opcional pero útil:**
+- fecha_fin_asignacion (si terminó tratamiento)
+- motivo_finalizacion (COMPLETADO, ABANDONO, etc.)
+
+## 📄 FORMATOS ACEPTADOS
+
+### OPCIÓN 1: CSV/Excel (Recomendado)
+- Fácil de preparar
+- Un archivo por tabla
+- Encoding: UTF-8
+
+### OPCIÓN 2: JSON
+- Bueno para datos complejos (problemas_detectados)
+- Mantiene estructura
+
+### OPCIÓN 3: SQL (Si migras de otro sistema)
+- Inserts directos
+- Cuidado con IDs y FKs
+
+## 🔢 MÍNIMO DE DATOS PARA IA
+
+### Para modelo básico:
+- ✅ 50+ pacientes
+- ✅ 50+ valoraciones completas
+- ✅ 5+ grupos terapéuticos
+- ✅ 100+ asignaciones exitosas
+
+### Para modelo robusto:
+- ⭐ 200+ pacientes
+- ⭐ 200+ valoraciones
+- ⭐ 10+ grupos
+- ⭐ 500+ asignaciones
+
+## 📊 CALIDAD DE DATOS
+
+### CRÍTICO:
+✅ diagnostico_cie10 (F84.0, F90.0, etc.)
+✅ problemas_detectados (al menos 1 por paciente)
+✅ Asignaciones completas (paciente + grupo + terapias)
+
+### IMPORTANTE:
+- Edad de pacientes (para calcular en valoración)
+- Nivel funcionalidad
+- Severidad de problemas
+
+### NICE TO HAVE:
+- Resultados de tratamiento
+- Progreso del paciente
+- Asistencia registrada

@@ -1,0 +1,190 @@
+<!-- WIDGET AUTOCOMPLETADO CIE-10 -->
+<!-- Agregar en el template crear_valoracion_inicial.html -->
+<!-- Colocar ANTES del cierre de {% endblock %} -->
+
+<style>
+.cie10-autocomplete {
+    position: relative;
+}
+
+.cie10-results {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: none;
+    margin-top: 2px;
+}
+
+.cie10-result-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cie10-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.cie10-result-item:last-child {
+    border-bottom: none;
+}
+
+.cie10-codigo {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.cie10-descripcion {
+    color: #333;
+}
+
+.cie10-categoria {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.cie10-loading {
+    text-align: center;
+    padding: 10px;
+    color: #6c757d;
+}
+
+.cie10-selected {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #e7f3ff;
+    border: 1px solid #0d6efd;
+    border-radius: 4px;
+}
+
+.cie10-selected .badge {
+    margin-right: 8px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cie10Input = document.getElementById('id_diagnostico_cie10_search');
+    const cie10IdInput = document.getElementById('id_diagnostico_cie10');
+    const resultsContainer = document.getElementById('cie10-results');
+    const selectedContainer = document.getElementById('cie10-selected');
+    
+    if (!cie10Input) return;
+    
+    let searchTimeout;
+    let selectedCodigo = null;
+    
+    // Búsqueda con debounce
+    cie10Input.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+        
+        resultsContainer.innerHTML = '<div class="cie10-loading">Buscando...</div>';
+        resultsContainer.style.display = 'block';
+        
+        searchTimeout = setTimeout(() => {
+            buscarCIE10(query);
+        }, 300); // Espera 300ms después de dejar de escribir
+    });
+    
+    // Función de búsqueda AJAX
+    function buscarCIE10(query) {
+        fetch(`/procedimientos/api/cie10/buscar/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                mostrarResultados(data.results);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsContainer.innerHTML = '<div class="cie10-loading text-danger">Error en la búsqueda</div>';
+            });
+    }
+    
+    // Mostrar resultados
+    function mostrarResultados(results) {
+        if (results.length === 0) {
+            resultsContainer.innerHTML = '<div class="cie10-loading">No se encontraron resultados</div>';
+            return;
+        }
+        
+        resultsContainer.innerHTML = results.map(result => `
+            <div class="cie10-result-item" data-id="${result.id}" data-codigo="${result.codigo}" data-descripcion="${result.descripcion}">
+                <div class="cie10-codigo">${result.codigo}</div>
+                <div class="cie10-descripcion">${result.descripcion}</div>
+                <div class="cie10-categoria"><i class="bi bi-folder"></i> ${result.categoria}</div>
+            </div>
+        `).join('');
+        
+        // Agregar eventos click a resultados
+        document.querySelectorAll('.cie10-result-item').forEach(item => {
+            item.addEventListener('click', function() {
+                seleccionarCodigo({
+                    id: this.dataset.id,
+                    codigo: this.dataset.codigo,
+                    descripcion: this.dataset.descripcion
+                });
+            });
+        });
+    }
+    
+    // Seleccionar código
+    function seleccionarCodigo(codigo) {
+        selectedCodigo = codigo;
+        cie10IdInput.value = codigo.id;
+        cie10Input.value = '';
+        resultsContainer.style.display = 'none';
+        
+        selectedContainer.innerHTML = `
+            <div class="cie10-selected">
+                <span class="badge bg-primary">${codigo.codigo}</span>
+                <span>${codigo.descripcion}</span>
+                <button type="button" class="btn btn-sm btn-link text-danger" onclick="limpiarCIE10()">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+        `;
+        selectedContainer.style.display = 'block';
+    }
+    
+    // Función global para limpiar selección
+    window.limpiarCIE10 = function() {
+        selectedCodigo = null;
+        cie10IdInput.value = '';
+        cie10Input.value = '';
+        selectedContainer.innerHTML = '';
+        selectedContainer.style.display = 'none';
+    };
+    
+    // Cerrar resultados al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!cie10Input.contains(e.target) && !resultsContainer.contains(e.target)) {
+            resultsContainer.style.display = 'none';
+        }
+    });
+    
+    // Cargar código seleccionado al editar
+    if (cie10IdInput.value) {
+        fetch(`/procedimientos/api/cie10/${cie10IdInput.value}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    seleccionarCodigo(data.codigo);
+                }
+            });
+    }
+});
+</script>

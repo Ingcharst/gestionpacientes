@@ -1,0 +1,54 @@
+# CORRECCIONES RÁPIDAS - SPRINT 1
+
+## 🔍 DIAGNÓSTICO PRIMERO
+
+1. Ejecutar:
+   python manage.py shell
+   
+2. Copiar y pegar TODO el código de: DIAGNOSTICO.py
+
+3. Ver qué tiene ❌ (errores)
+
+## 🔧 CORRECCIONES SEGÚN DIAGNÓSTICO
+
+### Si ❌ "Campo numero_admision NO existe":
+→ No agregaste el campo al modelo
+→ Ver: SPRINT1_MODIFICACIONES_MODELO_PACIENTE.py
+→ Migrar: python manage.py makemigrations && python manage.py migrate
+
+### Si ❌ "Campo numero_admision NO está en formulario":
+→ Ver: CORRECCION_FORMULARIO_ADMISION.py
+→ Copiar AdmisionPacienteForm completo
+
+### Si ❌ "Vista admision_paciente NO existe":
+→ No copiaste las vistas
+→ Ver: SPRINT1_VISTAS.py
+→ Copiar TODO al final de views.py
+
+### Si ❌ URLs NO configuradas:
+→ Ver: SPRINT1_URLS.py
+→ Agregar las 7 URLs en procedimientos/urls.py
+
+### Si ❌ Modelo ValoracionInicial NO existe:
+→ Ver: SPRINT1_MODELO_VALORACION_INICIAL.py
+→ Copiar TODO al final de models.py
+→ Migrar de nuevo
+
+## 📋 MENÚS
+
+Ver: CORRECCION_MENUS_SIDEBAR.html
+Agregar en templates/base/base.html después de "Pacientes"
+
+## ✅ VERIFICACIÓN FINAL
+
+Abrir: http://localhost:8000/procedimientos/admision/
+
+¿Se ve? → ✅ TODO BIEN
+¿Error? → Revisar diagnóstico
+
+## 📞 ARCHIVOS CLAVE
+
+1. DIAGNOSTICO.py - Ejecutar primero
+2. CHECKLIST_VERIFICACION.txt - Lista completa
+3. CORRECCION_FORMULARIO_ADMISION.py - Formulario correcto
+4. CORRECCION_MENUS_SIDEBAR.html - Menús

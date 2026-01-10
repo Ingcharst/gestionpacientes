@@ -1,0 +1,273 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'grupos:grupo_list' %}">Grupos</a></li>
+            {% if grupo %}
+            <li class="breadcrumb-item"><a href="{% url 'grupos:grupo_detail' grupo.pk %}">{{ grupo.nombre }}</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+            {% else %}
+            <li class="breadcrumb-item active">Crear Nuevo</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-{% if grupo %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+                {{ titulo }}
+            </h2>
+            <p class="text-muted">Complete la información del grupo terapéutico</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Errores generales del formulario -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger border-0 shadow-sm mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Información Básica -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Información Básica
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Nombre -->
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.nombre.id_for_label }}" class="form-label fw-semibold">
+                                    Nombre del Grupo <span class="text-danger">*</span>
+                                </label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nombre.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Ej: Grupo 9:00 a.m., Grupo Tarde, etc.
+                                </small>
+                            </div>
+
+                            <!-- Estado Activo -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Estado</label>
+                                <div class="form-check form-switch">
+                                    {{ form.activo }}
+                                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                        Grupo Activo
+                                    </label>
+                                </div>
+                                {% if form.activo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.activo.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Descripción -->
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.descripcion.id_for_label }}" class="form-label fw-semibold">
+                                    Descripción
+                                </label>
+                                {{ form.descripcion }}
+                                {% if form.descripcion.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.descripcion.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Horario y Días -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock me-2"></i>Horario y Días
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Hora Inicio -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.hora_inicio.id_for_label }}" class="form-label fw-semibold">
+                                    Hora de Inicio <span class="text-danger">*</span>
+                                </label>
+                                {{ form.hora_inicio }}
+                                {% if form.hora_inicio.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.hora_inicio.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Hora Fin -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.hora_fin.id_for_label }}" class="form-label fw-semibold">
+                                    Hora de Fin <span class="text-danger">*</span>
+                                </label>
+                                {{ form.hora_fin }}
+                                {% if form.hora_fin.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.hora_fin.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Días Disponibles -->
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Días Disponibles <span class="text-danger">*</span>
+                                </label>
+                                <div class="row g-2">
+                                    {% for choice in form.dias_disponibles %}
+                                    <div class="col-auto">
+                                        <div class="form-check form-check-inline p-3 border rounded">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                {{ choice.choice_label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.dias_disponibles.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.dias_disponibles.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Seleccione los días en que funcionará este grupo
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capacidad -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Capacidad
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Capacidad Máxima -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capacidad_maxima.id_for_label }}" class="form-label fw-semibold">
+                                    Capacidad Máxima <span class="text-danger">*</span>
+                                </label>
+                                {{ form.capacidad_maxima }}
+                                {% if form.capacidad_maxima.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.capacidad_maxima.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Número máximo de pacientes (1-50)
+                                </small>
+                            </div>
+
+                            {% if grupo %}
+                            <!-- Información de ocupación actual -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Ocupación Actual</label>
+                                <div class="alert alert-info mb-0">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>{{ grupo.pacientes_actuales }}/{{ grupo.capacidad_maxima }}</span>
+                                        <span class="fw-semibold">{{ grupo.porcentaje_ocupacion }}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-info" 
+                                             style="width: {{ grupo.porcentaje_ocupacion }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notas Adicionales -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sticky me-2"></i>Notas Adicionales
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="{{ form.notas.id_for_label }}" class="form-label fw-semibold">
+                                Notas
+                            </label>
+                            {{ form.notas }}
+                            {% if form.notas.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.notas.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Información adicional sobre el grupo
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% if grupo %}{% url 'grupos:grupo_detail' grupo.pk %}{% else %}{% url 'grupos:grupo_list' %}{% endif %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                {% if grupo %}Actualizar Grupo{% else %}Crear Grupo{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validación del formulario
+(function() {
+    'use strict';
+    const form = document.querySelector('.needs-validation');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,519 @@
+📋 PLAN DE TRABAJO: Sistema de Grupos para Pacientes
+🎯 ANÁLISIS DE REQUERIMIENTOS
+Funcionalidades Requeridas:
+
+✅ Grupos de Horario - Grupos identificados por hora (ej: "Grupo 9:00 a.m.")
+✅ Capacidad de Grupos - Límite de pacientes por grupo
+✅ Asignación de Pacientes - Al crear paciente, asignar a grupo
+✅ Días de Asistencia - Definir qué días asiste cada paciente
+✅ Número de Terapias - Establecer cantidad de terapias por semana
+✅ Control de Cupos - Validar disponibilidad antes de asignar
+✅ Pacientes Pendientes - Estado cuando no hay cupo
+✅ Sistema de Alertas - Notificaciones de pacientes sin grupo
+
+
+📐 ARQUITECTURA PROPUESTA
+1. Nuevos Modelos
+GrupoTerapeutico
+├─ nombre (ej: "Grupo 9:00 a.m.")
+├─ hora_inicio
+├─ hora_fin
+├─ capacidad_maxima
+├─ dias_disponibles (JSON: [L,M,Mi,J,V])
+├─ activo
+└─ descripcion
+
+AsignacionGrupo
+├─ paciente (FK → Paciente)
+├─ grupo (FK → GrupoTerapeutico)
+├─ dias_asistencia (JSON: [L,M,Mi])
+├─ numero_terapias_semanales
+├─ fecha_inicio_asignacion
+├─ fecha_fin_asignacion
+├─ estado (ACTIVA, SUSPENDIDA, FINALIZADA)
+└─ notas
+
+PacientePendiente
+├─ paciente (FK → Paciente)
+├─ fecha_solicitud
+├─ preferencia_horario
+├─ dias_preferidos (JSON)
+├─ prioridad (ALTA, MEDIA, BAJA)
+├─ estado (PENDIENTE, ASIGNADO, CANCELADO)
+└─ observaciones
+2. Modificaciones a Modelos Existentes
+python# Modelo Paciente - Agregar campos
+tiene_grupo_asignado (BooleanField)
+grupo_actual (FK → GrupoTerapeutico, null=True)
+estado_asignacion (ASIGNADO, PENDIENTE, SIN_SOLICITUD)
+```
+
+---
+
+## 🗂️ ESTRUCTURA DE ARCHIVOS
+```
+apps/
+└── grupos/                         # NUEVA APP
+    ├── __init__.py
+    ├── models.py                   # GrupoTerapeutico, AsignacionGrupo, PacientePendiente
+    ├── forms.py                    # Formularios de grupos y asignaciones
+    ├── views.py                    # Vistas CRUD + lógica de asignación
+    ├── urls.py                     # URLs de grupos
+    ├── admin.py                    # Admin de grupos
+    ├── serializers.py              # API REST (opcional)
+    ├── signals.py                  # Señales para alertas automáticas
+    └── utils.py                    # Funciones auxiliares (verificar_cupo, etc.)
+
+templates/
+└── grupos/
+    ├── grupo_list.html             # Lista de grupos
+    ├── grupo_detail.html           # Detalle de grupo + pacientes
+    ├── grupo_form.html             # Crear/editar grupo
+    ├── asignacion_form.html        # Asignar paciente a grupo
+    ├── pacientes_pendientes.html   # Lista de pendientes
+    └── partials/
+        ├── grupo_card.html
+        ├── cupo_disponible.html
+        └── alerta_sin_grupo.html
+
+apps/procedimientos/
+├── models.py                       # MODIFICAR: Agregar campos a Paciente
+├── forms.py                        # MODIFICAR: Agregar campo grupo en PacienteForm
+└── views.py                        # MODIFICAR: Lógica de asignación al crear paciente
+
+templates/procedimientos/
+├── paciente_form.html              # MODIFICAR: Agregar selector de grupo
+└── dashboard.html                  # MODIFICAR: Agregar widget de alertas
+
+📝 PLAN DE DESARROLLO (6 FASES)
+FASE 1: Crear Nueva App "Grupos" ⏱️ 30 min
+bashpython manage.py startapp grupos
+Tareas:
+
+ Crear app grupos
+ Agregar a INSTALLED_APPS
+ Crear estructura de carpetas
+
+
+FASE 2: Modelos de Datos ⏱️ 1.5 horas
+Archivos a crear/modificar:
+
+apps/grupos/models.py - Crear 3 modelos:
+
+GrupoTerapeutico
+AsignacionGrupo
+PacientePendiente
+
+
+apps/procedimientos/models.py - Modificar Paciente:
+
+python   # Agregar campos:
+   tiene_grupo_asignado = models.BooleanField(default=False)
+   grupo_actual = models.ForeignKey('grupos.GrupoTerapeutico', null=True)
+   estado_asignacion = models.CharField(choices=EstadoAsignacion.choices)
+
+Migraciones:
+
+bash   python manage.py makemigrations grupos
+   python manage.py makemigrations procedimientos
+   python manage.py migrate
+Salidas:
+
+✅ 3 nuevas tablas en BD
+✅ Relaciones FK establecidas
+✅ Campos de control en Paciente
+
+
+FASE 3: Lógica de Negocio ⏱️ 2 horas
+Archivos a crear:
+
+apps/grupos/utils.py - Funciones auxiliares:
+
+python   def verificar_cupo_disponible(grupo, dias_solicitados)
+   def asignar_paciente_a_grupo(paciente, grupo, dias, num_terapias)
+   def marcar_paciente_pendiente(paciente, preferencias)
+   def buscar_grupo_disponible(dias_preferidos, hora_preferida)
+   def calcular_ocupacion_grupo(grupo)
+   def liberar_cupo_paciente(paciente)
+   def obtener_pacientes_sin_grupo()
+
+apps/grupos/signals.py - Señales automáticas:
+
+python   @receiver(post_save, sender=Paciente)
+   def verificar_asignacion_grupo(sender, instance, created, **kwargs)
+   
+   @receiver(post_save, sender=AsignacionGrupo)
+   def actualizar_estado_paciente(sender, instance, created, **kwargs)
+
+apps/grupos/validators.py - Validaciones:
+
+python   def validar_dias_asistencia(dias, grupo)
+   def validar_capacidad_grupo(grupo, dias_nuevos)
+   def validar_horario_paciente(paciente, grupo)
+Salidas:
+
+✅ Lógica de asignación automática
+✅ Validación de cupos
+✅ Sistema de alertas por señales
+
+
+FASE 4: Formularios y Vistas ⏱️ 2 horas
+Archivos a crear:
+
+apps/grupos/forms.py:
+
+python   - GrupoTerapeuticoForm
+   - AsignacionGrupoForm
+   - BuscarGrupoForm
+   - PacientePendienteForm
+
+apps/grupos/views.py:
+
+python   # CRUD Grupos
+   - grupo_lista
+   - grupo_detalle (con pacientes asignados)
+   - grupo_crear
+   - grupo_editar
+   
+   # Asignaciones
+   - asignar_paciente_grupo
+   - reasignar_paciente
+   - liberar_paciente_grupo
+   
+   # Pacientes Pendientes
+   - pacientes_pendientes_lista
+   - asignar_pendiente_grupo
+   - priorizar_pendiente
+   
+   # Dashboard
+   - dashboard_grupos (ocupación, alertas)
+
+apps/grupos/urls.py:
+
+python   urlpatterns = [
+       path('', grupo_lista, name='grupo_list'),
+       path('<int:pk>/', grupo_detalle, name='grupo_detail'),
+       path('crear/', grupo_crear, name='grupo_create'),
+       path('asignar/<int:paciente_pk>/', asignar_paciente_grupo),
+       path('pendientes/', pacientes_pendientes_lista),
+       # ...
+   ]
+
+Modificar apps/procedimientos/forms.py:
+
+python   class PacienteForm(forms.ModelForm):
+       # Agregar campos:
+       grupo = forms.ModelChoiceField(queryset=GrupoTerapeutico.objects.filter(activo=True))
+       dias_asistencia = forms.MultipleChoiceField(choices=DIAS_SEMANA)
+       numero_terapias = forms.IntegerField(min_value=1, max_value=5)
+
+Modificar apps/procedimientos/views.py:
+
+python   def paciente_crear(request):
+       # ... código existente ...
+       if form.is_valid():
+           paciente = form.save()
+           
+           # NUEVA LÓGICA: Asignar a grupo
+           grupo = form.cleaned_data.get('grupo')
+           dias = form.cleaned_data.get('dias_asistencia')
+           num_terapias = form.cleaned_data.get('numero_terapias')
+           
+           if grupo and verificar_cupo_disponible(grupo, dias):
+               asignar_paciente_a_grupo(paciente, grupo, dias, num_terapias)
+           else:
+               marcar_paciente_pendiente(paciente, {...})
+Salidas:
+
+✅ CRUD completo de grupos
+✅ Proceso de asignación integrado
+✅ Gestión de pendientes
+
+
+FASE 5: Templates Frontend ⏱️ 2.5 horas
+Archivos a crear:
+
+templates/grupos/grupo_list.html:
+
+Lista de grupos con cards
+Indicador de ocupación (barra de progreso)
+Filtros por horario/día
+
+
+templates/grupos/grupo_detail.html:
+
+Información del grupo
+Lista de pacientes asignados
+Calendario semanal visual
+Botón "Asignar Paciente"
+
+
+templates/grupos/grupo_form.html:
+
+Formulario crear/editar grupo
+Selector de días disponibles (checkboxes)
+Campo capacidad máxima
+
+
+templates/grupos/asignacion_form.html:
+
+Selector de grupo (con disponibilidad)
+Checkboxes para días de asistencia
+Número de terapias semanales
+Validación en tiempo real de cupos
+
+
+templates/grupos/pacientes_pendientes.html:
+
+Tabla de pacientes sin grupo
+Botones de acción (Asignar/Priorizar)
+Filtros por prioridad/fecha
+
+
+templates/grupos/partials/alerta_sin_grupo.html:
+
+Widget de alerta
+Contador de pendientes
+Link a lista completa
+
+
+Modificar templates/procedimientos/paciente_form.html:
+
+html   <!-- Agregar sección de Asignación de Grupo -->
+   <div class="card mb-4 border-0 shadow-sm">
+       <div class="card-header bg-light">
+           <h6 class="mb-0 text-primary">
+               <i class="bi bi-people me-2"></i>Asignación de Grupo
+           </h6>
+       </div>
+       <div class="card-body">
+           <!-- Selector de grupo -->
+           <!-- Días de asistencia -->
+           <!-- Número de terapias -->
+           <!-- Indicador de cupo disponible -->
+       </div>
+   </div>
+
+Modificar templates/procedimientos/dashboard.html:
+
+html   <!-- Agregar widget de alertas -->
+   {% if pacientes_sin_grupo > 0 %}
+   <div class="alert alert-warning">
+       <i class="bi bi-exclamation-triangle"></i>
+       Hay {{ pacientes_sin_grupo }} paciente(s) sin grupo asignado
+       <a href="{% url 'grupos:pacientes_pendientes' %}">Ver lista</a>
+   </div>
+   {% endif %}
+Salidas:
+
+✅ Interfaz completa de gestión de grupos
+✅ Visualización de ocupación
+✅ Alertas visuales integradas
+
+
+FASE 6: Testing y Validación ⏱️ 1.5 horas
+Tests a crear:
+
+apps/grupos/tests.py:
+
+python   class GrupoTerapeuticoTestCase(TestCase):
+       def test_crear_grupo()
+       def test_calcular_ocupacion()
+       def test_verificar_cupo_disponible()
+   
+   class AsignacionGrupoTestCase(TestCase):
+       def test_asignar_paciente_con_cupo()
+       def test_asignar_paciente_sin_cupo()
+       def test_validar_dias_asistencia()
+   
+   class PacientePendienteTestCase(TestCase):
+       def test_marcar_pendiente()
+       def test_asignar_pendiente_a_grupo()
+
+Tests de integración:
+
+python   def test_flujo_completo_asignacion()
+   def test_alertas_pacientes_sin_grupo()
+   def test_liberacion_cupo()
+```
+
+3. **Validaciones manuales**:
+   - [ ] Crear 3 grupos con diferente capacidad
+   - [ ] Asignar pacientes hasta llenar cupo
+   - [ ] Intentar asignar sin cupo → debe quedar pendiente
+   - [ ] Verificar alertas en dashboard
+   - [ ] Liberar paciente y reasignar
+   - [ ] Editar días de asistencia
+
+**Salidas:**
+- ✅ Cobertura de tests >80%
+- ✅ Validación de casos límite
+- ✅ Sistema funcionando end-to-end
+
+---
+
+## 📊 RESUMEN DE ENTREGABLES
+
+### Nuevos Archivos (17):
+```
+apps/grupos/
+├── models.py          ✅ 3 modelos nuevos
+├── forms.py           ✅ 4 formularios
+├── views.py           ✅ 10+ vistas
+├── urls.py            ✅ 8 URLs
+├── utils.py           ✅ 7 funciones auxiliares
+├── signals.py         ✅ 2 señales
+├── validators.py      ✅ 3 validadores
+├── admin.py           ✅ Admin config
+└── tests.py           ✅ 15+ tests
+
+templates/grupos/
+├── grupo_list.html
+├── grupo_detail.html
+├── grupo_form.html
+├── asignacion_form.html
+├── pacientes_pendientes.html
+└── partials/
+    ├── grupo_card.html
+    ├── cupo_disponible.html
+    └── alerta_sin_grupo.html
+```
+
+### Archivos Modificados (4):
+```
+apps/procedimientos/models.py      ✅ +3 campos en Paciente
+apps/procedimientos/forms.py       ✅ +3 campos en PacienteForm
+apps/procedimientos/views.py       ✅ Lógica de asignación
+templates/procedimientos/
+├── paciente_form.html             ✅ +Sección de grupos
+└── dashboard.html                 ✅ +Widget de alertas
+```
+
+### Base de Datos:
+```
+3 nuevas tablas:
+├── grupos_grupoterapeutico
+├── grupos_asignaciongrupo
+└── grupos_pacientependiente
+
+Modelo Paciente modificado:
+├── tiene_grupo_asignado (BooleanField)
+├── grupo_actual (ForeignKey)
+└── estado_asignacion (CharField)
+
+⏱️ ESTIMACIÓN DE TIEMPO
+FaseTiempo EstimadoComplejidadFase 1: Crear App30 minBajaFase 2: Modelos1.5 horasMediaFase 3: Lógica Negocio2 horasAltaFase 4: Vistas/Forms2 horasMediaFase 5: Templates2.5 horasMediaFase 6: Testing1.5 horasMediaTOTAL~10 horas
+
+🎯 ORDEN DE IMPLEMENTACIÓN SUGERIDO
+Sprint 1 (Core): Fases 1-3
+
+✅ Crear app y modelos
+✅ Implementar lógica de negocio
+✅ Crear migraciones y aplicar
+
+Sprint 2 (Backend): Fase 4
+
+✅ Formularios y vistas
+✅ URLs y integración
+
+Sprint 3 (Frontend): Fase 5
+
+✅ Templates de grupos
+✅ Modificar templates existentes
+✅ Widgets y alertas
+
+Sprint 4 (QA): Fase 6
+
+✅ Tests unitarios
+✅ Tests de integración
+✅ Validación manual
+
+
+🚀 FUNCIONALIDADES FINALES
+Usuario Administrador Podrá:
+
+✅ Crear grupos con horarios y capacidades
+✅ Ver ocupación en tiempo real
+✅ Asignar/reasignar pacientes manualmente
+✅ Ver lista de pacientes pendientes
+✅ Recibir alertas de pacientes sin grupo
+✅ Gestionar días de asistencia por paciente
+
+Al Crear Paciente:
+
+✅ Selector de grupo con indicador de cupos
+✅ Selección de días de asistencia
+✅ Definir número de terapias semanales
+✅ Si no hay cupo → queda pendiente automáticamente
+✅ Alerta visible si quedó pendiente
+
+Dashboard Mostrará:
+
+✅ Total de grupos activos
+✅ Pacientes con grupo asignado
+✅ Pacientes pendientes (alerta roja)
+✅ Grupos con cupos disponibles
+✅ Ocupación promedio de grupos
+
+
+❓ DECISIONES PENDIENTES
+Antes de continuar, necesito que confirmes:
+1. Capacidad de Grupos
+
+¿Capacidad se cuenta por:
+
+ Total de pacientes únicos en el grupo?
+ Total de "sesiones" por día? (ej: 10 pacientes x 3 días = 30 sesiones)
+ Otra lógica?
+
+
+
+2. Días de Asistencia
+
+¿Los días son fijos por grupo o flexibles por paciente?
+
+ Grupo tiene días fijos (ej: L-M-Mi) y paciente debe seguirlos
+ Paciente puede elegir días dentro de los disponibles del grupo
+
+
+
+3. Múltiples Grupos
+
+¿Un paciente puede estar en múltiples grupos?
+
+ Sí (ej: Grupo mañana L-M, Grupo tarde Mi-J)
+ No (un paciente = un grupo único)
+
+
+
+4. Prioridad de Asignación
+
+¿Qué criterio para asignar pacientes pendientes?
+
+ FIFO (primero en llegar)
+ Por prioridad médica
+ Manual por administrador
+
+
+
+5. Notificaciones
+
+¿Dónde mostrar alertas?
+
+ Dashboard principal
+ Email a administrador
+ Notificaciones en sistema
+ Todo lo anterior
+
+
+
+
+🎬 PRÓXIMO PASO
+Una vez confirmes las decisiones pendientes, comenzaré con:
+Fase 1: Crear App y Modelos
+Generaré:
+
+Estructura completa de apps/grupos/
+Modelos con todas las relaciones
+Migraciones listas para aplicar
+Archivo de configuración

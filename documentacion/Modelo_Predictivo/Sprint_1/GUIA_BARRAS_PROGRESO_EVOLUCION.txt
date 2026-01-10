@@ -1,0 +1,207 @@
+# GUÍA: Barras de Progreso Dinámicas en Evolución
+
+## 🎯 PROBLEMA ORIGINAL
+
+En tu template, las barras tenían el código correcto pero **faltaba el símbolo %**:
+```html
+<!-- ❌ ANTES (sin %) -->
+style="width: {% widthratio evolucion.nivel_atencion 5 100 %}"
+```
+
+## ✅ SOLUCIÓN IMPLEMENTADA
+
+### 1. CORRECCIÓN PRINCIPAL: Agregar % al width
+
+```html
+<!-- ✅ DESPUÉS (con %) -->
+style="width: {% widthratio evolucion.nivel_atencion 5 100 %}%"
+```
+
+### 2. CÓMO FUNCIONA widthratio
+
+**Sintaxis:** `{% widthratio valor_actual valor_maximo multiplicador %}`
+
+**Fórmula:** `(valor_actual / valor_maximo) × multiplicador`
+
+**Para niveles de 1-5 a porcentajes:**
+```
+{% widthratio nivel 5 100 %}% 
+```
+
+**Ejemplos:**
+- Nivel 1: (1/5) × 100 = 20%
+- Nivel 2: (2/5) × 100 = 40%
+- Nivel 3: (3/5) × 100 = 60%
+- Nivel 4: (4/5) × 100 = 80%
+- Nivel 5: (5/5) × 100 = 100%
+
+### 3. MEJORAS ADICIONALES IMPLEMENTADAS
+
+#### A) Colores Dinámicos según Nivel
+
+```django
+{% if evolucion.nivel_atencion <= 2 %}
+    nivel-bajo        <!-- Rojo: niveles 1-2 -->
+{% elif evolucion.nivel_atencion == 3 %}
+    nivel-medio       <!-- Amarillo: nivel 3 -->
+{% else %}
+    nivel-alto        <!-- Verde: niveles 4-5 -->
+{% endif %}
+```
+
+#### B) Animación de Carga
+
+CSS agregado en `{% block extra_css %}`:
+```css
+.progress-bar-animated-custom {
+    animation: progress-animation 1s ease-in-out;
+}
+
+@keyframes progress-animation {
+    from { width: 0%; }
+}
+```
+
+#### C) Barras Más Altas y Visibles
+
+```html
+<div class="progress" style="height: 12px;">  <!-- Antes: 8px -->
+```
+
+#### D) Iconos Descriptivos
+
+```html
+<i class="bi bi-eye me-1"></i> Atención
+<i class="bi bi-hand-thumbs-up me-1"></i> Participación
+<i class="bi bi-people me-1"></i> Colaboración
+<i class="bi bi-lightbulb me-1"></i> Comprensión
+```
+
+#### E) Mejor Layout
+
+```html
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <small class="text-muted fw-bold">Atención</small>
+    <strong class="text-primary">4/5</strong>
+</div>
+```
+
+## 📋 CÓDIGO COMPLETO DE UNA BARRA
+
+```html
+{% if evolucion.nivel_atencion %}
+<div class="mb-3">
+    <!-- Header con nombre e indicador -->
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-muted fw-bold">
+            <i class="bi bi-eye me-1"></i> Atención
+        </small>
+        <strong class="text-primary">{{ evolucion.nivel_atencion }}/5</strong>
+    </div>
+    
+    <!-- Barra de progreso -->
+    <div class="progress" style="height: 12px;">
+        <div class="progress-bar progress-bar-animated-custom 
+                    {% if evolucion.nivel_atencion <= 2 %}nivel-bajo
+                    {% elif evolucion.nivel_atencion == 3 %}nivel-medio
+                    {% else %}nivel-alto{% endif %}" 
+             role="progressbar"
+             style="width: {% widthratio evolucion.nivel_atencion 5 100 %}%"
+             aria-valuenow="{{ evolucion.nivel_atencion }}"
+             aria-valuemin="0"
+             aria-valuemax="5">
+        </div>
+    </div>
+</div>
+{% endif %}
+```
+
+## 🎨 COLORES DE LAS BARRAS
+
+### Por Nivel (Dinámico):
+- **Rojo** (nivel-bajo): Niveles 1-2 → Requiere mucho apoyo
+- **Amarillo** (nivel-medio): Nivel 3 → En desarrollo
+- **Verde** (nivel-alto): Niveles 4-5 → Buen desempeño
+
+### Por Indicador (Fijo):
+- Atención: text-primary (azul)
+- Participación: text-success (verde)
+- Colaboración: text-info (celeste)
+- Comprensión: text-warning (amarillo)
+
+## 🔄 INSTALACIÓN
+
+1. **Reemplazar template completo:**
+   - Archivo: `templates/procedimientos/detalle_evolucion.html`
+   - Copiar de: `detalle_evolucion_CORREGIDO.html`
+
+2. **Guardar y recargar página**
+
+3. **Verificar funcionamiento:**
+   - Abrir cualquier evolución
+   - Las barras deben llenarse dinámicamente
+   - Ver animación de carga
+   - Colores deben cambiar según nivel
+
+## 💡 EJEMPLOS VISUALES
+
+### Nivel 1 (20%):
+```
+Atención              1/5
+[████░░░░░░░░░░░░░░░░] Rojo
+```
+
+### Nivel 3 (60%):
+```
+Participación         3/5
+[████████████░░░░░░░░] Amarillo
+```
+
+### Nivel 5 (100%):
+```
+Colaboración          5/5
+[████████████████████] Verde
+```
+
+## ⚠️ PUNTOS IMPORTANTES
+
+1. **Siempre usar el símbolo %** después de widthratio
+2. **Verificar que los valores existan** con {% if evolucion.nivel_xxx %}
+3. **Las barras necesitan height** para ser visibles
+4. **Bootstrap 5** ya incluye las clases .progress y .progress-bar
+5. **No se necesita JavaScript** - todo es con Django templates y CSS
+
+## 🔍 TROUBLESHOOTING
+
+### Problema: Las barras no se ven
+**Solución:** Verificar que `height: 12px;` esté en el div.progress
+
+### Problema: Las barras están vacías
+**Solución:** Verificar que agregaste el `%` después de widthratio
+
+### Problema: No hay animación
+**Solución:** Verificar que el CSS esté en `{% block extra_css %}`
+
+### Problema: Los colores no cambian
+**Solución:** Verificar las clases CSS nivel-bajo, nivel-medio, nivel-alto
+
+## ✅ RESULTADO FINAL
+
+Con esta implementación obtendrás:
+- ✅ Barras dinámicas que se llenan según el valor
+- ✅ Colores que indican nivel de desempeño
+- ✅ Animación suave de carga
+- ✅ Indicadores visuales profesionales
+- ✅ Responsive y accesible
+- ✅ Sin JavaScript necesario
+
+## 🎉 CARACTERÍSTICAS VISUALES
+
+- **Altura mayor** (12px vs 8px) - Más visible
+- **Animación** (1 segundo) - Efecto profesional
+- **Colores semánticos** - Rojo/Amarillo/Verde
+- **Iconos descriptivos** - Mejor UX
+- **Layout mejorado** - Valor al lado derecho
+- **Separación visual** - mb-3 entre indicadores
+
+¡Las barras ahora se llenan dinámicamente y lucen profesionales!

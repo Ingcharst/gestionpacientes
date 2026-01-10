@@ -1,0 +1,109 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Catálogo de Terapias - TEA Management{% endblock %}
+{% block page_title %}Catálogo de Terapias{% endblock %}
+
+{% block content %}
+<!-- Destacadas -->
+{% if destacadas %}
+<div class="mb-5">
+    <h4 class="mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Terapias Destacadas</h4>
+    <div class="row">
+        {% for terapia in destacadas %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-warning">
+                {% if terapia.imagen %}
+                <img src="{{ terapia.imagen.url }}" class="card-img-top" alt="{{ terapia.nombre }}">
+                {% else %}
+                <div class="card-img-top bg-light p-5 text-center">
+                    <i class="bi bi-heart-pulse fs-1 text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <span class="badge bg-warning text-dark mb-2">
+                        <i class="bi bi-star-fill"></i> Destacada
+                    </span>
+                    <h5 class="card-title">{{ terapia.nombre }}</h5>
+                    <p class="card-text text-muted small">{{ terapia.categoria.nombre }}</p>
+                    <p class="card-text">{{ terapia.descripcion_corta|truncatewords:15 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>{{ terapia.duracion_minutos }} min
+                        </small>
+                        <a href="{% url 'terapia_detail' terapia.pk %}" class="btn btn-sm btn-outline-primary">
+                            Ver más <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Filtros por Categoría -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <a href="{% url 'catalogo_terapias' %}" 
+               class="btn btn-sm {% if not request.GET.categoria %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Todas
+            </a>
+            {% for categoria in categorias %}
+            <a href="?categoria={{ categoria.id }}" 
+               class="btn btn-sm {% if request.GET.categoria == categoria.id|stringformat:'s' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ categoria.nombre }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Terapias -->
+<div class="row">
+    {% for terapia in terapias %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            {% if terapia.imagen %}
+            <img src="{{ terapia.imagen.url }}" class="card-img-top" alt="{{ terapia.nombre }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-light p-4 text-center" style="height: 200px;">
+                <i class="bi bi-heart-pulse fs-1 text-muted"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="mb-2">
+                    <span class="badge bg-primary">{{ terapia.categoria.nombre }}</span>
+                    {% if terapia.modalidad %}
+                    <span class="badge bg-secondary">{{ terapia.get_modalidad_display }}</span>
+                    {% endif %}
+                </div>
+                <h5 class="card-title">{{ terapia.nombre }}</h5>
+                <p class="card-text">{{ terapia.descripcion_corta|truncatewords:20 }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>{{ terapia.duracion_minutos }} min
+                    </small>
+                    {% if terapia.precio_base %}
+                    <small class="text-success">
+                        <i class="bi bi-cash me-1"></i>${{ terapia.precio_base }}
+                    </small>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'terapia_detail' terapia.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-info-circle me-1"></i>Ver Detalles
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-inbox fs-1 text-muted"></i>
+        <p class="text-muted">No hay terapias disponibles en esta categoría</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

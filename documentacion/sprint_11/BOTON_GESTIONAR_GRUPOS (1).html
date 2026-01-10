@@ -1,0 +1,29 @@
+# AGREGAR BOTÓN EN DETALLE DEL PACIENTE
+# Archivo: templates/procedimientos/paciente_detail.html
+
+<!-- Buscar la sección de botones de acción del paciente -->
+<!-- Agregar este botón DESPUÉS del botón "Editar" o similar: -->
+
+<a href="{% url 'grupos:paciente_grupos' paciente.id %}" class="btn btn-info">
+    <i class="bi bi-people-fill me-2"></i>Gestionar Grupos
+</a>
+
+<!-- EJEMPLO DE UBICACIÓN COMPLETA: -->
+<div class="card-footer">
+    <div class="d-flex gap-2">
+        <a href="{% url 'procedimientos:paciente_edit' paciente.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil me-2"></i>Editar
+        </a>
+        
+        <!-- NUEVO BOTÓN -->
+        <a href="{% url 'grupos:paciente_grupos' paciente.id %}" class="btn btn-info">
+            <i class="bi bi-people-fill me-2"></i>Gestionar Grupos
+        </a>
+        
+        {% if paciente.estado == 'PENDIENTE_ASIGNACION' %}
+        <a href="{% url 'grupos:grupo_list' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Asignar a Grupo
+        </a>
+        {% endif %}
+    </div>
+</div>

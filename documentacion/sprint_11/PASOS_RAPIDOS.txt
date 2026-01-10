@@ -1,0 +1,35 @@
+# PASOS RÁPIDOS (5 archivos, 10 minutos)
+
+## 1️⃣ CORREGIR VISTA ASIGNACIÓN
+apps/grupos/views.py
+→ Buscar función asignar_paciente
+→ Agregar 3 líneas cambio estado
+→ Ver: CORRECCION_CAMBIO_ESTADO.py
+
+## 2️⃣ COPIAR 4 VISTAS NUEVAS
+apps/grupos/views.py
+→ Copiar TODO de: VISTAS_MULTIPLES_GRUPOS.py
+→ Pegar al final
+
+## 3️⃣ AGREGAR 4 URLs
+apps/grupos/urls.py
+→ Copiar de: URLS_MULTIPLES_GRUPOS.py
+→ Pegar en urlpatterns
+
+## 4️⃣ COPIAR TEMPLATE
+template_paciente_grupos.html
+→ A: templates/grupos/paciente_grupos.html
+
+## 5️⃣ AGREGAR BOTÓN
+templates/procedimientos/paciente_detail.html
+→ Ver: BOTON_GESTIONAR_GRUPOS.html
+→ Agregar botón
+
+## ✅ LISTO
+python manage.py runserver
+
+## 🔍 PROBAR
+1. Ver paciente → botón "Gestionar Grupos"
+2. Asignar grupo → estado cambia a ACTIVO ✅
+3. Agregar otro grupo → sigue ACTIVO
+4. Eliminar todos → vuelve a PENDIENTE_ASIGNACION

@@ -1,0 +1,120 @@
+# ⚡ GUÍA RÁPIDA - CORRECCIÓN FORMULARIOS QUE NO GUARDAN
+
+## 🎯 PROBLEMA
+Los formularios de **Crear Procedimiento** y **Crear Sesión Terapéutica** no guardaban datos.
+
+## ✅ SOLUCIÓN EN 3 PASOS (5 MINUTOS)
+
+### PASO 1: Reemplazar Archivos (3 min)
+
+```
+ORIGEN (outputs/)                    → DESTINO (tu proyecto)
+═══════════════════════════════════════════════════════════════
+
+procedimientos_forms.py              → apps/procedimientos/forms.py
+procedimientos_models.py             → apps/procedimientos/models.py  
+procedimientos_views_corregido.py    → apps/procedimientos/views.py
+procedimiento_form.html              → templates/procedimientos/form.html
+sesion_form.html                     → templates/procedimientos/sesion_form.html
+```
+
+### PASO 2: Reiniciar Servidor (1 min)
+
+```bash
+# Detener servidor (Ctrl+C)
+# Iniciar nuevamente
+python manage.py runserver
+```
+
+### PASO 3: Probar (1 min)
+
+**Procedimiento:**
+1. Ir a `/procedimientos/crear/`
+2. Llenar: Paciente, Tipo, Profesional, Fecha, Hora, Motivo, Costo
+3. Click "Guardar"
+4. ✅ Debe mostrar mensaje de éxito y redirigir
+
+**Sesión:**
+1. Ir a `/procedimientos/sesiones/crear/`
+2. Llenar: Paciente, Terapia, Terapeuta, Fecha, Hora, Duración, Costo, Objetivos, Actividades
+3. Click "Guardar"
+4. ✅ Debe mostrar mensaje de éxito y redirigir
+
+---
+
+## 🔑 CAMBIOS PRINCIPALES
+
+### ✨ Autogeneración de Códigos
+- **Procedimientos:** Código formato `EVA-20251124-1234`
+- **Sesiones:** Número formato `TER-20251124-5678`
+
+### ✨ Campos Agregados
+- **Procedimientos:** Tipo, Motivo de Consulta, Costo
+- **Sesiones:** Duración (minutos), Costo, Actividades
+
+### ✨ Mensajes de Error
+- Ahora muestra qué campo falta o está incorrecto
+- Alertas visuales con Bootstrap
+
+### ✨ Estilos CSS
+- Todos los campos con clases Bootstrap
+- Selectores funcionan correctamente
+
+---
+
+## ⚠️ REQUISITOS PREVIOS
+
+Para que los formularios funcionen, necesitas:
+
+1. ✅ **Pacientes** creados en el sistema
+2. ✅ **Terapias** en el catálogo
+3. ✅ **Usuarios** con rol TERAPEUTA/MEDICO/PSICOLOGO
+4. ✅ **Consultorios** (opcional)
+
+Si los selectores muestran "--------", es porque faltan estos datos.
+
+---
+
+## 🐛 SOLUCIÓN DE PROBLEMAS
+
+### "This field is required"
+→ Llenar todos los campos con asterisco rojo (*)
+
+### Selectores vacíos
+→ Crear pacientes/terapias/usuarios primero
+
+### Error al guardar
+→ Revisar logs del servidor: `python manage.py runserver`
+
+---
+
+## 📋 CHECKLIST COMPLETO
+
+- [ ] Archivos reemplazados (5 archivos)
+- [ ] Servidor reiniciado
+- [ ] Pacientes existen en BD
+- [ ] Terapias existen en BD  
+- [ ] Usuarios terapeutas existen
+- [ ] Formulario de procedimientos guarda OK
+- [ ] Formulario de sesiones guarda OK
+- [ ] Códigos se generan automáticamente
+- [ ] Mensajes de éxito aparecen
+
+---
+
+## 📊 ARCHIVOS INCLUIDOS
+
+| Archivo | Tamaño | Descripción |
+|---------|--------|-------------|
+| procedimientos_forms.py | 5.4 KB | Formularios corregidos |
+| procedimientos_models.py | 41 KB | Métodos save() mejorados |
+| procedimientos_views_corregido.py | 9.5 KB | Manejo de errores |
+| procedimiento_form.html | 4.2 KB | Template con todos los campos |
+| sesion_form.html | 5.8 KB | Template con todos los campos |
+| CORRECCION_FORMULARIOS_GUARDAR.md | 15 KB | Documentación técnica completa |
+
+---
+
+**Tiempo total:** 5 minutos  
+**Dificultad:** Fácil  
+**Resultado:** Formularios 100% funcionales ✅

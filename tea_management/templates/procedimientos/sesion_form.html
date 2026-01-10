@@ -1,0 +1,184 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ titulo }} - TEA Management{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-heart me-2"></i>{{ titulo }}</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-info-circle me-1"></i>Información Básica
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Paciente <span class="text-danger">*</span></label>
+                                {{ form.paciente }}
+                                {% if form.paciente.errors %}
+                                <div class="invalid-feedback d-block">{{ form.paciente.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Terapia <span class="text-danger">*</span></label>
+                                {{ form.terapia }}
+                                {% if form.terapia.errors %}
+                                <div class="invalid-feedback d-block">{{ form.terapia.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Terapeuta <span class="text-danger">*</span></label>
+                            {{ form.terapeuta }}
+                            {% if form.terapeuta.errors %}
+                            <div class="invalid-feedback d-block">{{ form.terapeuta.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-clock me-1"></i>Programación
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Fecha <span class="text-danger">*</span></label>
+                                {{ form.fecha }}
+                                {% if form.fecha.errors %}
+                                <div class="invalid-feedback d-block">{{ form.fecha.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Hora Inicio <span class="text-danger">*</span></label>
+                                {{ form.hora_inicio }}
+                                {% if form.hora_inicio.errors %}
+                                <div class="invalid-feedback d-block">{{ form.hora_inicio.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Hora Fin</label>
+                                {{ form.hora_fin }}
+                                {% if form.hora_fin.errors %}
+                                <div class="invalid-feedback d-block">{{ form.hora_fin.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Duración (min) <span class="text-danger">*</span></label>
+                                {{ form.duracion_programada_minutos }}
+                                {% if form.duracion_programada_minutos.errors %}
+                                <div class="invalid-feedback d-block">{{ form.duracion_programada_minutos.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Estado</label>
+                                {{ form.estado }}
+                                {% if form.estado.errors %}
+                                <div class="invalid-feedback d-block">{{ form.estado.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tipo de Asistencia <span class="text-danger">*</span></label>
+                                {{ form.tipo_asistencia }}
+                                {% if form.tipo_asistencia.errors %}
+                                <div class="invalid-feedback d-block">{{ form.tipo_asistencia.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Minutos de Retraso <span class="text-danger">*</span></label>
+                                {{ form.minutos_retraso }}
+                                {% if form.minutos_retraso.errors %}
+                                <div class="invalid-feedback d-block">{{ form.minutos_retraso.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Costo <span class="text-danger">*</span></label>
+                                {{ form.costo }}
+                                {% if form.costo.errors %}
+                                <div class="invalid-feedback d-block">{{ form.costo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>                    </fieldset>
+
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-chat-left-text me-1"></i>Detalles de la Sesión
+                        </legend>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Objetivos de la Sesión <span class="text-danger">*</span></label>
+                            {{ form.objetivos_sesion }}
+                            {% if form.objetivos_sesion.errors %}
+                            <div class="invalid-feedback d-block">{{ form.objetivos_sesion.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Actividades Realizadas <span class="text-danger">*</span></label>
+                            {{ form.actividades_realizadas }}
+                            {% if form.actividades_realizadas.errors %}
+                            <div class="invalid-feedback d-block">{{ form.actividades_realizadas.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones del Terapeuta</label>
+                            {{ form.observaciones_terapeuta }}
+                            {% if form.observaciones_terapeuta.errors %}
+                            <div class="invalid-feedback d-block">{{ form.observaciones_terapeuta.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'procedimientos:sesion_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('select').forEach(el => el.classList.add('form-select'));
+    document.querySelectorAll('input[type="date"], input[type="time"], input[type="number"]').forEach(el => el.classList.add('form-control'));
+    document.querySelectorAll('textarea').forEach(el => el.classList.add('form-control'));
+});
+</script>
+{% endblock %}

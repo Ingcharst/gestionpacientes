@@ -1,0 +1,47 @@
+{% load static %}
+{% load procedure_tags %}
+
+{% for paciente in pacientes %}
+<tr hx-target="this" hx-swap="outerHTML">
+    <td>
+        <strong>{{ paciente.numero_historia_clinica }}</strong><br>
+        <small class="text-muted">{{ paciente.numero_documento }}</small>
+    </td>
+    <td>
+        <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="fw-bold text-decoration-none">
+            {{ paciente.nombre_completo }}
+        </a>
+    </td>
+    <td>{{ paciente.edad_meses|edad_format }}</td>
+    <td>
+        {% if paciente.estado == 'ACTIVO' %}
+        <span class="badge bg-success">{{ paciente.get_estado_display }}</span>
+        {% elif paciente.estado == 'EVALUACION' %}
+        <span class="badge bg-warning">{{ paciente.get_estado_display }}</span>
+        {% else %}
+        <span class="badge bg-secondary">{{ paciente.get_estado_display }}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if paciente.ultima_sesion %}
+            {{ paciente.ultima_sesion|date:"d M Y" }}
+        {% else %}
+            N/A
+        {% endif %}
+    </td>
+    <td>
+        <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="btn btn-sm btn-outline-info" title="Ver Detalle">
+            <i class="bi bi-eye"></i>
+        </a>
+        <a href="{% url 'procedimientos:sesion_create' %}?paciente={{ paciente.pk }}" class="btn btn-sm btn-outline-success" title="Agendar Sesión">
+            <i class="bi bi-calendar-plus"></i>
+        </a>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center py-4 text-muted">
+        <i class="bi bi-search me-2"></i> No se encontraron pacientes que coincidan con los filtros.
+    </td>
+</tr>
+{% endfor %}

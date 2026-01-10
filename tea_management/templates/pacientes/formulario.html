@@ -1,0 +1,158 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Paciente{% endblock %}
+{% block page_title %}{% if object %}Editar{% else %}Registrar Nuevo{% endif %} Paciente{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Información Personal -->
+                    <h5 class="border-bottom pb-2 mb-3">Información Personal</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombres *</label>
+                            {{ form.nombres }}
+                            {% if form.nombres.errors %}<div class="text-danger">{{ form.nombres.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Apellidos *</label>
+                            {{ form.apellidos }}
+                            {% if form.apellidos.errors %}<div class="text-danger">{{ form.apellidos.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo Documento *</label>
+                            {{ form.tipo_documento }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Número Documento *</label>
+                            {{ form.numero_documento }}
+                            {% if form.numero_documento.errors %}<div class="text-danger">{{ form.numero_documento.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha Nacimiento *</label>
+                            {{ form.fecha_nacimiento }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Género *</label>
+                            {{ form.genero }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Historia Clínica *</label>
+                            {{ form.numero_historia_clinica }}
+                            {% if form.numero_historia_clinica.errors %}<div class="text-danger">{{ form.numero_historia_clinica.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Número Admisión *</label>
+                            {{ form.numero_admision }}
+                            {% if form.numero_admision.errors %}<div class="text-danger">{{ form.numero_admision.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Foto</label>
+                            {{ form.foto }}
+                        </div>
+                    </div>
+                    
+                    <!-- Contacto -->
+                    <h5 class="border-bottom pb-2 mb-3">Información de Contacto</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            {{ form.telefono }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Dirección</label>
+                            {{ form.direccion }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ciudad</label>
+                            {{ form.ciudad }}
+                        </div>
+                    </div>
+                    
+                    <!-- Responsable -->
+                    <h5 class="border-bottom pb-2 mb-3">Información del Responsable</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre Responsable *</label>
+                            {{ form.nombre_responsable }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Parentesco *</label>
+                            {{ form.parentesco_responsable }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono Responsable *</label>
+                            {{ form.telefono_responsable }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Responsable</label>
+                            {{ form.email_responsable }}
+                        </div>
+                    </div>
+                    
+                    <!-- Información Médica -->
+                    <h5 class="border-bottom pb-2 mb-3">Información Médica</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label">Diagnóstico Principal *</label>
+                            {{ form.diagnostico_principal }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Alergias</label>
+                            {{ form.alergias }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Medicamentos Actuales</label>
+                            {{ form.medicamentos }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">EPS</label>
+                            {{ form.eps }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            {{ form.estado }}
+                        </div>
+                    </div>
+                    
+                    <!-- Observaciones -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label">Observaciones Generales</label>
+                            {{ form.observaciones }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Necesidades Especiales</label>
+                            {{ form.necesidades_especiales }}
+                        </div>
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'procedimientos:paciente_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Guardar Paciente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select { border-radius: 0.25rem; }
+    textarea.form-control { min-height: 80px; }
+</style>
+{% endblock %}

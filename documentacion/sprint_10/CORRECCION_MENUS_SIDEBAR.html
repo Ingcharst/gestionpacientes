@@ -1,0 +1,42 @@
+# MENÚS DEL SIDEBAR - Sprint 1
+# Archivo: templates/base/base.html
+
+<!-- Buscar la sección del sidebar con Pacientes y agregar DESPUÉS: -->
+
+<!-- SPRINT 1: ADMISIÓN Y VALORACIÓN -->
+<li class="nav-item">
+    <a class="nav-link {% if 'admision' in request.path %}active{% endif %}" 
+       href="{% url 'procedimientos:admision_paciente' %}">
+        <i class="bi bi-person-plus-fill me-2"></i>Admitir Paciente
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link {% if 'pendientes-valoracion' in request.path %}active{% endif %}" 
+       href="{% url 'procedimientos:pacientes_pendientes_valoracion' %}">
+        <i class="bi bi-clipboard2-pulse me-2"></i>Pendientes Valoración
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link {% if 'pendientes-asignacion' in request.path %}active{% endif %}" 
+       href="{% url 'procedimientos:pacientes_pendientes_asignacion' %}">
+        <i class="bi bi-people-fill me-2"></i>Pendientes Asignación
+    </a>
+</li>
+
+<!-- FIN SPRINT 1 -->
+
+
+# ============================================================================
+# UBICACIÓN EXACTA EN base.html:
+# ============================================================================
+
+<!-- Buscar esta sección: -->
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'procedimientos:paciente_list' %}">
+        <i class="bi bi-people me-2"></i> Pacientes
+    </a>
+</li>
+
+<!-- AGREGAR JUSTO DESPUÉS las 3 opciones de arriba -->

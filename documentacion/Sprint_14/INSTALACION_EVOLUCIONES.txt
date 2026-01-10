@@ -1,0 +1,276 @@
+# INSTALACIÓN: MÓDULO DE EVOLUCIONES
+
+## 🎯 FUNCIONALIDAD
+
+Sistema completo para que profesionales registren la evolución de pacientes en cada sesión de terapia. Incluye:
+- Registro detallado de cada sesión
+- Evaluación cuantitativa (1-5) en 4 dimensiones
+- Observaciones, logros y dificultades
+- Recomendaciones y plan de seguimiento
+- Sistema de firma (no editable una vez firmado)
+- Estadísticas y reportes
+- Historial completo por paciente
+
+## 📦 ARCHIVOS GENERADOS
+
+1. MODELO_EVOLUCION.py - Modelo EvolucionPaciente completo
+2. FORM_EVOLUCION.py - Formulario con validaciones
+3. VISTAS_EVOLUCION.py - 8 vistas (crear, editar, listar, etc.)
+4. URLS_EVOLUCION.py - URLs del módulo
+5. template_crear_evolucion.html - Formulario de registro
+6. template_evoluciones_paciente.html - Listado con estadísticas
+7. template_detalle_evolucion.html - Vista detallada
+
+## ⚡ INSTALACIÓN (20 minutos)
+
+### PASO 1: AGREGAR MODELO (5 min)
+
+**Archivo:** apps/procedimientos/models.py
+
+1. Copiar clase EvolucionPaciente de MODELO_EVOLUCION.py
+2. Pegar AL FINAL del archivo models.py
+3. Asegurarse de que imports estén presentes:
+   ```python
+   from django.utils import timezone
+   ```
+
+### PASO 2: MIGRAR BASE DE DATOS (2 min)
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### PASO 3: AGREGAR FORMULARIO (2 min)
+
+**Archivo:** apps/procedimientos/forms.py
+
+1. Copiar clase EvolucionPacienteForm de FORM_EVOLUCION.py
+2. Pegar en forms.py
+
+### PASO 4: AGREGAR VISTAS (3 min)
+
+**Archivo:** apps/procedimientos/views.py
+
+Copiar las 8 funciones de VISTAS_EVOLUCION.py al final:
+- crear_evolucion()
+- editar_evolucion()
+- detalle_evolucion()
+- evoluciones_paciente()
+- mis_evoluciones()
+- firmar_evolucion()
+- eliminar_evolucion()
+
+### PASO 5: AGREGAR URLs (1 min)
+
+**Archivo:** apps/procedimientos/urls.py
+
+Agregar las URLs de URLS_EVOLUCION.py a urlpatterns
+
+### PASO 6: CREAR TEMPLATES (5 min)
+
+Crear en templates/procedimientos/:
+
+1. **crear_evolucion.html**
+   - Copiar de: template_crear_evolucion.html
+
+2. **evoluciones_paciente.html**
+   - Copiar de: template_evoluciones_paciente.html
+
+3. **detalle_evolucion.html**
+   - Copiar de: template_detalle_evolucion.html
+
+4. **confirmar_firma.html** (simple)
+5. **confirmar_eliminar_evolucion.html** (simple)
+
+### PASO 7: AGREGAR MENÚ (2 min)
+
+**Archivo:** templates/base/base.html
+
+Agregar en sidebar después de "Pacientes":
+
+```html
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'procedimientos:mis_evoluciones' %}">
+        <i class="bi bi-file-medical"></i>
+        <span>Mis Evoluciones</span>
+    </a>
+</li>
+```
+
+### PASO 8: AGREGAR BOTÓN EN PACIENTE (2 min)
+
+**Archivo:** templates/procedimientos/paciente_detail.html
+
+Agregar botón "Ver Evoluciones" en la página de detalle del paciente:
+
+```html
+<a href="{% url 'procedimientos:evoluciones_paciente' paciente.id %}" 
+   class="btn btn-info">
+    <i class="bi bi-file-medical"></i> Ver Evoluciones
+</a>
+```
+
+### PASO 9: REINICIAR SERVIDOR
+
+```bash
+python manage.py runserver
+```
+
+## ✅ VERIFICAR FUNCIONAMIENTO
+
+1. **Acceder a Paciente:**
+   - Ir a detalle de un paciente
+   - Click en "Ver Evoluciones"
+   - Debe mostrar página vacía con botón "Nueva Evolución"
+
+2. **Crear Evolución:**
+   - Click "Nueva Evolución"
+   - Llenar formulario (obligatorios con *)
+   - Guardar
+   - Debe aparecer en listado
+
+3. **Ver Evolución:**
+   - Click en ícono ojo
+   - Debe mostrar detalle completo
+
+4. **Editar Evolución:**
+   - Click en ícono lápiz (solo si no está firmada)
+   - Modificar
+   - Guardar
+
+5. **Firmar Evolución:**
+   - Click "Firmar" en detalle
+   - Confirmar
+   - Ya no se puede editar
+
+6. **Ver Estadísticas:**
+   - En listado de evoluciones del paciente
+   - Debe mostrar: Total sesiones, Asistencia %, Promedios
+
+## 🎨 CAMPOS DEL FORMULARIO
+
+### Información Básica:
+- Paciente, Terapia, Grupo
+- Fecha, Hora inicio/fin
+- Tipo de sesión
+- ¿Asistió?
+
+### Desarrollo:
+- Objetivos trabajados *
+- Actividades realizadas *
+- Material utilizado
+
+### Evaluación:
+- Desempeño general * (Excelente/Bueno/Regular/Requiere apoyo/No participó)
+- Nivel atención (1-5)
+- Nivel participación (1-5)
+- Nivel colaboración (1-5)
+- Nivel comprensión (1-5)
+
+### Observaciones:
+- Logros obtenidos
+- Dificultades observadas
+- Observaciones conducta
+- Observaciones generales
+
+### Plan:
+- Tarea asignada
+- Recomendaciones
+- Próximos objetivos
+
+### Finalización:
+- Firmar evolución (checkbox)
+
+## 📊 ESTADÍSTICAS GENERADAS
+
+Por Paciente:
+- Total de sesiones
+- Porcentaje de asistencia
+- Promedio atención
+- Promedio participación
+- Promedio colaboración
+- Promedio comprensión
+
+Por Evolución:
+- Duración de sesión (calculada automáticamente)
+- Promedio evaluación (calculado de 4 niveles)
+- Número de sesión (auto-incrementable)
+
+## 🔒 SEGURIDAD
+
+- Solo el profesional que creó puede editar
+- No se puede editar evolución firmada
+- No se puede eliminar evolución firmada
+- Timestamps automáticos (creación/modificación)
+- Validación de horas (fin > inicio)
+
+## 🎯 FLUJO DE USO
+
+1. Profesional termina sesión con paciente
+2. Ingresa a sistema → Paciente → Ver Evoluciones
+3. Click "Nueva Evolución"
+4. Llena formulario (15-20 min)
+5. Guarda como borrador
+6. Revisa y firma
+7. Evolución queda permanente en historial
+
+## 💡 TIPS
+
+- **Borrador:** Guardar sin firmar permite editar después
+- **Firmado:** Una vez firmado, no se puede modificar (garantiza integridad)
+- **Filtros:** Usar filtros por terapia/fecha para ver progreso específico
+- **Estadísticas:** Revisar promedios para evaluar progreso global
+
+## 📈 PARA REPORTES (Siguiente fase)
+
+Esta información será usada para:
+- Reportes de progreso por paciente
+- Reportes de asistencia
+- Evaluación de efectividad de terapias
+- Dashboard de profesionales
+- Retroalimentación para modelo IA
+
+## ⚠️ ERRORES COMUNES
+
+**"EvolucionPaciente does not exist":**
+→ No agregaste el modelo o no migraste
+→ python manage.py makemigrations
+→ python manage.py migrate
+
+**"EvolucionPacienteForm not found":**
+→ No agregaste el formulario a forms.py
+
+**Template no encontrado:**
+→ Verificar que templates estén en templates/procedimientos/
+
+**No aparece en menú:**
+→ No agregaste el link al sidebar
+
+## 🚀 PRÓXIMOS PASOS
+
+Una vez instalado:
+1. ✅ Registrar evoluciones de prueba
+2. 📊 Verificar estadísticas
+3. 📈 Crear módulo de reportes
+4. 🤖 Usar datos para IA
+
+## 📁 ESTRUCTURA DE ARCHIVOS
+
+```
+apps/procedimientos/
+├── models.py (+ EvolucionPaciente)
+├── forms.py (+ EvolucionPacienteForm)
+├── views.py (+ 8 vistas)
+└── urls.py (+ URLs)
+
+templates/procedimientos/
+├── crear_evolucion.html (nuevo)
+├── evoluciones_paciente.html (nuevo)
+├── detalle_evolucion.html (nuevo)
+├── confirmar_firma.html (nuevo)
+└── confirmar_eliminar_evolucion.html (nuevo)
+```
+
+Instalación total: ~20 minutos
+Beneficio: Sistema profesional de seguimiento + datos para reportes + IA

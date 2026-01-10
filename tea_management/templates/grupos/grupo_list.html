@@ -1,0 +1,242 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Grupos Terapéuticos{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-people-fill me-2"></i>Grupos Terapéuticos
+            </h2>
+            <p class="text-muted">Gestión de grupos de atención por horario</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'grupos:grupo_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Crear Grupo
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Grupos</p>
+                            <h3 class="mb-0 fw-bold">{{ estadisticas.total_grupos }}</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-people text-primary fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Pacientes Asignados</p>
+                            <h3 class="mb-0 fw-bold">{{ estadisticas.total_pacientes }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-person-check text-success fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Cupos Disponibles</p>
+                            <h3 class="mb-0 fw-bold">{{ estadisticas.total_cupos_disponibles }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-box-seam text-info fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Pendientes</p>
+                            <h3 class="mb-0 fw-bold {% if estadisticas.pacientes_pendientes > 0 %}text-warning{% endif %}">
+                                {{ estadisticas.pacientes_pendientes }}
+                            </h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-clock-history text-warning fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta de pacientes pendientes -->
+    {% if estadisticas.pacientes_pendientes > 0 %}
+    <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-1">Pacientes Pendientes de Asignación</h6>
+                <p class="mb-0">Hay <strong>{{ estadisticas.pacientes_pendientes }}</strong> paciente(s) en lista de espera.</p>
+            </div>
+            <a href="{% url 'grupos:pacientes_pendientes' %}" class="btn btn-warning btn-sm">
+                <i class="bi bi-list-ul me-1"></i>Ver Lista
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="buscar" 
+                           placeholder="Buscar por nombre o descripción..." 
+                           value="{{ request.GET.buscar }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-2"></i>Buscar
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'grupos:grupo_list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle me-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Grupos -->
+    <div class="row">
+        {% for grupo in grupos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 {% if not grupo.activo %}opacity-50{% endif %}">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary">
+                            <i class="bi bi-clock me-2"></i>{{ grupo.nombre }}
+                        </h5>
+                        {% if not grupo.activo %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                        {% elif grupo.esta_lleno %}
+                        <span class="badge bg-danger">Lleno</span>
+                        {% else %}
+                        <span class="badge bg-success">Activo</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Horario -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="bi bi-calendar-event me-1"></i>Horario
+                        </small>
+                        <p class="mb-0 fw-semibold">
+                            {{ grupo.hora_inicio|time:"H:i" }} - {{ grupo.hora_fin|time:"H:i" }}
+                        </p>
+                    </div>
+
+                    <!-- Días -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="bi bi-calendar-week me-1"></i>Días
+                        </small>
+                        <div class="d-flex gap-1">
+                            {% for dia_codigo, dia_nombre in grupo.DIAS_SEMANA %}
+                                {% if dia_codigo in grupo.dias_disponibles %}
+                                <span class="badge bg-primary">{{ dia_codigo }}</span>
+                                {% else %}
+                                <span class="badge bg-light text-muted">{{ dia_codigo }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Capacidad -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-people me-1"></i>Capacidad
+                            </small>
+                            <small class="fw-semibold">
+                                {{ grupo.pacientes_actuales }}/{{ grupo.capacidad_maxima }}
+                            </small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar 
+                                {% if grupo.porcentaje_ocupacion >= 90 %}bg-danger
+                                {% elif grupo.porcentaje_ocupacion >= 70 %}bg-warning
+                                {% else %}bg-success{% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ grupo.porcentaje_ocupacion }}%"
+                                aria-valuenow="{{ grupo.porcentaje_ocupacion }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ grupo.porcentaje_ocupacion }}% ocupado</small>
+                    </div>
+
+                    <!-- Descripción -->
+                    {% if grupo.descripcion %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Descripción</small>
+                        <p class="mb-0 small">{{ grupo.descripcion|truncatewords:15 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer bg-white border-top">
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'grupos:grupo_detail' grupo.pk %}" 
+                           class="btn btn-sm btn-primary flex-grow-1">
+                            <i class="bi bi-eye me-1"></i>Ver Detalle
+                        </a>
+                        <a href="{% url 'grupos:grupo_edit' grupo.pk %}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay grupos registrados</h5>
+                    <p class="text-muted mb-3">Comienza creando tu primer grupo terapéutico</p>
+                    <a href="{% url 'grupos:grupo_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Crear Primer Grupo
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

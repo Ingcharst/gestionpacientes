@@ -1,0 +1,178 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ action }} Consultorio - TEA Management{% endblock %}
+{% block page_title %}{{ action }} Consultorio{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-door-open me-2"></i>{{ action }} Consultorio</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-info-circle me-1"></i>Información Básica
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}
+                                <div class="invalid-feedback d-block">{{ form.nombre.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.codigo.id_for_label }}" class="form-label">Código</label>
+                                {{ form.codigo }}
+                                {% if form.codigo.errors %}
+                                <div class="invalid-feedback d-block">{{ form.codigo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                                    Tipo <span class="text-danger">*</span>
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                <div class="invalid-feedback d-block">{{ form.tipo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.numero.id_for_label }}" class="form-label">Número</label>
+                                {{ form.numero }}
+                                {% if form.numero.errors %}
+                                <div class="invalid-feedback d-block">{{ form.numero.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.piso.id_for_label }}" class="form-label">Piso</label>
+                                {{ form.piso }}
+                                {% if form.piso.errors %}
+                                <div class="invalid-feedback d-block">{{ form.piso.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label">Descripción</label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-rulers me-1"></i>Especificaciones
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.capacidad.id_for_label }}" class="form-label">Capacidad</label>
+                                {{ form.capacidad }}
+                                {% if form.capacidad.errors %}
+                                <div class="invalid-feedback d-block">{{ form.capacidad.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.area_m2.id_for_label }}" class="form-label">Área (m²)</label>
+                                {{ form.area_m2 }}
+                                {% if form.area_m2.errors %}
+                                <div class="invalid-feedback d-block">{{ form.area_m2.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.estado.id_for_label }}" class="form-label">Estado</label>
+                                {{ form.estado }}
+                                {% if form.estado.errors %}
+                                <div class="invalid-feedback d-block">{{ form.estado.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.caracteristicas.id_for_label }}" class="form-label">
+                                Características
+                            </label>
+                            {{ form.caracteristicas }}
+                            {% if form.caracteristicas.errors %}
+                            <div class="invalid-feedback d-block">{{ form.caracteristicas.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.equipamiento.id_for_label }}" class="form-label">Equipamiento</label>
+                            {{ form.equipamiento }}
+                            {% if form.equipamiento.errors %}
+                            <div class="invalid-feedback d-block">{{ form.equipamiento.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.foto %}
+                        <div class="mb-3">
+                            <label for="{{ form.foto.id_for_label }}" class="form-label">Foto</label>
+                            {{ form.foto }}
+                            {% if form.foto.errors %}
+                            <div class="invalid-feedback d-block">{{ form.foto.errors }}</div>
+                            {% endif %}
+                            {% if consultorio and consultorio.foto %}
+                            <div class="mt-2">
+                                <img src="{{ consultorio.foto.url }}" class="img-thumbnail" style="max-width: 200px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if form.activo %}
+                        <div class="form-check">
+                            {{ form.activo }}
+                            <label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo</label>
+                        </div>
+                        {% endif %}
+                    </fieldset>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% if consultorio %}{% url 'consultorio_detail' consultorio.pk %}{% else %}{% url 'consultorio_list' %}{% endif %}" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[type="text"], input[type="number"], select, textarea').forEach(el => {
+        if (el.tagName === 'SELECT') el.classList.add('form-select');
+        else if (el.tagName === 'TEXTAREA') el.classList.add('form-control');
+        else if (!el.classList.contains('form-control')) el.classList.add('form-control');
+    });
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('form-check-input'));
+    document.querySelectorAll('input[type="file"]').forEach(el => el.classList.add('form-control'));
+});
+</script>
+{% endblock %}

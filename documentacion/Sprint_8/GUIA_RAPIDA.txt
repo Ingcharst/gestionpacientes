@@ -1,0 +1,64 @@
+# 🚀 GUÍA RÁPIDA DE INSTALACIÓN
+
+## Pasos para Aplicar las Correcciones
+
+### 1️⃣ COPIAR ARCHIVOS (5 minutos)
+
+Desde la carpeta `outputs/`, copia cada archivo a su ubicación correspondiente:
+
+```
+ORIGEN (outputs/)                  → DESTINO (tu proyecto)
+═══════════════════════════════════════════════════════════════════
+
+base.html                          → templates/base/base.html
+
+procedimientos_dashboard.html      → templates/procedimientos/dashboard.html
+procedimientos_views.py            → apps/procedimientos/views.py
+
+paciente_list.html                 → templates/procedimientos/paciente_list.html
+paciente_table.html                → templates/procedimientos/partials/paciente_table.html
+
+paciente_detalle.html              → templates/procedimientos/paciente_detalle.html
+
+auth_dashboard.html                → templates/auth/dashboard.html
+usuarios_views.py                  → apps/usuarios/views.py
+```
+
+### 2️⃣ VERIFICAR (2 minutos)
+
+1. Servidor corriendo: `python manage.py runserver`
+2. Abrir navegador: `http://localhost:8000`
+3. Verificar menú lateral → "Grupos Terapéuticos" debe aparecer
+4. Ir a Lista de Pacientes → Columna "Grupo" debe estar visible
+5. Abrir Dashboard → Widget de grupos debe mostrarse
+
+### 3️⃣ ¡LISTO! ✅
+
+El módulo de Grupos ahora está completamente integrado.
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+- ✅ **Todos los archivos ya están modificados y listos para usar**
+- ✅ **No necesitas editar nada manualmente**
+- ✅ **Solo copia y pega los archivos en sus ubicaciones**
+- ⚠️ **Haz backup de los archivos originales antes de reemplazar**
+
+---
+
+## 🔍 VERIFICACIÓN RÁPIDA
+
+Después de copiar, verifica estos 3 puntos:
+
+1. **Sidebar:** ¿Aparece "Grupos Terapéuticos"? ✅
+2. **Lista Pacientes:** ¿Hay una columna "Grupo"? ✅
+3. **Dashboards:** ¿Se ven alertas/widgets de grupos? ✅
+
+Si los 3 están ✅, la instalación fue exitosa.
+
+---
+
+**Tiempo total:** 5-7 minutos
+**Archivos:** 8
+**Resultado:** Módulo 100% integrado

@@ -1,0 +1,365 @@
+# GUÍA DE INSTALACIÓN: MVP Sistema de Recomendación de Grupos
+
+## 📋 CONTENIDO DEL MVP
+
+Has recibido 8 archivos que conforman el sistema completo:
+
+### Archivos del Motor IA:
+1. **ml_models/__init__.py** - Módulo Python
+2. **ml_models/reglas.py** - Filtros duros (70 líneas)
+3. **ml_models/features.py** - Extractor de características (230 líneas)
+4. **ml_models/scoring.py** - Calculador de scores (120 líneas)
+5. **ml_models/predictor.py** - Motor principal (260 líneas)
+
+### Archivos de Integración Django:
+6. **views.py** - Vistas Django (150 líneas)
+7. **urls.py** - URLs (30 líneas)
+8. **templates/recomendaciones.html** - Template HTML (300 líneas)
+
+**Total: ~960 líneas de código listo para usar**
+
+## 🚀 INSTALACIÓN PASO A PASO
+
+### PASO 1: Crear Estructura de Directorios (2 minutos)
+
+```bash
+# Desde la raíz del proyecto Django
+cd tu_proyecto
+
+# Crear directorio para el módulo ML
+mkdir -p apps/ml_models
+touch apps/ml_models/__init__.py
+
+# Crear directorio para templates
+mkdir -p apps/grupos/templates/grupos
+```
+
+### PASO 2: Copiar Archivos del Motor IA (3 minutos)
+
+```bash
+# Copiar archivos del motor
+cp mvp_recomendador/ml_models/__init__.py apps/ml_models/
+cp mvp_recomendador/ml_models/reglas.py apps/ml_models/
+cp mvp_recomendador/ml_models/features.py apps/ml_models/
+cp mvp_recomendador/ml_models/scoring.py apps/ml_models/
+cp mvp_recomendador/ml_models/predictor.py apps/ml_models/
+```
+
+### PASO 3: Copiar Archivos de Integración (2 minutos)
+
+```bash
+# Copiar vistas
+# Opción A: Crear archivo nuevo
+cp mvp_recomendador/views.py apps/grupos/views_recomendador.py
+
+# Opción B: Agregar al views.py existente
+# (copiar el contenido manualmente al final de apps/grupos/views.py)
+
+# Copiar template
+cp mvp_recomendador/templates/recomendaciones.html apps/grupos/templates/grupos/
+```
+
+### PASO 4: Configurar URLs (3 minutos)
+
+Abrir: **apps/grupos/urls.py**
+
+Agregar al inicio del archivo:
+
+```python
+# Importar vistas del recomendador
+from .views_recomendador import (
+    recomendar_grupos_paciente,
+    asignar_desde_recomendacion,
+    exportar_recomendaciones,
+    debug_recomendacion
+)
+```
+
+Agregar al `urlpatterns`:
+
+```python
+urlpatterns = [
+    # ... URLs existentes ...
+    
+    # ========== SISTEMA DE RECOMENDACIÓN (NUEVO) ==========
+    path(
+        'paciente/<int:paciente_id>/recomendar-grupos/',
+        recomendar_grupos_paciente,
+        name='recomendar_grupos_paciente'
+    ),
+    path(
+        'paciente/<int:paciente_id>/asignar-grupo/<int:grupo_id>/',
+        asignar_desde_recomendacion,
+        name='asignar_desde_recomendacion'
+    ),
+    path(
+        'paciente/<int:paciente_id>/exportar-recomendaciones/',
+        exportar_recomendaciones,
+        name='exportar_recomendaciones'
+    ),
+    path(
+        'debug/paciente/<int:paciente_id>/grupo/<int:grupo_id>/',
+        debug_recomendacion,
+        name='debug_recomendacion'
+    ),
+]
+```
+
+### PASO 5: Registrar App en Settings (1 minuto)
+
+Abrir: **tea_management/settings.py** (o tu archivo de settings)
+
+Agregar a `INSTALLED_APPS`:
+
+```python
+INSTALLED_APPS = [
+    # ... apps existentes ...
+    'apps.ml_models',  # AGREGAR ESTA LÍNEA
+]
+```
+
+### PASO 6: Agregar Botón en Detalle de Paciente (2 minutos)
+
+Abrir: **apps/procedimientos/templates/procedimientos/paciente_detail.html**
+
+Buscar la sección de botones (generalmente cerca del header) y agregar:
+
+```html
+<!-- Botón para Recomendaciones IA -->
+<a href="{% url 'grupos:recomendar_grupos_paciente' paciente.id %}" 
+   class="btn btn-primary">
+    <i class="bi bi-robot me-1"></i> 
+    Recomendar Grupos IA
+</a>
+```
+
+Alternativamente, agregar en una card de "Acciones Rápidas":
+
+```html
+<div class="card">
+    <div class="card-header">
+        <h5>Acciones Rápidas</h5>
+    </div>
+    <div class="card-body">
+        <!-- Otros botones existentes -->
+        
+        <a href="{% url 'grupos:recomendar_grupos_paciente' paciente.id %}" 
+           class="btn btn-primary w-100 mb-2">
+            <i class="bi bi-robot me-2"></i>
+            Obtener Recomendaciones de Grupos IA
+        </a>
+    </div>
+</div>
+```
+
+### PASO 7: Verificar Modelos Requeridos (2 minutos)
+
+El sistema necesita estos campos en tus modelos:
+
+**Modelo Paciente** (apps/procedimientos/models.py):
+- ✅ edad (property o field)
+- ✅ genero (CharField)
+- ✅ fecha_nacimiento (DateField)
+- ✅ nombre_completo (property o field)
+
+**Modelo GrupoTerapeutico** (apps/grupos/models.py):
+- ✅ estado (CharField) - debe tener opción 'ACTIVO'
+- ✅ edad_minima (IntegerField)
+- ✅ edad_maxima (IntegerField)
+- ✅ cupos_disponibles (property o field)
+- ✅ capacidad_maxima (IntegerField)
+- ✅ terapia (ForeignKey a Terapia)
+- ✅ fecha_inicio (DateField) - opcional
+- ⚠️  nivel_funcionamiento (CharField) - opcional pero recomendado
+- ⚠️  areas_enfoque (TextField) - opcional pero recomendado
+
+**Modelo Valoracion** (apps/procedimientos/models.py):
+- ✅ paciente (ForeignKey)
+- ✅ fecha_valoracion (DateField)
+- ✅ diagnostico_principal (CharField/TextField)
+- ⚠️  nivel_funcionamiento (CharField) - opcional pero recomendado
+- ⚠️  areas_afectadas (TextField) - opcional pero recomendado
+
+**Modelo AsignacionGrupo** (apps/grupos/models.py):
+- ✅ paciente (ForeignKey)
+- ✅ grupo (ForeignKey)
+- ✅ estado (CharField) - debe tener 'ACTIVA', 'FINALIZADA'
+- ✅ fecha_inicio (DateField)
+- ⚠️  fecha_fin (DateField) - opcional
+
+Si falta algún campo opcional, el sistema funcionará pero con menos precisión.
+
+### PASO 8: Reiniciar Servidor (1 minuto)
+
+```bash
+# Detener servidor (Ctrl+C)
+# Reiniciar
+python manage.py runserver
+```
+
+### PASO 9: Primera Prueba (5 minutos)
+
+1. **Ir a un paciente con valoración:**
+   - http://localhost:8000/procedimientos/pacientes/1/
+
+2. **Clic en "Recomendar Grupos IA"**
+
+3. **Verificar que aparecen recomendaciones**
+
+4. **Si hay error, revisar:**
+   - Logs del servidor
+   - Que los modelos tengan los campos necesarios
+   - Que haya grupos activos en la BD
+
+## ✅ CHECKLIST DE INSTALACIÓN
+
+```
+[ ] Paso 1: Estructura de directorios creada
+[ ] Paso 2: Archivos ML copiados (5 archivos)
+[ ] Paso 3: Vistas copiadas
+[ ] Paso 4: URLs configuradas
+[ ] Paso 5: App registrada en settings
+[ ] Paso 6: Botón agregado en detalle paciente
+[ ] Paso 7: Modelos verificados
+[ ] Paso 8: Servidor reiniciado
+[ ] Paso 9: Primera prueba exitosa
+```
+
+## 🔧 SOLUCIÓN DE PROBLEMAS
+
+### Error: "ModuleNotFoundError: No module named 'apps.ml_models'"
+
+**Solución:**
+```bash
+# Verificar que existe el __init__.py
+ls apps/ml_models/__init__.py
+
+# Si no existe, crearlo
+touch apps/ml_models/__init__.py
+
+# Reiniciar servidor
+```
+
+### Error: "NoReverseMatch at /pacientes/1/ ... recomendar_grupos_paciente"
+
+**Solución:**
+```python
+# Verificar que las URLs están en apps/grupos/urls.py
+# Verificar que el namespace es 'grupos' en el include principal
+
+# En tea_management/urls.py debe estar:
+path('grupos/', include('apps.grupos.urls', namespace='grupos')),
+```
+
+### Error: "Paciente no tiene valoración"
+
+**Solución:**
+- Crear una valoración para el paciente primero
+- O comentar la verificación en views.py temporalmente
+
+### No aparecen grupos
+
+**Solución:**
+```bash
+# Verificar que hay grupos activos
+python manage.py shell
+>>> from apps.grupos.models import GrupoTerapeutico
+>>> GrupoTerapeutico.objects.filter(estado='ACTIVO').count()
+
+# Si es 0, crear grupos de prueba o cambiar estado
+```
+
+### Score siempre sale bajo
+
+**Solución:**
+```python
+# Ajustar pesos en apps/ml_models/scoring.py
+# O crear un método para ajustar pesos dinámicamente
+
+# Ejemplo: dar más peso a disponibilidad
+PESOS = {
+    'edad': 0.30,
+    'disponibilidad': 0.35,  # Aumentado
+    'nivel': 0.15,
+    # ...
+}
+```
+
+## 📊 VERIFICACIÓN DE FUNCIONAMIENTO
+
+### Test 1: Recomendaciones Básicas
+```
+✓ Acceder a /grupos/paciente/1/recomendar-grupos/
+✓ Ver al menos 1 recomendación
+✓ Ver score de compatibilidad (0-100%)
+✓ Ver razones de compatibilidad
+```
+
+### Test 2: Filtros Funcionando
+```
+✓ Paciente de 5 años no aparece en grupo 10-15 años
+✓ Grupos sin cupos muestran "lista de espera"
+✓ Grupos fuera de rango de edad no aparecen
+```
+
+### Test 3: Scoring Correcto
+```
+✓ Grupo con edad exacta tiene score alto (>85%)
+✓ Grupo con cupos tiene score alto
+✓ Grupo sin cupos tiene score reducido
+```
+
+## 🎯 PRÓXIMOS PASOS
+
+Una vez funcionando el MVP:
+
+1. **Recopilar Feedback (1 semana)**
+   - Usar el sistema en casos reales
+   - Anotar aciertos y errores
+   - Ajustar pesos si es necesario
+
+2. **Optimizar Parámetros (1 semana)**
+   - Ajustar rangos de edad permitidos
+   - Modificar pesos de scoring
+   - Agregar reglas específicas
+
+3. **Preparar para ML (2-4 semanas)**
+   - Recopilar datos de asignaciones
+   - Marcar asignaciones exitosas
+   - Generar dataset de entrenamiento
+
+4. **Integrar Machine Learning (2-3 semanas)**
+   - Entrenar modelo con datos reales
+   - Integrar predicciones ML
+   - Comparar con sistema de reglas
+
+## 💡 CONSEJOS FINALES
+
+1. **No modificar archivos core al inicio**
+   - Primero probar tal cual
+   - Luego ajustar según necesidades
+
+2. **Documentar cambios**
+   - Si ajustas pesos, anota por qué
+   - Llevar registro de mejoras
+
+3. **Feedback de usuarios**
+   - Pedir opinión a terapeutas
+   - ¿Las recomendaciones tienen sentido?
+   - ¿Qué factores faltaron?
+
+4. **Monitorear uso**
+   - ¿Cuántas veces se usa?
+   - ¿Resultó en asignaciones?
+   - ¿Satisfacción del usuario?
+
+## 📞 SOPORTE
+
+Si encuentras problemas:
+
+1. Revisar logs del servidor Django
+2. Verificar que todos los archivos se copiaron
+3. Confirmar que las URLs están bien configuradas
+4. Verificar campos de modelos
+
+¡Éxito con tu MVP de Recomendaciones IA! 🚀

@@ -1,0 +1,82 @@
+# 🔧 PARCHE: Campos edad_minima/edad_maxima no existen
+
+## ❌ ERROR
+
+```
+AttributeError at /grupos/paciente/13/recomendar-grupos/
+'GrupoTerapeutico' object has no attribute 'edad_minima'
+```
+
+## 🎯 CAUSA
+
+Tu modelo `GrupoTerapeutico` NO tiene los campos:
+- `edad_minima`
+- `edad_maxima`
+
+El código asumía que estos campos existían.
+
+## ✅ SOLUCIÓN APLICADA
+
+He modificado el código para que sea **flexible** y funcione sin estos campos:
+
+### Archivos corregidos:
+
+1. **reglas.py** - Filtro de edad opcional
+2. **features.py** - Cálculos de edad robustos
+
+Si el grupo no tiene rangos de edad:
+- ✅ Se acepta cualquier edad
+- ✅ Se retorna score neutro (75%)
+- ✅ No se bloquea el sistema
+
+## 🚀 APLICAR CORRECCIONES
+
+```bash
+# Copiar archivos corregidos
+cp mvp_recomendador/ml_models/reglas.py apps/ml_models/
+cp mvp_recomendador/ml_models/features.py apps/ml_models/
+
+# Reiniciar servidor
+python manage.py runserver
+```
+
+## 📝 ALTERNATIVA: Agregar campos al modelo
+
+Si quieres usar filtros por edad, agrega estos campos:
+
+```python
+# En apps/grupos/models.py - Modelo GrupoTerapeutico
+class GrupoTerapeutico(models.Model):
+    # ... campos existentes ...
+    
+    # Agregar estos campos:
+    edad_minima = models.IntegerField(
+        'Edad Mínima',
+        null=True,
+        blank=True,
+        help_text='Edad mínima recomendada'
+    )
+    edad_maxima = models.IntegerField(
+        'Edad Máxima',
+        null=True,
+        blank=True,
+        help_text='Edad máxima recomendada'
+    )
+```
+
+Luego ejecutar:
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+## 💡 RECOMENDACIÓN
+
+Por ahora, el sistema funcionará SIN filtros de edad.
+
+Luego puedes:
+1. Agregar los campos al modelo
+2. Configurar rangos de edad para cada grupo
+3. El sistema automáticamente usará esos rangos
+
+¡Listo! 🎉

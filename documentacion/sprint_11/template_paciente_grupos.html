@@ -1,0 +1,226 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Grupos de {{ paciente.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-people-fill me-2"></i>Grupos de {{ paciente.nombre_completo }}</h2>
+            <p class="text-muted mb-0">
+                <span class="badge bg-{{ paciente.estado == 'ACTIVO' and 'success' or 'warning' }}">
+                    {{ paciente.get_estado_display }}
+                </span>
+                {{ paciente.numero_admision }} • {{ asignaciones.count }} grupo(s) • {{ total_terapias }} terapias total
+            </p>
+        </div>
+        <a href="{% url 'procedimientos:paciente_detail' paciente.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Paciente
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Grupos Asignados -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Grupos Asignados</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if asignaciones %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Grupo</th>
+                                    <th>Terapia</th>
+                                    <th>Terapias</th>
+                                    <th>Días</th>
+                                    <th>Asignado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asignacion in asignaciones %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ asignacion.grupo.nombre }}</strong><br>
+                                        <small class="text-muted">{{ asignacion.grupo.horario }}</small>
+                                    </td>
+                                    <td>{{ asignacion.grupo.terapia.nombre }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ asignacion.numero_terapias_asignadas }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {% for dia in asignacion.dias_asistencia %}
+                                                <span class="badge bg-secondary">{{ dia|slice:":3" }}</span>
+                                            {% endfor %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small>{{ asignacion.fecha_inicio_asignacion|date:"d/m/Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#cambiarGrupoModal{{ asignacion.id }}">
+                                            <i class="bi bi-arrow-left-right"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#eliminarModal{{ asignacion.id }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal Cambiar Grupo -->
+                                <div class="modal fade" id="cambiarGrupoModal{{ asignacion.id }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Cambiar Grupo</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'grupos:cambiar_grupo_paciente' asignacion.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <p>Cambiar de <strong>{{ asignacion.grupo.nombre }}</strong> a:</p>
+                                                    <select name="nuevo_grupo" class="form-select" required>
+                                                        <option value="">Seleccione grupo...</option>
+                                                        {% for grupo in grupos_disponibles %}
+                                                        <option value="{{ grupo.id }}">
+                                                            {{ grupo.nombre }} - {{ grupo.terapia.nombre }}
+                                                        </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-warning">Cambiar Grupo</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Eliminar -->
+                                <div class="modal fade" id="eliminarModal{{ asignacion.id }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Confirmar Eliminación</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'grupos:eliminar_asignacion' asignacion.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    ¿Eliminar asignación de <strong>{{ asignacion.grupo.nombre }}</strong>?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <p class="mt-3">No hay grupos asignados</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Agregar Nuevo Grupo -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Agregar Grupo</h5>
+                </div>
+                <div class="card-body">
+                    {% if grupos_disponibles %}
+                    <form method="post" action="{% url 'grupos:agregar_grupo_paciente' paciente.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Grupo <span class="text-danger">*</span></label>
+                            <select name="grupo" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                {% for grupo in grupos_disponibles %}
+                                <option value="{{ grupo.id }}">
+                                    {{ grupo.nombre }} - {{ grupo.terapia.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Terapias <span class="text-danger">*</span></label>
+                            <input type="number" name="numero_terapias_asignadas" 
+                                   class="form-control" value="10" min="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Días</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="dias_asistencia" value="Lunes" id="lun" checked>
+                                    <label class="form-check-label" for="lun">L</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="dias_asistencia" value="Martes" id="mar" checked>
+                                    <label class="form-check-label" for="mar">M</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="dias_asistencia" value="Miércoles" id="mie" checked>
+                                    <label class="form-check-label" for="mie">X</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="dias_asistencia" value="Jueves" id="jue">
+                                    <label class="form-check-label" for="jue">J</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="dias_asistencia" value="Viernes" id="vie">
+                                    <label class="form-check-label" for="vie">V</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Agregar Grupo
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Paciente asignado a todos los grupos disponibles
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

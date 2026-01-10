@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pacientes Pendientes{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-warning">
+                <i class="bi bi-clock-history me-2"></i>Pacientes Pendientes de Asignación
+            </h2>
+            <p class="text-muted">Lista de espera de pacientes sin grupo asignado</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'grupos:grupo_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Ver Grupos
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm border-start border-danger border-4">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1">Prioridad Alta</small>
+                    <h3 class="mb-0 fw-bold text-danger">
+                        {{ pendientes|filter_by_priority:'ALTA'|length }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm border-start border-warning border-4">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1">Prioridad Media</small>
+                    <h3 class="mb-0 fw-bold text-warning">
+                        {{ pendientes|filter_by_priority:'MEDIA'|length }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm border-start border-success border-4">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1">Prioridad Baja</small>
+                    <h3 class="mb-0 fw-bold text-success">
+                        {{ pendientes|filter_by_priority:'BAJA'|length }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <small class="text-muted d-block mb-1">Total Pendientes</small>
+                    <h3 class="mb-0 fw-bold">{{ total_pendientes }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Prioridad</label>
+                    <select name="prioridad" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="ALTA" {% if request.GET.prioridad == 'ALTA' %}selected{% endif %}>
+                            Alta
+                        </option>
+                        <option value="MEDIA" {% if request.GET.prioridad == 'MEDIA' %}selected{% endif %}>
+                            Media
+                        </option>
+                        <option value="BAJA" {% if request.GET.prioridad == 'BAJA' %}selected{% endif %}>
+                            Baja
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-2"></i>Filtrar
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'grupos:pacientes_pendientes' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle me-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Pacientes Pendientes -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                Lista de Espera ({{ total_pendientes }} pacientes)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if pendientes %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Prioridad</th>
+                            <th>Horario Preferido</th>
+                            <th>Días Preferidos</th>
+                            <th>Tiempo Esperando</th>
+                            <th>Fecha Solicitud</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pendiente in pendientes %}
+                        <tr {% if pendiente.dias_esperando > 7 %}class="table-warning"{% endif %}>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if pendiente.paciente.foto %}
+                                    <img src="{{ pendiente.paciente.foto.url }}" 
+                                         alt="{{ pendiente.paciente.nombres }}"
+                                         class="rounded-circle me-2"
+                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-primary bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-person text-primary"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-semibold">
+                                            {{ pendiente.paciente.nombres }} {{ pendiente.paciente.apellidos }}
+                                        </div>
+                                        <small class="text-muted">
+                                            HC: {{ pendiente.paciente.numero_historia_clinica }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if pendiente.prioridad == 'ALTA' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Alta
+                                </span>
+                                {% elif pendiente.prioridad == 'MEDIA' %}
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-dash-circle me-1"></i>Media
+                                </span>
+                                {% else %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Baja
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <i class="bi bi-clock text-muted me-1"></i>
+                                {{ pendiente.preferencia_horario|time:"H:i" }}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    {% for dia in pendiente.dias_preferidos %}
+                                    <span class="badge bg-primary">{{ dia }}</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if pendiente.dias_esperando > 7 %}
+                                <span class="badge bg-danger">
+                                    {{ pendiente.dias_esperando }} días
+                                    <i class="bi bi-exclamation-triangle-fill ms-1"></i>
+                                </span>
+                                {% elif pendiente.dias_esperando > 3 %}
+                                <span class="badge bg-warning">
+                                    {{ pendiente.dias_esperando }} días
+                                </span>
+                                {% else %}
+                                <span class="badge bg-info">
+                                    {{ pendiente.dias_esperando }} días
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ pendiente.fecha_solicitud|date:"d/m/Y H:i" }}
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'grupos:asignar_paciente_especifico' pendiente.paciente.pk %}" 
+                                       class="btn btn-success"
+                                       title="Asignar a grupo">
+                                        <i class="bi bi-check-circle me-1"></i>Asignar
+                                    </a>
+                                    <button class="btn btn-outline-info" 
+                                            title="Ver observaciones"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modal-observaciones-{{ pendiente.pk }}">
+                                        <i class="bi bi-info-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Modal de Observaciones -->
+                        <div class="modal fade" id="modal-observaciones-{{ pendiente.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">
+                                            Observaciones - {{ pendiente.paciente.nombres }}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        {% if pendiente.observaciones %}
+                                        <p>{{ pendiente.observaciones }}</p>
+                                        {% else %}
+                                        <p class="text-muted">No hay observaciones registradas</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Cerrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-check-circle fs-1 text-success mb-3"></i>
+                <h5 class="text-muted">¡Excelente! No hay pacientes pendientes</h5>
+                <p class="text-muted mb-3">Todos los pacientes están asignados a grupos</p>
+                <a href="{% url 'grupos:grupo_list' %}" class="btn btn-primary">
+                    <i class="bi bi-people me-2"></i>Ver Grupos
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

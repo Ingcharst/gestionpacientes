@@ -1,0 +1,207 @@
+# 🔧 CORRECCIONES DE INTEGRACIÓN - MÓDULO GRUPOS
+
+## 📋 Resumen de Correcciones
+
+Se deben realizar **5 correcciones** en diferentes archivos para integrar completamente el módulo de grupos con el resto del sistema.
+
+---
+
+## ✅ LISTA DE CORRECCIONES
+
+### 1. **Agregar enlace "Grupos" en el Sidebar** ⭐ CRÍTICO
+   - **Archivo:** `templates/base/base.html`
+   - **Línea:** Después de línea 134
+   - **Tiempo:** 30 segundos
+   - [Ver corrección detallada](computer:///mnt/user-data/outputs/CORRECCION_01_SIDEBAR.md)
+
+### 2. **Agregar alertas de grupos en Dashboard de Procedimientos** ⭐ IMPORTANTE
+   - **Archivos:** 
+     - `templates/procedimientos/dashboard.html`
+     - `apps/procedimientos/views.py`
+   - **Tiempo:** 2 minutos
+   - [Ver corrección detallada](computer:///mnt/user-data/outputs/CORRECCION_02_DASHBOARD.md)
+
+### 3. **Agregar columna y botón de grupos en Lista de Pacientes** ⭐ CRÍTICO
+   - **Archivos:**
+     - `templates/procedimientos/paciente_list.html`
+     - `templates/procedimientos/partials/paciente_table.html`
+   - **Tiempo:** 3 minutos
+   - [Ver corrección detallada](computer:///mnt/user-data/outputs/CORRECCION_03_LISTA_PACIENTES.md)
+
+### 4. **Agregar info de grupo en Detalle de Paciente** ⭐ IMPORTANTE
+   - **Archivo:** `templates/procedimientos/paciente_detalle.html`
+   - **Tiempo:** 2 minutos
+   - [Ver corrección detallada](computer:///mnt/user-data/outputs/CORRECCION_04_DETALLE_PACIENTE.md)
+
+### 5. **Agregar widget de grupos en Dashboard Principal** ⭐ OPCIONAL
+   - **Archivos:**
+     - `templates/auth/dashboard.html`
+     - `apps/usuarios/views.py` (o donde esté la vista dashboard)
+   - **Tiempo:** 3 minutos
+   - [Ver corrección detallada](computer:///mnt/user-data/outputs/CORRECCION_05_DASHBOARD_PRINCIPAL.md)
+
+---
+
+## 🚀 INSTALACIÓN RÁPIDA (10 minutos)
+
+### Orden de Implementación Recomendado:
+
+```
+1. Corrección 1 (Sidebar)           → Acceso principal al módulo
+2. Corrección 3 (Lista Pacientes)   → Asignación desde lista
+3. Corrección 4 (Detalle Paciente)  → Info completa del grupo
+4. Corrección 2 (Dashboard Proc)    → Alertas en procedimientos
+5. Corrección 5 (Dashboard Main)    → Widget en dashboard (opcional)
+```
+
+---
+
+## 📝 CHECKLIST DE VERIFICACIÓN
+
+### Después de Corrección 1 - Sidebar
+- [ ] El enlace "Grupos Terapéuticos" aparece en el menú lateral
+- [ ] Al hacer clic, abre `/grupos/`
+- [ ] Se marca como activo cuando estás en cualquier página de grupos
+
+### Después de Corrección 2 - Dashboard Procedimientos
+- [ ] Aparece alerta amarilla si hay pacientes pendientes
+- [ ] La alerta muestra el número de pacientes
+- [ ] Los botones llevan a la lista de espera y grupos
+
+### Después de Corrección 3 - Lista de Pacientes
+- [ ] Nueva columna "Grupo" visible en la tabla
+- [ ] Muestra badge según estado (Asignado/En espera/Sin grupo)
+- [ ] Botón de asignar visible para pacientes sin grupo
+- [ ] Botón de ver grupo visible para pacientes asignados
+
+### Después de Corrección 4 - Detalle Paciente
+- [ ] Card de grupo visible en la columna izquierda
+- [ ] Muestra info del grupo si está asignado
+- [ ] Muestra alerta de espera si está pendiente
+- [ ] Botón de asignar disponible si no tiene grupo
+
+### Después de Corrección 5 - Dashboard Principal
+- [ ] Widget de grupos visible con 4 estadísticas
+- [ ] Botones de acceso rápido funcionan
+- [ ] Alerta aparece si hay pendientes
+
+---
+
+## 🎯 RESULTADO ESPERADO
+
+Después de aplicar todas las correcciones:
+
+### Navegación Completa:
+```
+Sidebar → Grupos Terapéuticos
+    ├─ Dashboard de Grupos
+    ├─ Lista de Grupos
+    ├─ Crear Grupo
+    ├─ Asignar Paciente
+    └─ Pacientes Pendientes
+```
+
+### Acceso desde Pacientes:
+```
+Lista de Pacientes
+    └─ Botón "Asignar a Grupo" (columna Acciones)
+
+Detalle de Paciente
+    └─ Card "Grupo Terapéutico" con info y botones
+```
+
+### Alertas Automáticas:
+```
+Dashboard Procedimientos
+    └─ Alerta si hay pacientes pendientes
+
+Dashboard Principal (opcional)
+    └─ Widget con estadísticas y alertas
+```
+
+---
+
+## 🐛 SOLUCIÓN DE PROBLEMAS
+
+### Error: "TemplateDoesNotExist: grupos/..."
+**Causa:** Los templates de grupos no están en el lugar correcto
+**Solución:** Verificar que `/templates/grupos/` exista con todos los archivos
+
+### Error: "NoReverseMatch at /grupos/"
+**Causa:** Las URLs de grupos no están incluidas
+**Solución:** Verificar que en `config/urls.py` esté:
+```python
+path('grupos/', include('apps.grupos.urls')),
+```
+
+### Error: Variable no existe en template
+**Causa:** La vista no está pasando las variables necesarias
+**Solución:** Verificar las modificaciones en las vistas (Correcciones 2 y 5)
+
+### Los enlaces no funcionan
+**Causa:** App grupos no está en INSTALLED_APPS
+**Solución:** Verificar `config/settings.py`:
+```python
+INSTALLED_APPS = [
+    # ...
+    'apps.grupos',
+]
+```
+
+---
+
+## 📊 IMPACTO DE LAS CORRECCIONES
+
+| Corrección | Archivos | Líneas | Impacto |
+|------------|----------|--------|---------|
+| 1. Sidebar | 1 | +8 | Alto - Acceso principal |
+| 2. Dashboard Proc | 2 | +25 | Alto - Alertas importantes |
+| 3. Lista Pacientes | 2 | +40 | Muy Alto - Asignación rápida |
+| 4. Detalle Paciente | 1 | +60 | Alto - Info completa |
+| 5. Dashboard Main | 2 | +70 | Medio - Visual/Stats |
+| **TOTAL** | **8** | **~203** | **Integración Completa** |
+
+---
+
+## 🎉 VERIFICACIÓN FINAL
+
+Una vez aplicadas todas las correcciones, verificar:
+
+1. ✅ **Navegación:** Puedes acceder a grupos desde el menú lateral
+2. ✅ **Visualización:** Los pacientes muestran su estado de grupo
+3. ✅ **Asignación:** Puedes asignar pacientes desde múltiples lugares
+4. ✅ **Alertas:** Se muestran notificaciones de pacientes pendientes
+5. ✅ **Información:** El detalle del paciente muestra info del grupo
+
+---
+
+## 📚 ARCHIVOS DE CORRECCIÓN
+
+Todos los archivos de corrección están disponibles en:
+```
+/mnt/user-data/outputs/
+├── CORRECCION_01_SIDEBAR.md
+├── CORRECCION_02_DASHBOARD.md
+├── CORRECCION_03_LISTA_PACIENTES.md
+├── CORRECCION_04_DETALLE_PACIENTE.md
+├── CORRECCION_05_DASHBOARD_PRINCIPAL.md
+└── CORRECCIONES_INTEGRACION.md (este archivo)
+```
+
+---
+
+## 💡 NOTAS IMPORTANTES
+
+1. **Backups:** Haz backup de los archivos antes de modificarlos
+2. **Testing:** Prueba cada corrección individualmente
+3. **Prioridad:** Las correcciones 1 y 3 son críticas para el funcionamiento
+4. **Opcional:** La corrección 5 es opcional pero recomendada
+5. **Orden:** Sigue el orden recomendado para evitar confusiones
+
+---
+
+**Tiempo Total Estimado:** 10-15 minutos  
+**Dificultad:** Baja (copiar y pegar código)  
+**Impacto:** Alto (integración completa del módulo)
+
+**¡Con estas correcciones el módulo de Grupos estará 100% integrado!** 🚀

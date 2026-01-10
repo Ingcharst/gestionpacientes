@@ -1,0 +1,261 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if editando %}Editar{% else %}Registrar{% endif %} Evolución{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="bi bi-file-medical me-2"></i>
+                {% if editando %}Editar{% else %}Registrar{% endif %} Evolución de Terapia
+            </h2>
+            {% if paciente %}
+            <p class="text-muted mb-0">
+                Paciente: <strong>{{ paciente.nombre_completo }}</strong>
+            </p>
+            {% endif %}
+        </div>
+        <div>
+            {% if paciente %}
+            <a href="{% url 'procedimientos:evoluciones_paciente' paciente.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+            {% else %}
+            <a href="{% url 'procedimientos:mis_evoluciones' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <!-- Información de la Sesión -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Información de la Sesión</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Paciente <span class="text-danger">*</span></label>
+                        {{ form.paciente }}
+                        {% if form.paciente.errors %}
+                            <div class="text-danger small">{{ form.paciente.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Terapia <span class="text-danger">*</span></label>
+                        {{ form.terapia }}
+                        {% if form.terapia.errors %}
+                            <div class="text-danger small">{{ form.terapia.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Grupo Terapéutico</label>
+                        {{ form.grupo }}
+                        <small class="form-text text-muted">Si aplica</small>
+                        {% if form.grupo.errors %}
+                            <div class="text-danger small">{{ form.grupo.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipo de Sesión</label>
+                        {{ form.tipo_sesion }}
+                        {% if form.tipo_sesion.errors %}
+                            <div class="text-danger small">{{ form.tipo_sesion.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Fecha de la Sesión <span class="text-danger">*</span></label>
+                        {{ form.fecha_sesion }}
+                        {% if form.fecha_sesion.errors %}
+                            <div class="text-danger small">{{ form.fecha_sesion.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Hora de Inicio <span class="text-danger">*</span></label>
+                        {{ form.hora_inicio }}
+                        {% if form.hora_inicio.errors %}
+                            <div class="text-danger small">{{ form.hora_inicio.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Hora de Fin <span class="text-danger">*</span></label>
+                        {{ form.hora_fin }}
+                        {% if form.hora_fin.errors %}
+                            <div class="text-danger small">{{ form.hora_fin.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12 mb-3">
+                        <div class="form-check">
+                            {{ form.asistio }}
+                            <label class="form-check-label">{{ form.asistio.label }}</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desarrollo de la Sesión -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Desarrollo de la Sesión</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Objetivos Trabajados <span class="text-danger">*</span></label>
+                    {{ form.objetivos_trabajados }}
+                    {% if form.objetivos_trabajados.errors %}
+                        <div class="text-danger small">{{ form.objetivos_trabajados.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Actividades Realizadas <span class="text-danger">*</span></label>
+                    {{ form.actividades_realizadas }}
+                    {% if form.actividades_realizadas.errors %}
+                        <div class="text-danger small">{{ form.actividades_realizadas.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Material Utilizado</label>
+                    {{ form.material_utilizado }}
+                    <small class="form-text text-muted">Material didáctico o recursos utilizados</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluación del Desempeño -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-star me-2"></i>Evaluación del Desempeño</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Desempeño General <span class="text-danger">*</span></label>
+                        {{ form.desempeno }}
+                        {% if form.desempeno.errors %}
+                            <div class="text-danger small">{{ form.desempeno.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Nivel de Atención (1-5)</label>
+                        {{ form.nivel_atencion }}
+                        <small class="form-text text-muted">1=Muy bajo, 5=Excelente</small>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Nivel de Participación (1-5)</label>
+                        {{ form.nivel_participacion }}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Nivel de Colaboración (1-5)</label>
+                        {{ form.nivel_colaboracion }}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Nivel de Comprensión (1-5)</label>
+                        {{ form.nivel_comprension }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones y Seguimiento -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Observaciones y Seguimiento</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Logros Obtenidos</label>
+                    {{ form.logros_obtenidos }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Dificultades Observadas</label>
+                    {{ form.dificultades_observadas }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Observaciones de Conducta</label>
+                    {{ form.observaciones_conducta }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Observaciones Generales</label>
+                    {{ form.observaciones_generales }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recomendaciones y Plan -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Recomendaciones y Plan</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Tarea Asignada</label>
+                    {{ form.tarea_asignada }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Recomendaciones</label>
+                    {{ form.recomendaciones }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Próximos Objetivos</label>
+                    {{ form.proximos_objetivos }}
+                </div>
+                
+                <div class="form-check">
+                    {{ form.firmado }}
+                    <label class="form-check-label">
+                        {{ form.firmado.label }}
+                    </label>
+                    <small class="form-text text-muted d-block">
+                        Si marca esta opción, la evolución quedará finalizada y no se podrá editar
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="d-flex justify-content-between">
+            {% if paciente %}
+            <a href="{% url 'procedimientos:evoluciones_paciente' paciente.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Cancelar
+            </a>
+            {% else %}
+            <a href="{% url 'procedimientos:mis_evoluciones' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Cancelar
+            </a>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-1"></i>
+                {% if editando %}Actualizar{% else %}Guardar{% endif %} Evolución
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

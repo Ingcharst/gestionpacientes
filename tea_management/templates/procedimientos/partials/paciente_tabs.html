@@ -1,0 +1,112 @@
+{% load static %}
+
+{% if tab == 'sesiones' %}
+    <h5>Historial de Sesiones (Últimas 10)</h5>
+    <div class="table-responsive">
+        {% if sesiones %}
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Terapia</th>
+                    <th>Terapeuta</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sesion in sesiones %}
+                <tr>
+                    <td>{{ sesion.fecha|date:"d M Y" }} @ {{ sesion.hora_inicio|time:"H:i" }}</td>
+                    <td>{{ sesion.terapia.nombre }}</td>
+                    <td>{{ sesion.terapeuta.get_full_name }}</td>
+                    <td><span class="badge bg-secondary">{{ sesion.get_estado_display }}</span></td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-outline-secondary" title="Ver Detalle">
+                            <i class="bi bi-zoom-in"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No hay sesiones registradas para este paciente.</p>
+        {% endif %}
+    </div>
+
+{% elif tab == 'objetivos' %}
+    <h5>Objetivos Terapéuticos Activos</h5>
+    <div class="mb-3">
+        <a href="{% url 'procedimientos:objetivo_create' %}?paciente={{ paciente.pk }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Objetivo
+        </a>
+    </div>
+    {% if objetivos %}
+    <ul class="list-group">
+        {% for objetivo in objetivos %}
+        <li class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1 fw-bold">{{ objetivo.nombre }}</h6>
+                <small class="text-muted">Meta: {{ objetivo.fecha_meta|date:"d M Y" }}</small>
+            </div>
+            <p class="mb-1 small">{{ objetivo.descripcion|truncatechars:100 }}</p>
+            <div class="progress" style="height: 5px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ objetivo.progreso }}%;" aria-valuenow="{{ objetivo.progreso }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small class="text-muted">{{ objetivo.progreso }}% de avance</small>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No hay objetivos terapéuticos activos.</p>
+    {% endif %}
+
+{% elif tab == 'evolucion' %}
+    <h5>Evoluciones Clínicas</h5>
+    <div class="mb-3">
+        <a href="{% url 'procedimientos:evolucion_create' %}?paciente={{ paciente.pk }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-file-earmark-text me-1"></i> Registrar Evolución
+        </a>
+    </div>
+    {% if evoluciones %}
+    {% for evolucion in evoluciones %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1 fw-bold">Evolución del {{ evolucion.fecha|date:"d M Y" }}</h6>
+                <small class="text-muted">Registrado por: {{ evolucion.creado_por.get_full_name }}</small>
+            </div>
+            <p class="card-text small">{{ evolucion.resumen_intervencion|linebreaksbr }}</p>
+            <span class="badge bg-secondary">Comunicación: {{ evolucion.get_comunicacion_display }}</span>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted">No hay registros de evolución clínica.</p>
+    {% endif %}
+
+{% elif tab == 'procedimientos' %}
+    <h5>Procedimientos de Evaluación y Consulta</h5>
+    {% if procedimientos %}
+        <ul class="list-group">
+            {% for proc in procedimientos %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-clipboard me-2"></i> 
+                    <strong>{{ proc.tipo_procedimiento }}</strong>: {{ proc.nombre }}
+                    <small class="text-muted ms-2">({{ proc.fecha_realizacion|date:"d M Y" }})</small>
+                </div>
+                <span class="badge bg-info rounded-pill">{{ proc.get_estado_display }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No hay procedimientos de evaluación o consulta registrados.</p>
+    {% endif %}
+
+{% else %}
+    <div class="alert alert-warning">
+        Pestaña no reconocida.
+    </div>
+{% endif %}

@@ -1,0 +1,91 @@
+codigo,descripcion,categoria
+F84.0,Autismo infantil,Trastornos generalizados del desarrollo
+F84.1,Autismo atípico,Trastornos generalizados del desarrollo
+F84.2,Síndrome de Rett,Trastornos generalizados del desarrollo
+F84.3,Otro trastorno desintegrativo de la infancia,Trastornos generalizados del desarrollo
+F84.4,Trastorno hipercinético con retraso mental y movimientos estereotipados,Trastornos generalizados del desarrollo
+F84.5,Síndrome de Asperger,Trastornos generalizados del desarrollo
+F84.8,Otros trastornos generalizados del desarrollo,Trastornos generalizados del desarrollo
+F84.9,Trastorno generalizado del desarrollo no especificado,Trastornos generalizados del desarrollo
+F80.0,Trastorno específico de la pronunciación,Trastornos del desarrollo del habla y del lenguaje
+F80.1,Trastorno del lenguaje expresivo,Trastornos del desarrollo del habla y del lenguaje
+F80.2,Trastorno del lenguaje receptivo,Trastornos del desarrollo del habla y del lenguaje
+F80.3,Afasia adquirida con epilepsia (síndrome de Landau-Kleffner),Trastornos del desarrollo del habla y del lenguaje
+F80.8,Otros trastornos del desarrollo del habla y del lenguaje,Trastornos del desarrollo del habla y del lenguaje
+F80.9,Trastorno del desarrollo del habla y del lenguaje no especificado,Trastornos del desarrollo del habla y del lenguaje
+F81.0,Trastorno específico de la lectura,Trastornos del desarrollo de las habilidades escolares
+F81.1,Trastorno específico de la ortografía,Trastornos del desarrollo de las habilidades escolares
+F81.2,Trastorno específico del cálculo,Trastornos del desarrollo de las habilidades escolares
+F81.3,Trastorno mixto del desarrollo de las habilidades escolares,Trastornos del desarrollo de las habilidades escolares
+F81.8,Otros trastornos del desarrollo de las habilidades escolares,Trastornos del desarrollo de las habilidades escolares
+F81.9,Trastorno del desarrollo de las habilidades escolares no especificado,Trastornos del desarrollo de las habilidades escolares
+F82,Trastorno específico del desarrollo de la función motriz,Trastornos del desarrollo psicológico
+F83,Trastornos específicos mixtos del desarrollo,Trastornos del desarrollo psicológico
+F88,Otros trastornos del desarrollo psicológico,Trastornos del desarrollo psicológico
+F89,Trastorno del desarrollo psicológico no especificado,Trastornos del desarrollo psicológico
+F90.0,Trastorno de la actividad y de la atención,Trastornos hipercinéticos
+F90.1,Trastorno hipercinético disocial,Trastornos hipercinéticos
+F90.8,Otros trastornos hipercinéticos,Trastornos hipercinéticos
+F90.9,Trastorno hipercinético no especificado,Trastornos hipercinéticos
+F91.0,Trastorno disocial limitado al contexto familiar,Trastornos disociales
+F91.1,Trastorno disocial en niños no socializado,Trastornos disociales
+F91.2,Trastorno disocial en niños socializado,Trastornos disociales
+F91.3,Trastorno negativista desafiante,Trastornos disociales
+F91.8,Otros trastornos disociales,Trastornos disociales
+F91.9,Trastorno disocial no especificado,Trastornos disociales
+F92.0,Trastorno disocial depresivo,Trastornos mixtos disociales y de las emociones
+F92.8,Otros trastornos mixtos disociales y de las emociones,Trastornos mixtos disociales y de las emociones
+F92.9,Trastorno mixto disocial y de las emociones no especificado,Trastornos mixtos disociales y de las emociones
+F93.0,Trastorno de ansiedad de separación de la infancia,Trastornos de las emociones de comienzo en la infancia
+F93.1,Trastorno de ansiedad fóbica de la infancia,Trastornos de las emociones de comienzo en la infancia
+F93.2,Trastorno de ansiedad social de la infancia,Trastornos de las emociones de comienzo en la infancia
+F93.3,Trastorno de rivalidad entre hermanos,Trastornos de las emociones de comienzo en la infancia
+F93.8,Otros trastornos de las emociones en la infancia,Trastornos de las emociones de comienzo en la infancia
+F93.9,Trastorno de las emociones en la infancia no especificado,Trastornos de las emociones de comienzo en la infancia
+F94.0,Mutismo selectivo,Trastornos del comportamiento social en la infancia
+F94.1,Trastorno de vinculación de la infancia reactivo,Trastornos del comportamiento social en la infancia
+F94.2,Trastorno de vinculación de la infancia desinhibido,Trastornos del comportamiento social en la infancia
+F94.8,Otros trastornos del comportamiento social en la infancia,Trastornos del comportamiento social en la infancia
+F94.9,Trastorno del comportamiento social en la infancia no especificado,Trastornos del comportamiento social en la infancia
+F95.0,Trastorno de tics transitorios,Trastornos de tics
+F95.1,Trastorno de tics motores o fónicos crónicos,Trastornos de tics
+F95.2,Trastorno de tics múltiples motores y fónicos combinados (síndrome de Gilles de la Tourette),Trastornos de tics
+F95.8,Otros trastornos de tics,Trastornos de tics
+F95.9,Trastorno de tics no especificado,Trastornos de tics
+F98.0,Enuresis de origen no orgánico,Otros trastornos del comportamiento
+F98.1,Encopresis de origen no orgánico,Otros trastornos del comportamiento
+F98.2,Trastorno de la ingestión alimentaria en la infancia,Otros trastornos del comportamiento
+F98.3,Pica en la infancia,Otros trastornos del comportamiento
+F98.4,Trastorno de estereotipias motrices,Otros trastornos del comportamiento
+F98.5,Tartamudeo (espasmofemia),Otros trastornos del comportamiento
+F98.6,Farfulleo,Otros trastornos del comportamiento
+F98.8,Otros trastornos de las emociones y del comportamiento en la infancia,Otros trastornos del comportamiento
+F98.9,Trastorno de las emociones y del comportamiento de comienzo en la infancia no especificado,Otros trastornos del comportamiento
+G80.0,Parálisis cerebral espástica,Parálisis cerebral
+G80.1,Parálisis cerebral espástica dipléjica,Parálisis cerebral
+G80.2,Parálisis cerebral espástica hemipléjica,Parálisis cerebral
+G80.3,Parálisis cerebral discinética,Parálisis cerebral
+G80.4,Parálisis cerebral atáxica,Parálisis cerebral
+G80.8,Otros tipos de parálisis cerebral,Parálisis cerebral
+G80.9,Parálisis cerebral no especificada,Parálisis cerebral
+Q90.0,Síndrome de Down trisomía 21 por falta de disyunción meiótica,Síndrome de Down
+Q90.1,Síndrome de Down trisomía 21 por mosaicismo,Síndrome de Down
+Q90.2,Síndrome de Down trisomía 21 por translocación,Síndrome de Down
+Q90.9,Síndrome de Down no especificado,Síndrome de Down
+R62.0,Falta del desarrollo fisiológico normal esperado,Retraso del desarrollo
+R62.8,Otra falta del crecimiento o desarrollo fisiológico normal esperado,Retraso del desarrollo
+R62.9,Falta del crecimiento o desarrollo fisiológico normal esperado no especificado,Retraso del desarrollo
+R48.0,Dislexia y alexia,Trastornos del aprendizaje
+R48.1,Agnosia,Trastornos cognitivos
+R48.2,Apraxia,Trastornos cognitivos
+R48.8,Otras alteraciones simbólicas específicas y las no especificadas,Trastornos cognitivos
+H93.2,Otras percepciones auditivas anormales,Trastornos auditivos
+R47.0,Disfasia y afasia,Trastornos del habla
+R47.1,Disartria y anartria,Trastornos del habla
+R47.8,Otros trastornos del habla y los no especificados,Trastornos del habla
+F70,Retraso mental leve,Discapacidad intelectual
+F71,Retraso mental moderado,Discapacidad intelectual
+F72,Retraso mental grave,Discapacidad intelectual
+F73,Retraso mental profundo,Discapacidad intelectual
+F78,Otro retraso mental,Discapacidad intelectual
+F79,Retraso mental no especificado,Discapacidad intelectual

@@ -1,0 +1,240 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ action }} Terapia - TEA Management{% endblock %}
+{% block page_title %}{{ action }} Terapia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>{{ action }} Terapia</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <!-- Información Básica -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-info-circle me-1"></i>Información Básica
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}
+                                <div class="invalid-feedback d-block">{{ form.nombre.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.codigo.id_for_label }}" class="form-label">Código</label>
+                                {{ form.codigo }}
+                                {% if form.codigo.errors %}
+                                <div class="invalid-feedback d-block">{{ form.codigo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.categoria.id_for_label }}" class="form-label">
+                                    Categoría <span class="text-danger">*</span>
+                                </label>
+                                {{ form.categoria }}
+                                {% if form.categoria.errors %}
+                                <div class="invalid-feedback d-block">{{ form.categoria.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.modalidad.id_for_label }}" class="form-label">Modalidad</label>
+                                {{ form.modalidad }}
+                                {% if form.modalidad.errors %}
+                                <div class="invalid-feedback d-block">{{ form.modalidad.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.especialidad.id_for_label }}" class="form-label">Especialidad</label>
+                                {{ form.especialidad }}
+                                {% if form.especialidad.errors %}
+                                <div class="invalid-feedback d-block">{{ form.especialidad.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion_corta.id_for_label }}" class="form-label">
+                                Descripción Corta
+                            </label>
+                            {{ form.descripcion_corta }}
+                            {% if form.descripcion_corta.errors %}
+                            <div class="invalid-feedback d-block">{{ form.descripcion_corta.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Máximo 200 caracteres</small>
+                        </div>
+
+                        {% if form.imagen %}
+                        <div class="mb-3">
+                            <label for="{{ form.imagen.id_for_label }}" class="form-label">Imagen</label>
+                            {{ form.imagen }}
+                            {% if form.imagen.errors %}
+                            <div class="invalid-feedback d-block">{{ form.imagen.errors }}</div>
+                            {% endif %}
+                            {% if terapia and terapia.imagen %}
+                            <div class="mt-2">
+                                <img src="{{ terapia.imagen.url }}" class="img-thumbnail" style="max-width: 200px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </fieldset>
+
+                    <!-- Descripción Detallada -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-file-text me-1"></i>Descripción Detallada
+                        </legend>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                                Descripción <span class="text-danger">*</span>
+                            </label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.objetivos.id_for_label }}" class="form-label">Objetivos</label>
+                            {{ form.objetivos }}
+                            {% if form.objetivos.errors %}
+                            <div class="invalid-feedback d-block">{{ form.objetivos.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.metodologia.id_for_label }}" class="form-label">Metodología</label>
+                            {{ form.metodologia }}
+                            {% if form.metodologia.errors %}
+                            <div class="invalid-feedback d-block">{{ form.metodologia.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.materiales_necesarios.id_for_label }}" class="form-label">
+                                Materiales Necesarios
+                            </label>
+                            {{ form.materiales_necesarios }}
+                            {% if form.materiales_necesarios.errors %}
+                            <div class="invalid-feedback d-block">{{ form.materiales_necesarios.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Configuración -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-sliders me-1"></i>Configuración
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.duracion_minutos.id_for_label }}" class="form-label">
+                                    Duración (minutos)
+                                </label>
+                                {{ form.duracion_minutos }}
+                                {% if form.duracion_minutos.errors %}
+                                <div class="invalid-feedback d-block">{{ form.duracion_minutos.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.precio_base.id_for_label }}" class="form-label">Precio Base</label>
+                                {{ form.precio_base }}
+                                {% if form.precio_base.errors %}
+                                <div class="invalid-feedback d-block">{{ form.precio_base.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.edad_minima.id_for_label }}" class="form-label">Edad Mínima</label>
+                                {{ form.edad_minima }}
+                                {% if form.edad_minima.errors %}
+                                <div class="invalid-feedback d-block">{{ form.edad_minima.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.requisitos.id_for_label }}" class="form-label">Requisitos</label>
+                            {{ form.requisitos }}
+                            {% if form.requisitos.errors %}
+                            <div class="invalid-feedback d-block">{{ form.requisitos.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.contraindicaciones.id_for_label }}" class="form-label">
+                                Contraindicaciones
+                            </label>
+                            {{ form.contraindicaciones }}
+                            {% if form.contraindicaciones.errors %}
+                            <div class="invalid-feedback d-block">{{ form.contraindicaciones.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            {% if form.destacado %}
+                            <div class="col-md-6 mb-3 form-check">
+                                {{ form.destacado }}
+                                <label class="form-check-label" for="{{ form.destacado.id_for_label }}">
+                                    Destacada
+                                </label>
+                            </div>
+                            {% endif %}
+                            {% if form.activo %}
+                            <div class="col-md-6 mb-3 form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    Activo
+                                </label>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% if terapia %}{% url 'terapias:terapia_detail' terapia.pk %}{% else %}{% url 'terapias:terapia_list' %}{% endif %}" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>{{ action }} Terapia
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[type="text"], input[type="number"], select, textarea').forEach(el => {
+        if (el.tagName === 'SELECT') el.classList.add('form-select');
+        else if (el.tagName === 'TEXTAREA') el.classList.add('form-control');
+        else if (!el.classList.contains('form-control')) el.classList.add('form-control');
+    });
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('form-check-input'));
+    document.querySelectorAll('input[type="file"]').forEach(el => el.classList.add('form-control'));
+});
+</script>
+{% endblock %}

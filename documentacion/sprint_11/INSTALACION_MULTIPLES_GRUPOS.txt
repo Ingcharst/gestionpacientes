@@ -1,0 +1,63 @@
+# INSTALACIÓN: Gestión de Múltiples Grupos
+
+## 🎯 CAMBIOS
+
+1. ✅ Corregir cambio de estado al asignar
+2. ✅ Crear interfaz para múltiples grupos
+3. ✅ Permitir agregar/eliminar/cambiar grupos
+4. ✅ Estado automático según asignaciones
+
+## ⚡ INSTALACIÓN (10 minutos)
+
+### 1. CORREGIR VISTA ASIGNACIÓN (apps/grupos/views.py)
+
+En la función de asignación, agregar:
+```python
+# Después de crear asignación
+if paciente.estado in ['ADMITIDO', 'PENDIENTE_ASIGNACION']:
+    paciente.estado = Paciente.Estado.ACTIVO
+    paciente.save(update_fields=['estado'])
+```
+
+Ver código completo: CORRECCION_CAMBIO_ESTADO.py
+
+### 2. AGREGAR NUEVAS VISTAS (apps/grupos/views.py)
+
+Copiar TODO el código de: VISTAS_MULTIPLES_GRUPOS.py
+Pegar AL FINAL de apps/grupos/views.py
+
+### 3. AGREGAR URLs (apps/grupos/urls.py)
+
+Copiar las 4 URLs de: URLS_MULTIPLES_GRUPOS.py
+Pegar en urlpatterns
+
+### 4. AGREGAR TEMPLATE
+
+Copiar: template_paciente_grupos.html
+A: templates/grupos/paciente_grupos.html
+
+### 5. AGREGAR BOTÓN (templates/procedimientos/paciente_detail.html)
+
+Ver: BOTON_GESTIONAR_GRUPOS.html
+Agregar botón "Gestionar Grupos" en sección de acciones
+
+### 6. REINICIAR
+
+```bash
+python manage.py runserver
+```
+
+## ✅ PROBAR
+
+1. Ver paciente: debe tener botón "Gestionar Grupos"
+2. Clic en botón: ver grupos asignados
+3. Agregar nuevo grupo: paciente cambia a ACTIVO
+4. Eliminar todas las asignaciones: vuelve a PENDIENTE_ASIGNACION
+
+## 📁 ARCHIVOS
+
+1. CORRECCION_CAMBIO_ESTADO.py - Cambio de estado
+2. VISTAS_MULTIPLES_GRUPOS.py - 4 vistas nuevas
+3. template_paciente_grupos.html - Interfaz completa
+4. URLS_MULTIPLES_GRUPOS.py - 4 URLs
+5. BOTON_GESTIONAR_GRUPOS.html - Acceso desde paciente

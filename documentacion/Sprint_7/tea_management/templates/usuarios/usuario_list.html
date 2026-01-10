@@ -1,0 +1,72 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Usuarios - TEA Management{% endblock %}
+{% block page_title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-people me-2"></i>Lista de Usuarios</h5>
+        {% if user.es_admin %}
+        <a href="{% url 'usuario_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo Usuario
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Buscar usuario..."
+                           hx-get="{% url 'usuario_list' %}" 
+                           hx-trigger="keyup changed delay:500ms" 
+                           hx-target="#usuarios-table"
+                           hx-include="[name='rol'], [name='estado']"
+                           name="search">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" 
+                        hx-get="{% url 'usuario_list' %}"
+                        hx-trigger="change"
+                        hx-target="#usuarios-table"
+                        hx-include="[name='search'], [name='estado']"
+                        name="rol">
+                    <option value="">Todos los roles</option>
+                    {% for value, label in roles %}
+                    <option value="{{ value }}" {% if request.GET.rol == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" 
+                        hx-get="{% url 'usuario_list' %}"
+                        hx-trigger="change"
+                        hx-target="#usuarios-table"
+                        hx-include="[name='search'], [name='rol']"
+                        name="estado">
+                    <option value="">Todos los estados</option>
+                    {% for value, label in estados %}
+                    <option value="{{ value }}" {% if request.GET.estado == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <span class="badge bg-info fs-6">Total: {{ usuarios.count }}</span>
+            </div>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div id="usuarios-table">
+            {% include 'usuarios/partials/usuario_table.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

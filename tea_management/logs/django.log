@@ -1,0 +1,997 @@
+INFO 2025-11-05 20:05:57,533 autoreload Watching for file changes with StatReloader
+INFO 2025-11-05 20:08:42,047 autoreload Watching for file changes with StatReloader
+WARNING 2025-11-05 20:08:58,747 log Not Found: /accounts/login/
+WARNING 2025-11-05 20:09:00,302 log Not Found: /favicon.ico
+ERROR 2025-11-05 20:09:10,787 log Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Program Files\Python310\lib\site-packages\django\utils\deprecation.py", line 122, in __call__
+    response = self.process_response(request, response)
+  File "C:\Program Files\Python310\lib\site-packages\django\middleware\clickjacking.py", line 27, in process_response
+    if response.get("X-Frame-Options") is not None:
+AttributeError: 'function' object has no attribute 'get'
+INFO 2025-11-05 20:11:08,262 autoreload E:\TEA_Center\venv\tea_management\config\urls.py changed, reloading.
+INFO 2025-11-05 20:11:09,280 autoreload Watching for file changes with StatReloader
+INFO 2025-11-05 20:12:46,972 autoreload Watching for file changes with StatReloader
+ERROR 2025-11-05 20:13:13,320 log Internal Server Error: /admin/consultorios/disponibilidadconsultorio/add/
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\db\models\options.py", line 683, in get_field
+    return self.fields_map[field_name]
+KeyError: 'duracion_minutos'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\utils.py", line 290, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\utils.py", line 330, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "C:\Program Files\Python310\lib\site-packages\django\db\models\options.py", line 685, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: DisponibilidadConsultorio has no field named 'duracion_minutos'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Program Files\Python310\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Program Files\Python310\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Program Files\Python310\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1075, in render
+    output = self.filter_expression.resolve(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 722, in resolve
+    obj = self.var.resolve(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 854, in resolve
+    value = self._resolve_lookup(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 925, in _resolve_lookup
+    current = current()
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\helpers.py", line 275, in contents
+    f, attr, value = lookup_field(field, obj, model_admin)
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\utils.py", line 302, in lookup_field
+    attr = getattr(obj, name, sentinel)
+  File "E:\TEA_Center\venv\tea_management\apps\consultorios\models.py", line 492, in duracion_minutos
+    inicio = datetime.combine(self.fecha, self.hora_inicio)
+TypeError: combine() argument 1 must be datetime.date, not None
+ERROR 2025-11-05 20:16:18,957 log Internal Server Error: /admin/consultorios/disponibilidadconsultorio/add/
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\db\models\options.py", line 683, in get_field
+    return self.fields_map[field_name]
+KeyError: 'duracion_minutos'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\utils.py", line 290, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\utils.py", line 330, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "C:\Program Files\Python310\lib\site-packages\django\db\models\options.py", line 685, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: DisponibilidadConsultorio has no field named 'duracion_minutos'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Program Files\Python310\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Program Files\Python310\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Program Files\Python310\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1016, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 1075, in render
+    output = self.filter_expression.resolve(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 722, in resolve
+    obj = self.var.resolve(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 854, in resolve
+    value = self._resolve_lookup(context)
+  File "C:\Program Files\Python310\lib\site-packages\django\template\base.py", line 925, in _resolve_lookup
+    current = current()
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\helpers.py", line 275, in contents
+    f, attr, value = lookup_field(field, obj, model_admin)
+  File "C:\Program Files\Python310\lib\site-packages\django\contrib\admin\utils.py", line 302, in lookup_field
+    attr = getattr(obj, name, sentinel)
+  File "E:\TEA_Center\venv\tea_management\apps\consultorios\models.py", line 492, in duracion_minutos
+    inicio = datetime.combine(self.fecha, self.hora_inicio)
+TypeError: combine() argument 1 must be datetime.date, not None
+INFO 2025-11-05 20:18:27,256 autoreload E:\TEA_Center\venv\tea_management\apps\consultorios\models.py changed, reloading.
+INFO 2025-11-05 20:18:28,609 autoreload Watching for file changes with StatReloader
+INFO 2025-11-05 20:18:41,891 autoreload E:\TEA_Center\venv\tea_management\apps\consultorios\models.py changed, reloading.
+INFO 2025-11-05 20:18:42,721 autoreload Watching for file changes with StatReloader
+INFO 2025-11-05 20:18:48,505 autoreload E:\TEA_Center\venv\tea_management\apps\consultorios\models.py changed, reloading.
+INFO 2025-11-05 20:18:49,336 autoreload Watching for file changes with StatReloader
+INFO 2025-11-05 20:18:54,794 autoreload E:\TEA_Center\venv\tea_management\apps\consultorios\models.py changed, reloading.
+INFO 2025-11-05 20:18:55,598 autoreload Watching for file changes with StatReloader
+INFO 2025-11-05 20:19:06,748 autoreload E:\TEA_Center\venv\tea_management\apps\consultorios\models.py changed, reloading.
+INFO 2025-11-05 20:19:07,561 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 18:52:22,209 autoreload Watching for file changes with StatReloader
+ERROR 2025-11-06 18:52:32,803 log Internal Server Error: /
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "E:\TEA_Center\venv\tea_management\apps\usuarios\views.py", line 85, in dashboard
+    return render(request, 'usuarios/dashboard.html', context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: usuarios/dashboard.html
+WARNING 2025-11-06 18:52:33,891 log Not Found: /favicon.ico
+INFO 2025-11-06 18:55:50,534 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:29:52,351 autoreload E:\TEA_Center\venv\tea_management\config\settings.py changed, reloading.
+INFO 2025-11-06 19:29:53,204 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:30:23,112 autoreload E:\TEA_Center\venv\tea_management\config\urls.py changed, reloading.
+INFO 2025-11-06 19:30:23,910 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:31:28,132 autoreload Watching for file changes with StatReloader
+ERROR 2025-11-06 19:36:28,392 log Internal Server Error: /admin/terapias/terapia/add/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 681, in get_field
+    return self.fields_map[field_name]
+KeyError: 'duracion_formateada'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 289, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 322, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Terapia has no field named 'duracion_formateada'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1059, in render
+    output = self.filter_expression.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 710, in resolve
+    obj = self.var.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 842, in resolve
+    value = self._resolve_lookup(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 909, in _resolve_lookup
+    current = current()
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\helpers.py", line 270, in contents
+    f, attr, value = lookup_field(field, obj, model_admin)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 300, in lookup_field
+    attr = getattr(obj, name)
+  File "E:\TEA_Center\venv\tea_management\apps\terapias\models.py", line 465, in duracion_formateada
+    horas = self.duracion_minutos // 60
+TypeError: unsupported operand type(s) for //: 'NoneType' and 'int'
+ERROR 2025-11-06 19:40:30,974 log Internal Server Error: /admin/terapias/terapia/add/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 681, in get_field
+    return self.fields_map[field_name]
+KeyError: 'duracion_formateada'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 289, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 322, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Terapia has no field named 'duracion_formateada'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1059, in render
+    output = self.filter_expression.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 710, in resolve
+    obj = self.var.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 842, in resolve
+    value = self._resolve_lookup(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 909, in _resolve_lookup
+    current = current()
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\helpers.py", line 270, in contents
+    f, attr, value = lookup_field(field, obj, model_admin)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 300, in lookup_field
+    attr = getattr(obj, name)
+  File "E:\TEA_Center\venv\tea_management\apps\terapias\models.py", line 465, in duracion_formateada
+    horas = self.duracion_minutos // 60
+TypeError: unsupported operand type(s) for //: 'NoneType' and 'int'
+INFO 2025-11-06 19:43:40,443 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:43:40,471 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:43:43,498 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:43:43,503 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:43:50,955 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:43:51,962 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:43:51,978 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:43:52,588 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:44:03,793 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:44:04,358 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:44:04,468 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:44:05,008 autoreload Watching for file changes with StatReloader
+ERROR 2025-11-06 19:45:44,366 log Internal Server Error: /admin/terapias/terapia/add/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 681, in get_field
+    return self.fields_map[field_name]
+KeyError: 'costo_formateado'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 289, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 322, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Terapia has no field named 'costo_formateado'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1059, in render
+    output = self.filter_expression.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 710, in resolve
+    obj = self.var.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 842, in resolve
+    value = self._resolve_lookup(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 909, in _resolve_lookup
+    current = current()
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\helpers.py", line 270, in contents
+    f, attr, value = lookup_field(field, obj, model_admin)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 300, in lookup_field
+    attr = getattr(obj, name)
+  File "E:\TEA_Center\venv\tea_management\apps\terapias\models.py", line 482, in costo_formateado
+    return f"${self.costo_sesion:,.2f}"
+TypeError: unsupported format string passed to NoneType.__format__
+ERROR 2025-11-06 19:49:19,113 log Internal Server Error: /admin/terapias/terapia/add/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 681, in get_field
+    return self.fields_map[field_name]
+KeyError: 'costo_formateado'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 289, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 322, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "E:\TEA_Center\venv\lib\site-packages\django\db\models\options.py", line 683, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Terapia has no field named 'costo_formateado'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\loader_tags.py", line 210, in render
+    return template.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 173, in render
+    return self._render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 241, in render
+    nodelist.append(node.render_annotated(context))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\defaulttags.py", line 325, in render
+    return nodelist.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 1059, in render
+    output = self.filter_expression.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 710, in resolve
+    obj = self.var.resolve(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 842, in resolve
+    value = self._resolve_lookup(context)
+  File "E:\TEA_Center\venv\lib\site-packages\django\template\base.py", line 909, in _resolve_lookup
+    current = current()
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\helpers.py", line 270, in contents
+    f, attr, value = lookup_field(field, obj, model_admin)
+  File "E:\TEA_Center\venv\lib\site-packages\django\contrib\admin\utils.py", line 300, in lookup_field
+    attr = getattr(obj, name)
+  File "E:\TEA_Center\venv\tea_management\apps\terapias\models.py", line 482, in costo_formateado
+    return f"${self.costo_sesion:,.2f}"
+TypeError: unsupported format string passed to NoneType.__format__
+INFO 2025-11-06 19:50:15,878 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:50:15,958 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:50:16,738 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:50:16,768 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:50:22,659 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:50:22,918 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:50:23,384 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:50:23,674 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:51:11,078 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:51:11,093 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:51:11,778 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:51:11,788 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:51:14,607 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:51:14,688 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:51:15,307 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:51:15,418 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:51:21,263 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:51:21,689 autoreload E:\TEA_Center\venv\tea_management\apps\terapias\models.py changed, reloading.
+INFO 2025-11-06 19:51:22,168 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 19:51:22,450 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 20:45:43,485 autoreload E:\TEA_Center\venv\tea_management\config\settings.py changed, reloading.
+INFO 2025-11-06 20:45:43,505 autoreload E:\TEA_Center\venv\tea_management\config\settings.py changed, reloading.
+INFO 2025-11-06 20:45:44,197 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 20:45:44,213 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 21:00:44,018 autoreload E:\TEA_Center\venv\tea_management\apps\procedimientos\apps.py changed, reloading.
+INFO 2025-11-06 21:00:44,067 autoreload E:\TEA_Center\venv\tea_management\apps\procedimientos\apps.py changed, reloading.
+INFO 2025-11-06 21:00:45,084 autoreload Watching for file changes with StatReloader
+INFO 2025-11-06 21:00:45,088 autoreload Watching for file changes with StatReloader

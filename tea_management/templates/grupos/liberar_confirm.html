@@ -1,0 +1,119 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Liberar Cupo - Confirmación{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Liberación de Cupo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning border-0 mb-4">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle me-2"></i>¿Está seguro?
+                        </h6>
+                        <p class="mb-0">
+                            Esta acción finalizará la asignación del paciente al grupo y liberará el cupo.
+                        </p>
+                    </div>
+
+                    <!-- Información del Paciente -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Información de la Asignación</h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Paciente</small>
+                                    <p class="mb-0 fw-semibold">
+                                        {{ asignacion.paciente.nombres }} {{ asignacion.paciente.apellidos }}
+                                    </p>
+                                    <small class="text-muted">
+                                        HC: {{ asignacion.paciente.numero_historia_clinica }}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Grupo</small>
+                                    <p class="mb-0 fw-semibold">{{ asignacion.grupo.nombre }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Días de Asistencia</small>
+                                    <div class="d-flex gap-1">
+                                        {% for dia in asignacion.dias_asistencia %}
+                                        <span class="badge bg-primary">{{ dia }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Terapias/Semana</small>
+                                    <p class="mb-0 fw-semibold">
+                                        {{ asignacion.numero_terapias_semanales }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Fecha Inicio</small>
+                                    <p class="mb-0">{{ asignacion.fecha_inicio_asignacion|date:"d/m/Y" }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <small class="text-muted d-block mb-1">Duración</small>
+                                    <p class="mb-0">{{ asignacion.duracion_dias }} días</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Confirmación -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="motivo" class="form-label fw-semibold">
+                                Motivo de Liberación
+                            </label>
+                            <textarea name="motivo" 
+                                      id="motivo" 
+                                      class="form-control" 
+                                      rows="3"
+                                      placeholder="Ingrese el motivo de la liberación del cupo..."></textarea>
+                            <small class="form-text text-muted">
+                                Opcional: Indique la razón por la que se libera este cupo
+                            </small>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'grupos:grupo_detail' asignacion.grupo.pk %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle me-2"></i>Confirmar Liberación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

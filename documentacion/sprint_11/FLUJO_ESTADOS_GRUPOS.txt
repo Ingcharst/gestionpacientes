@@ -1,0 +1,63 @@
+# FLUJO DE ESTADOS CON GRUPOS
+
+## 📊 DIAGRAMA DE ESTADOS
+
+ADMITIDO
+    ↓
+[Valoración Inicial]
+    ↓
+PENDIENTE_ASIGNACION
+    ↓
+[Asignar 1er Grupo] ←─────┐
+    ↓                      │
+ACTIVO ──→ [Agregar más grupos] (Sigue ACTIVO)
+    ↓                      │
+[Eliminar grupos]          │
+    ↓                      │
+¿Quedan grupos? ───SI──────┘
+    │
+    NO
+    ↓
+PENDIENTE_ASIGNACION
+
+## 🔄 LÓGICA DE CAMBIO DE ESTADO
+
+### Al asignar PRIMER grupo:
+```
+if paciente.estado in ['ADMITIDO', 'PENDIENTE_ASIGNACION']:
+    paciente.estado = ACTIVO
+```
+
+### Al eliminar asignación:
+```
+if not hay_mas_asignaciones:
+    paciente.estado = PENDIENTE_ASIGNACION
+else:
+    # Sigue ACTIVO
+```
+
+## 🎯 CASOS DE USO
+
+1. **Paciente nuevo a 1 grupo**
+   PENDIENTE_ASIGNACION → asignar → ACTIVO
+
+2. **Paciente activo a otro grupo adicional**
+   ACTIVO → agregar grupo → ACTIVO (2 grupos)
+
+3. **Cambiar de grupo**
+   Cambiar grupo A por grupo B (sigue ACTIVO)
+
+4. **Eliminar un grupo (tiene más)**
+   Eliminar grupo A (tiene B,C) → ACTIVO
+
+5. **Eliminar último grupo**
+   Eliminar único grupo → PENDIENTE_ASIGNACION
+
+## ✅ FUNCIONALIDADES
+
+✅ Ver todos los grupos del paciente
+✅ Agregar grupos adicionales
+✅ Cambiar de un grupo a otro
+✅ Eliminar asignaciones
+✅ Cambio automático de estado
+✅ Contador de terapias totales

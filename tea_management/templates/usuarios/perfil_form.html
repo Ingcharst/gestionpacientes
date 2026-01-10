@@ -1,0 +1,208 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Editar Perfil Profesional - TEA Management{% endblock %}
+{% block page_title %}Editar Perfil Profesional{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-badge me-2"></i>Perfil Profesional de {{ perfil.usuario.get_full_name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Mensajes de error generales -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Especialidades -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-award me-1"></i>Especialidades
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.especialidades.id_for_label }}" class="form-label">
+                                    Especialidad Principal
+                                </label>
+                                {{ form.especialidades }}
+                                {% if form.especialidades.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.especialidades.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if form.especialidades_secundarias %}
+                        <div class="mb-3">
+                            <label for="{{ form.especialidades_secundarias.id_for_label }}" class="form-label">
+                                Especialidades Secundarias
+                            </label>
+                            {{ form.especialidades_secundarias }}
+                            {% if form.especialidades_secundarias.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.especialidades_secundarias.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.especialidades_secundarias.help_text }}</small>
+                        </div>
+                        {% endif %}
+                    </fieldset>
+
+                    <!-- Formación Académica -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-mortarboard me-1"></i>Formación Académica
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.universidad.id_for_label }}" class="form-label">
+                                    Universidad
+                                </label>
+                                {{ form.universidad }}
+                                {% if form.universidad.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.universidad.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.anios_experiencia.id_for_label }}" class="form-label">
+                                    Años de Experiencia
+                                </label>
+                                {{ form.anios_experiencia }}
+                                {% if form.anios_experiencia.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.anios_experiencia.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if form.certificaciones %}
+                        <div class="mb-3">
+                            <label for="{{ form.certificaciones.id_for_label }}" class="form-label">
+                                Certificaciones
+                            </label>
+                            {{ form.certificaciones }}
+                            {% if form.certificaciones.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.certificaciones.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.certificaciones.help_text }}</small>
+                        </div>
+                        {% endif %}
+                    </fieldset>
+
+                    <!-- Información Profesional -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-file-text me-1"></i>Información Profesional
+                        </legend>
+                        
+                        {% if form.bio %}
+                        <div class="mb-3">
+                            <label for="{{ form.bio.id_for_label }}" class="form-label">
+                                Biografía Profesional
+                            </label>
+                            {{ form.bio }}
+                            {% if form.bio.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.bio.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.bio.help_text }}</small>
+                        </div>
+                        {% endif %}
+
+                        {% if form.horario_atencion %}
+                        <div class="mb-3">
+                            <label for="{{ form.horario_atencion.id_for_label }}" class="form-label">
+                                Horario de Atención
+                            </label>
+                            {{ form.horario_atencion }}
+                            {% if form.horario_atencion.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.horario_atencion.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.horario_atencion.help_text }}</small>
+                        </div>
+                        {% endif %}
+
+                        {% if form.disponible %}
+                        <div class="mb-3 form-check">
+                            {{ form.disponible }}
+                            <label class="form-check-label" for="{{ form.disponible.id_for_label }}">
+                                Disponible para asignaciones
+                            </label>
+                            {% if form.disponible.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.disponible.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </fieldset>
+
+                    <!-- Información del Sistema -->
+                    <div class="alert alert-light">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Fecha de Creación:</strong> {{ perfil.fecha_creacion|date:"d/m/Y H:i" }}<br>
+                            <strong>Última Actualización:</strong> {{ perfil.fecha_actualizacion|date:"d/m/Y H:i" }}
+                        </small>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'usuario_detail' perfil.usuario.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="number"], select, textarea');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                if (input.tagName === 'SELECT') {
+                    input.classList.add('form-select');
+                } else if (input.type !== 'checkbox') {
+                    input.classList.add('form-control');
+                }
+            }
+        });
+        
+        // Estilo para checkbox
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.classList.add('form-check-input');
+        });
+    });
+</script>
+{% endblock %}

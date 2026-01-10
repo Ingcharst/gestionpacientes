@@ -1,0 +1,93 @@
+# ✅ CHECKLIST DE VERIFICACIÓN - SPRINT 1
+
+## 1. MODELO PACIENTE (apps/procedimientos/models.py)
+
+[ ] Campo agregado:
+    numero_admision = models.CharField(max_length=50, unique=True, ...)
+
+[ ] Estado por defecto cambiado:
+    default=Estado.ADMITIDO (NO Estado.ACTIVO)
+
+[ ] Campo estado max_length=30 (NO 20)
+
+
+## 2. MIGRACIONES
+
+[ ] Ejecutado: python manage.py makemigrations
+[ ] Ejecutado: python manage.py migrate
+[ ] Servidor reiniciado después de migrar
+
+
+## 3. FORMULARIO (apps/procedimientos/forms.py)
+
+[ ] 'numero_admision' en fields de AdmisionPacienteForm
+[ ] Ver archivo: CORRECCION_FORMULARIO_ADMISION.py
+
+
+## 4. URLS (apps/procedimientos/urls.py)
+
+[ ] Agregadas 7 URLs del Sprint 1:
+    - path('admision/', ...)
+    - path('pacientes/pendientes-valoracion/', ...)
+    - path('pacientes/<int:paciente_id>/valoracion/crear/', ...)
+    - path('pacientes/<int:paciente_id>/valoracion/', ...)
+    - path('pacientes/<int:paciente_id>/valoracion/editar/', ...)
+    - path('valoracion/<int:valoracion_id>/completar/', ...)
+    - path('pacientes/pendientes-asignacion/', ...)
+
+
+## 5. VISTAS (apps/procedimientos/views.py)
+
+[ ] Agregadas 8 vistas del Sprint 1
+
+
+## 6. TEMPLATES (templates/procedimientos/)
+
+[ ] Copiados 5 templates:
+    - admision_paciente.html
+    - pacientes_pendientes_valoracion.html
+    - crear_valoracion_inicial.html
+    - ver_valoracion_inicial.html
+    - pacientes_pendientes_asignacion.html
+
+
+## 7. MENÚS (templates/base/base.html)
+
+[ ] Agregados 3 enlaces en sidebar:
+    - Admitir Paciente
+    - Pendientes Valoración
+    - Pendientes Asignación
+
+Ver archivo: CORRECCION_MENUS_SIDEBAR.html
+
+
+## 8. PRUEBA RÁPIDA
+
+Abrir en navegador:
+http://localhost:8000/procedimientos/admision/
+
+¿Se ve el formulario? 
+[ ] SÍ → Campo numero_admision visible
+[ ] NO → Verificar puntos 1-7
+
+
+## 9. ERRORES COMUNES
+
+"Page not found" → Verificar URLs (punto 4)
+"Template does not exist" → Verificar templates (punto 6)
+Campo no visible → Verificar formulario (punto 3)
+"no such table" → Verificar migraciones (punto 2)
+
+
+## 10. COMANDO DE VERIFICACIÓN
+
+python manage.py shell
+
+>>> from apps.procedimientos.models import Paciente
+>>> print(Paciente._meta.get_field('numero_admision'))
+# Debe mostrar el campo, no error
+
+>>> from apps.procedimientos.forms import AdmisionPacienteForm
+>>> form = AdmisionPacienteForm()
+>>> 'numero_admision' in form.fields
+True  # ← Debe ser True

@@ -1,0 +1,120 @@
+# 🚀 INSTALACIÓN RÁPIDA - MÓDULO DE REPORTES
+
+## ⚡ INSTALACIÓN EN 5 PASOS (10 MINUTOS)
+
+### 1️⃣ COPIAR ARCHIVOS (3 min)
+
+```
+ORIGEN (outputs/)              → DESTINO (tu proyecto)
+═══════════════════════════════════════════════════════════
+
+reportes/                      → apps/reportes/
+templates_reportes/            → templates/reportes/
+```
+
+### 2️⃣ ACTUALIZAR SETTINGS.PY (1 min)
+
+Agregar a `INSTALLED_APPS` en `config/settings.py`:
+
+```python
+INSTALLED_APPS = [
+    # ... apps existentes ...
+    'apps.grupos',
+    'apps.reportes',  # ← AGREGAR
+]
+```
+
+### 3️⃣ ACTUALIZAR URLS.PY (1 min)
+
+Agregar en `config/urls.py`:
+
+```python
+urlpatterns = [
+    # ... rutas existentes ...
+    path('grupos/', include('apps.grupos.urls')),
+    path('reportes/', include('apps.reportes.urls')),  # ← AGREGAR
+]
+```
+
+### 4️⃣ ACTUALIZAR SIDEBAR (2 min)
+
+En `templates/base/base.html`, agregar después de Grupos:
+
+```html
+<li class="nav-item">
+    <a class="nav-link {% if 'reportes' in request.path %}active{% endif %}" 
+       href="{% url 'reportes:dashboard' %}">
+        <i class="bi bi-clipboard-data me-2"></i> Reportes
+    </a>
+</li>
+```
+
+### 5️⃣ INSTALAR DEPENDENCIAS (3 min)
+
+```bash
+pip install reportlab==4.0.9 openpyxl==3.1.2
+```
+
+---
+
+## ✅ VERIFICACIÓN (2 min)
+
+```bash
+# 1. Iniciar servidor
+python manage.py runserver
+
+# 2. Abrir navegador
+http://localhost:8000/reportes/
+
+# 3. Verificar que se vea el dashboard con 5 tipos de reportes
+```
+
+---
+
+## 📊 REPORTES DISPONIBLES
+
+1. ✅ **Informe Mensual** (PDF + Excel) - Facturación
+2. ✅ **Informe Trimestral** (PDF) - Avance de paciente
+3. ✅ **Reporte de Asistencia** (PDF) - Control mensual
+4. ✅ **Reporte de Terapeutas** (PDF) - Productividad
+5. ✅ **Reporte de Grupos** (Web + PDF) - Ocupación
+
+---
+
+## 🎯 PRIMER USO
+
+1. Ir a: `http://localhost:8000/reportes/`
+2. Clic en "Informe Mensual por Paciente"
+3. Seleccionar: Paciente, Mes, Año
+4. Clic en "Generar PDF"
+5. ¡Listo! Se abrirá el PDF en nueva pestaña
+
+---
+
+## 🆘 SI ALGO FALLA
+
+**Error: Module not found 'reportlab'**
+→ `pip install reportlab openpyxl`
+
+**Error: NoReverseMatch**
+→ Verificar que reportes esté en INSTALLED_APPS y URLs
+
+**PDF vacío**
+→ Verificar que haya datos en el mes/trimestre seleccionado
+
+---
+
+## 📁 ARCHIVOS EN OUTPUTS
+
+- `reportes/` - App completa
+- `templates_reportes/` - Templates
+- `settings.py` - Settings actualizado (referencia)
+- `config_urls.py` - URLs actualizado (referencia)
+- `base.html` - Base con sidebar actualizado (referencia)
+- `MODULO_REPORTES_DOCUMENTACION.md` - Doc completa
+
+---
+
+**Tiempo total:** 10-15 minutos  
+**Dificultad:** Fácil  
+**Resultado:** Módulo completo de reportes funcionando ✅

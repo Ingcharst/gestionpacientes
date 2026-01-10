@@ -1,0 +1,203 @@
+# ============================================================================
+# 🚀 SPRINT 1: ADMISIÓN Y VALORACIÓN INICIAL
+# ============================================================================
+
+## 📦 CONTENIDO DEL PAQUETE
+
+Este paquete contiene todos los archivos necesarios para implementar el Sprint 1
+del sistema de gestión de pacientes TEA.
+
+### Estructura de Carpetas:
+
+```
+SPRINT1_COMPLETO/
+│
+├── LEEME.txt                          ← Este archivo
+├── SPRINT1_RESUMEN_EJECUTIVO.md       ← Resumen completo del Sprint
+├── SPRINT1_INSTALACION_RAPIDA.txt     ← Guía rápida (15 min)
+│
+├── 1_codigo/                          ← Archivos Python
+│   ├── SPRINT1_MODIFICACIONES_MODELO_PACIENTE.py
+│   ├── SPRINT1_MODELO_VALORACION_INICIAL.py
+│   ├── SPRINT1_FORMULARIOS.py
+│   ├── SPRINT1_VISTAS.py
+│   ├── SPRINT1_URLS.py
+│   └── SPRINT1_SCRIPT_MIGRACION.py
+│
+├── 2_templates/                       ← Templates HTML
+│   ├── admision_paciente.html
+│   ├── pacientes_pendientes_valoracion.html
+│   ├── crear_valoracion_inicial.html
+│   ├── ver_valoracion_inicial.html
+│   └── pacientes_pendientes_asignacion.html
+│
+└── 3_documentacion/                   ← Documentación detallada
+    └── SPRINT1_GUIA_COMPLETA.md
+```
+
+---
+
+## 🎯 ¿QUÉ HACE ESTE SPRINT?
+
+Implementa el nuevo flujo de admisión y valoración de pacientes:
+
+```
+ADMISIÓN → VALORACIÓN INICIAL → PENDIENTE ASIGNACIÓN
+```
+
+### Funcionalidades:
+- ✅ Admitir pacientes con número de admisión manual
+- ✅ Capturar firma digital del acudiente
+- ✅ Realizar valoración inicial completa
+- ✅ Registrar problemas detectados
+- ✅ Recomendar terapias
+- ✅ Gestionar estados del paciente
+
+---
+
+## ⚡ INSTALACIÓN RÁPIDA (15 MINUTOS)
+
+### 1. Leer la Guía
+**Abrir:** `SPRINT1_INSTALACION_RAPIDA.txt`
+
+### 2. Modificar Archivos
+Copiar el código de la carpeta `1_codigo/` a tu proyecto:
+- Modificar: `apps/procedimientos/models.py`
+- Modificar: `apps/procedimientos/forms.py`
+- Modificar: `apps/procedimientos/views.py`
+- Modificar: `apps/procedimientos/urls.py`
+
+### 3. Copiar Templates
+Copiar archivos de `2_templates/` a:
+```
+tu_proyecto/templates/procedimientos/
+```
+
+### 4. Crear Migraciones
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### 5. ¡Listo!
+```bash
+python manage.py runserver
+```
+
+---
+
+## 📚 DOCUMENTACIÓN
+
+### Para Instalación Rápida (15 min):
+👉 **SPRINT1_INSTALACION_RAPIDA.txt**
+
+### Para Instalación Detallada (30-45 min):
+👉 **3_documentacion/SPRINT1_GUIA_COMPLETA.md**
+
+### Para Entender el Sprint:
+👉 **SPRINT1_RESUMEN_EJECUTIVO.md**
+
+---
+
+## 🔄 FLUJO IMPLEMENTADO
+
+```
+1. Admitir Paciente
+   ├─ Número de admisión: ADM-YYYYMMDD-####
+   ├─ Firma digital del acudiente
+   └─ Estado: ADMITIDO
+
+2. Valoración Inicial
+   ├─ Evaluar paciente
+   ├─ Registrar problemas
+   ├─ Recomendar terapias
+   └─ Estado: PENDIENTE_ASIGNACION
+
+3. Lista para Asignación
+   └─ Listo para Sprint 2 (asignar a grupos)
+```
+
+---
+
+## ✅ REQUISITOS
+
+- Django 4.x+
+- Python 3.8+
+- Bootstrap 5 (ya incluido en templates)
+- Signature Pad (CDN incluido en template)
+
+---
+
+## 🐛 SOLUCIÓN DE PROBLEMAS
+
+### Error: "numero_admision cannot be null"
+**Solución:** Usar el script de migración
+```bash
+python manage.py shell
+>>> exec(open('1_codigo/SPRINT1_SCRIPT_MIGRACION.py').read())
+>>> migrar_pacientes_existentes()
+```
+
+### Error: "estado value too long"
+**Solución:** Aumentar max_length del campo estado a 30 en models.py
+
+### Más problemas:
+Ver sección completa en `3_documentacion/SPRINT1_GUIA_COMPLETA.md`
+
+---
+
+## 📊 ESTADÍSTICAS
+
+- Modelos modificados: 1
+- Modelos nuevos: 1
+- Formularios nuevos: 3
+- Vistas nuevas: 8
+- URLs nuevas: 7
+- Templates nuevos: 5
+- Tiempo de instalación: 15-45 min
+
+---
+
+## 🎯 SIGUIENTE SPRINT
+
+**Sprint 2:** Asignación a Múltiples Grupos
+- Permitir paciente en varios grupos
+- Número de terapias por asignación
+- Vista del asesor para asignar
+
+---
+
+## 📞 SOPORTE
+
+1. Leer documentación incluida
+2. Revisar logs del servidor
+3. Verificar migraciones: `python manage.py showmigrations`
+
+---
+
+## ✨ CARACTERÍSTICAS DESTACADAS
+
+- 🖊️ Firma digital con canvas HTML5
+- 📋 Problemas detectados dinámicos (agregar múltiples)
+- 🎯 Estados automáticos del flujo
+- 📊 Valoración completa por áreas
+- 💊 Recomendaciones de terapias
+- 🔐 Validaciones y seguridad
+- 📱 UI responsiva Bootstrap 5
+
+---
+
+**Desarrollado por:** Claude (Sprint 1)
+**Fecha:** 30 de Noviembre, 2025
+**Versión:** 1.0
+**Estado:** ✅ COMPLETO Y LISTO PARA USAR
+
+---
+
+## 🚀 ¡COMIENZA AHORA!
+
+1. Leer: `SPRINT1_INSTALACION_RAPIDA.txt`
+2. Seguir los pasos
+3. ¡Disfrutar del nuevo sistema!
+
+**Tiempo estimado: 15 minutos** ⏱️

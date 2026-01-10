@@ -1,0 +1,504 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-clipboard2-pulse me-2"></i>{{ titulo }}</h2>
+            <p class="text-muted mb-0">Evaluación inicial del paciente</p>
+        </div>
+        <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Información del Paciente -->
+    <div class="card mb-4 border-primary">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    {% if paciente.foto %}
+                    <img src="{{ paciente.foto.url }}" class="rounded-circle" width="80" height="80" alt="Foto">
+                    {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person fs-1"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <h4 class="mb-1">{{ paciente.nombre_completo }}</h4>
+                    <p class="mb-0 text-muted">
+                        <strong>N° Admisión:</strong> {{ paciente.numero_admision }} | 
+                        <strong>Edad:</strong> {{ paciente.edad }} años | 
+                        <strong>Documento:</strong> {{ paciente.numero_documento }}
+                    </p>
+                    <p class="mb-0 text-muted">
+                        <strong>Diagnóstico:</strong> {{ paciente.diagnostico_principal }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario de Valoración -->
+    <form method="post" id="valoracionForm">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Columna Principal -->
+            <div class="col-lg-9">
+                <!-- Información General de la Valoración -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Información General</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Fecha de Valoración <span class="text-danger">*</span></label>
+                                {{ form.fecha_valoracion }}
+                                {% if form.fecha_valoracion.errors %}
+                                <div class="invalid-feedback d-block">{{ form.fecha_valoracion.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hora de Inicio</label>
+                                {{ form.hora_inicio }}
+                                {% if form.hora_inicio.errors %}
+                                <div class="invalid-feedback d-block">{{ form.hora_inicio.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hora de Fin</label>
+                                {{ form.hora_fin }}
+                                {% if form.hora_fin.errors %}
+                                <div class="invalid-feedback d-block">{{ form.hora_fin.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivo y Antecedentes -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-file-medical me-2"></i>Motivo y Antecedentes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Motivo de Consulta <span class="text-danger">*</span></label>
+                            {{ form.motivo_consulta }}
+                            {% if form.motivo_consulta.errors %}
+                            <div class="invalid-feedback d-block">{{ form.motivo_consulta.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Antecedentes Personales</label>
+                            {{ form.antecedentes_personales }}
+                            {% if form.antecedentes_personales.errors %}
+                            <div class="invalid-feedback d-block">{{ form.antecedentes_personales.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Antecedentes Familiares</label>
+                            {{ form.antecedentes_familiares }}
+                            {% if form.antecedentes_familiares.errors %}
+                            <div class="invalid-feedback d-block">{{ form.antecedentes_familiares.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Desarrollo Evolutivo</label>
+                            {{ form.desarrollo_evolutivo }}
+                            <small class="form-text text-muted">Hitos del desarrollo, embarazo, parto, etc.</small>
+                            {% if form.desarrollo_evolutivo.errors %}
+                            <div class="invalid-feedback d-block">{{ form.desarrollo_evolutivo.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problemas Detectados -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Problemas Detectados</h5>
+                            <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#agregarProblemaModal">
+                                <i class="bi bi-plus-circle me-1"></i>Agregar Problema
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="problemasContainer">
+                            <p class="text-muted text-center py-3" id="noProblemasMsg">
+                                No se han agregado problemas. Haga clic en "Agregar Problema" para registrar.
+                            </p>
+                        </div>
+                        <input type="hidden" name="problemas_detectados_json" id="problemasJSON" value="[]">
+                    </div>
+                </div>
+
+                <!-- Evaluación por Áreas -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-card-checklist me-2"></i>Evaluación por Áreas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Evaluación de Lenguaje</label>
+                            {{ form.evaluacion_lenguaje }}
+                            {% if form.evaluacion_lenguaje.errors %}
+                            <div class="invalid-feedback d-block">{{ form.evaluacion_lenguaje.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Evaluación Motora</label>
+                            {{ form.evaluacion_motora }}
+                            {% if form.evaluacion_motora.errors %}
+                            <div class="invalid-feedback d-block">{{ form.evaluacion_motora.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Evaluación Cognitiva</label>
+                            {{ form.evaluacion_cognitiva }}
+                            {% if form.evaluacion_cognitiva.errors %}
+                            <div class="invalid-feedback d-block">{{ form.evaluacion_cognitiva.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Evaluación Conductual</label>
+                            {{ form.evaluacion_conductual }}
+                            {% if form.evaluacion_conductual.errors %}
+                            <div class="invalid-feedback d-block">{{ form.evaluacion_conductual.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Evaluación Social</label>
+                            {{ form.evaluacion_social }}
+                            {% if form.evaluacion_social.errors %}
+                            <div class="invalid-feedback d-block">{{ form.evaluacion_social.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observaciones Generales -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Observaciones Generales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones de la Evaluación <span class="text-danger">*</span></label>
+                            {{ form.observaciones_generales }}
+                            {% if form.observaciones_generales.errors %}
+                            <div class="invalid-feedback d-block">{{ form.observaciones_generales.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nivel de Funcionalidad</label>
+                            {{ form.nivel_funcionalidad }}
+                            {% if form.nivel_funcionalidad.errors %}
+                            <div class="invalid-feedback d-block">{{ form.nivel_funcionalidad.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagnóstico -->
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-clipboard2-heart me-2"></i>Diagnóstico</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Diagnóstico del Profesional <span class="text-danger">*</span></label>
+                            {{ form.diagnostico_profesional }}
+                            {% if form.diagnostico_profesional.errors %}
+                            <div class="invalid-feedback d-block">{{ form.diagnostico_profesional.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Código CIE-10</label>
+                            {{ form.diagnostico_cie10 }}
+                            <small class="form-text text-muted">Código de diagnóstico CIE-10 si aplica</small>
+                            {% if form.diagnostico_cie10.errors %}
+                            <div class="invalid-feedback d-block">{{ form.diagnostico_cie10.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recomendaciones -->
+                <div class="card mb-4">
+                    <div class="card-header" style="background-color: #6f42c1; color: white;">
+                        <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Recomendaciones de Tratamiento</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Terapias Recomendadas <span class="text-danger">*</span></label>
+                            {{ form.terapias_recomendadas }}
+                            {% if form.terapias_recomendadas.errors %}
+                            <div class="invalid-feedback d-block">{{ form.terapias_recomendadas.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número de Sesiones Recomendado</label>
+                                {{ form.numero_sesiones_recomendado }}
+                                {% if form.numero_sesiones_recomendado.errors %}
+                                <div class="invalid-feedback d-block">{{ form.numero_sesiones_recomendado.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Frecuencia Recomendada</label>
+                                {{ form.frecuencia_recomendada }}
+                                <small class="form-text text-muted">Ej: 2 veces por semana</small>
+                                {% if form.frecuencia_recomendada.errors %}
+                                <div class="invalid-feedback d-block">{{ form.frecuencia_recomendada.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Duración Estimada del Tratamiento</label>
+                            {{ form.duracion_estimada_tratamiento }}
+                            <small class="form-text text-muted">Ej: 6 meses, 1 año</small>
+                            {% if form.duracion_estimada_tratamiento.errors %}
+                            <div class="invalid-feedback d-block">{{ form.duracion_estimada_tratamiento.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones sobre Recomendaciones</label>
+                            {{ form.observaciones_recomendaciones }}
+                            {% if form.observaciones_recomendaciones.errors %}
+                            <div class="invalid-feedback d-block">{{ form.observaciones_recomendaciones.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <hr>
+
+                        <div class="form-check mb-3">
+                            {{ form.requiere_interconsulta }}
+                            <label class="form-check-label" for="{{ form.requiere_interconsulta.id_for_label }}">
+                                Requiere Interconsulta con otro Especialista
+                            </label>
+                        </div>
+
+                        <div class="mb-3" id="interconsultaDiv" style="display: none;">
+                            <label class="form-label">Especialidades para Interconsulta</label>
+                            {{ form.especialidades_interconsulta }}
+                            <small class="form-text text-muted">Ej: Neurología, Psiquiatría</small>
+                            {% if form.especialidades_interconsulta.errors %}
+                            <div class="invalid-feedback d-block">{{ form.especialidades_interconsulta.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Lateral -->
+            <div class="col-lg-3">
+                <!-- Estado -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Estado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check">
+                            {{ form.completada }}
+                            <label class="form-check-label" for="{{ form.completada.id_for_label }}">
+                                <strong>Marcar como Completada</strong>
+                            </label>
+                            <small class="form-text text-muted d-block mt-2">
+                                Al completar, el paciente pasará a estado "Pendiente Asignación"
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Guardar Valoración
+                            </button>
+                            <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ayuda -->
+                <div class="card mt-3 border-info">
+                    <div class="card-body">
+                        <h6 class="text-info"><i class="bi bi-info-circle me-2"></i>Información</h6>
+                        <small class="text-muted">
+                            Complete todos los campos requeridos (*) antes de guardar.
+                            Puede guardar sin marcar como completada para continuar después.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Modal: Agregar Problema -->
+<div class="modal fade" id="agregarProblemaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Agregar Problema Detectado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Problema</label>
+                    {{ problema_form.tipo }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    {{ problema_form.descripcion }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Severidad</label>
+                    {{ problema_form.severidad }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observaciones Adicionales</label>
+                    {{ problema_form.observaciones }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="agregarProblemaBtn">
+                    <i class="bi bi-plus-circle me-2"></i>Agregar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let problemas = [];
+
+// Mostrar/ocultar campo de interconsulta
+document.getElementById('{{ form.requiere_interconsulta.id_for_label }}').addEventListener('change', function() {
+    document.getElementById('interconsultaDiv').style.display = this.checked ? 'block' : 'none';
+});
+
+// Agregar problema
+document.getElementById('agregarProblemaBtn').addEventListener('click', function() {
+    const tipo = document.getElementById('{{ problema_form.tipo.id_for_label }}').value;
+    const descripcion = document.getElementById('{{ problema_form.descripcion.id_for_label }}').value;
+    const severidad = document.getElementById('{{ problema_form.severidad.id_for_label }}').value;
+    const observaciones = document.getElementById('{{ problema_form.observaciones.id_for_label }}').value;
+    
+    if (!tipo || !descripcion) {
+        alert('Por favor complete tipo y descripción del problema');
+        return;
+    }
+    
+    const problema = {
+        tipo: tipo,
+        descripcion: descripcion,
+        severidad: severidad,
+        observaciones: observaciones
+    };
+    
+    problemas.push(problema);
+    actualizarProblemasUI();
+    
+    // Limpiar formulario y cerrar modal
+    document.getElementById('{{ problema_form.tipo.id_for_label }}').value = '';
+    document.getElementById('{{ problema_form.descripcion.id_for_label }}').value = '';
+    document.getElementById('{{ problema_form.severidad.id_for_label }}').value = 'MODERADA';
+    document.getElementById('{{ problema_form.observaciones.id_for_label }}').value = '';
+    
+    bootstrap.Modal.getInstance(document.getElementById('agregarProblemaModal')).hide();
+});
+
+// Actualizar UI de problemas
+function actualizarProblemasUI() {
+    const container = document.getElementById('problemasContainer');
+    const noMsg = document.getElementById('noProblemasMsg');
+    
+    if (problemas.length === 0) {
+        noMsg.style.display = 'block';
+        return;
+    }
+    
+    noMsg.style.display = 'none';
+    
+    let html = '<div class="list-group">';
+    problemas.forEach((p, index) => {
+        const severidadBadge = {
+            'LEVE': 'bg-success',
+            'MODERADA': 'bg-warning text-dark',
+            'SEVERA': 'bg-danger'
+        };
+        
+        html += `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">${p.tipo}</span>
+                            <span class="badge ${severidadBadge[p.severidad]}">${p.severidad}</span>
+                        </div>
+                        <p class="mb-1"><strong>${p.descripcion}</strong></p>
+                        ${p.observaciones ? `<p class="mb-0 text-muted small">${p.observaciones}</p>` : ''}
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarProblema(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
+    
+    // Actualizar campo oculto
+    document.getElementById('problemasJSON').value = JSON.stringify(problemas);
+}
+
+// Eliminar problema
+function eliminarProblema(index) {
+    if (confirm('¿Está seguro de eliminar este problema?')) {
+        problemas.splice(index, 1);
+        actualizarProblemasUI();
+    }
+}
+</script>
+{% endblock %}

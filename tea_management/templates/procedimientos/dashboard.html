@@ -1,0 +1,156 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Dashboard Procedimientos - TEA Management{% endblock %}
+{% block page_title %}Dashboard de Procedimientos{% endblock %}
+
+{% block content %}
+<!-- KPIs -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-people fs-1 text-primary"></i>
+                <h3 class="mt-2">{{ total_pacientes }}</h3>
+                <p class="text-muted mb-0">Total Pacientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-person-check fs-1 text-success"></i>
+                <h3 class="mt-2">{{ pacientes_activos }}</h3>
+                <p class="text-muted mb-0">Pacientes Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-calendar-check fs-1 text-info"></i>
+                <h3 class="mt-2">{{ sesiones_hoy }}</h3>
+                <p class="text-muted mb-0">Sesiones Hoy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-clock-history fs-1 text-warning"></i>
+                <h3 class="mt-2">{{ procedimientos_programados }}</h3>
+                <p class="text-muted mb-0">Procedimientos Programados</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alerta de Grupos -->
+{% if pacientes_pendientes_grupo > 0 %}
+<div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>¡Atención!</strong> Hay {{ pacientes_pendientes_grupo }} paciente{{ pacientes_pendientes_grupo|pluralize }} 
+    pendiente{{ pacientes_pendientes_grupo|pluralize }} de asignar a un grupo terapéutico.
+    <a href="{% url 'grupos:pacientes_pendientes' %}" class="alert-link ms-2">Ver lista de espera</a>
+    <a href="{% url 'grupos:grupo_list' %}" class="alert-link ms-2">Ver grupos</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Últimas Sesiones -->
+    <div class="col-lg-7 mb-4">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-calendar-heart me-2"></i>Últimas Sesiones</h5>
+                <a href="{% url 'procedimientos:sesion_list' %}" class="btn btn-sm btn-outline-primary">Ver todas</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for sesion in ultimas_sesiones %}
+                    <a href="{% url 'procedimientos:sesion_detail' sesion.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="mb-1">{{ sesion.paciente.nombre_completo }}</h6>
+                                <p class="mb-1 text-muted small">
+                                    {{ sesion.terapia.nombre }} - {{ sesion.terapeuta.get_full_name }}
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">{{ sesion.fecha|date:"d/m/Y" }}</small><br>
+                                <small class="text-muted">{{ sesion.hora_inicio }}</small>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted text-center py-3">No hay sesiones recientes</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pacientes Recientes -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Pacientes Recientes</h5>
+                <a href="{% url 'procedimientos:paciente_list' %}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for paciente in pacientes_recientes %}
+                    <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ paciente.nombre_completo }}</h6>
+                                <small class="text-muted">{{ paciente.numero_historia_clinica }}</small>
+                            </div>
+                            <span class="badge bg-{% if paciente.estado == 'ACTIVO' %}success{% else %}secondary{% endif %}">
+                                {{ paciente.get_estado_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted text-center py-3">No hay pacientes recientes</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos Rápidos -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Accesos Rápidos</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'procedimientos:paciente_create' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus me-1"></i>Nuevo Paciente
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'procedimientos:sesion_create' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-calendar-plus me-1"></i>Nueva Sesión
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'procedimientos:procedimiento_create' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-clipboard-plus me-1"></i>Nuevo Procedimiento
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'procedimientos:sesion_list' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-list-check me-1"></i>Ver Sesiones
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

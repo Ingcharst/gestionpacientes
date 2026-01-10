@@ -1,0 +1,93 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Reportes - TEA Management{% endblock %}
+{% block page_title %}Centro de Reportes{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-people fs-1 text-primary"></i>
+                <h3 class="mt-2">{{ total_pacientes }}</h3>
+                <p class="text-muted mb-0">Pacientes Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-person-badge fs-1 text-success"></i>
+                <h3 class="mt-2">{{ total_terapeutas }}</h3>
+                <p class="text-muted mb-0">Terapeutas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <i class="bi bi-people-fill fs-1 text-info"></i>
+                <h3 class="mt-2">{{ total_grupos }}</h3>
+                <p class="text-muted mb-0">Grupos Activos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Reportes Obligatorios -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                <strong>Reportes Obligatorios</strong>
+            </div>
+            <div class="card-body">
+                <h6>1. Informe Mensual por Paciente</h6>
+                <p class="text-muted small">Detalle de terapias y procedimientos para facturación.</p>
+                <a href="{% url 'reportes:informe_mensual_form' %}" class="btn btn-primary btn-sm w-100 mb-3">
+                    <i class="bi bi-file-pdf me-1"></i>Generar Informe Mensual
+                </a>
+                
+                <hr>
+                
+                <h6>2. Informe Trimestral de Avance</h6>
+                <p class="text-muted small">Registro del progreso del paciente desde el inicio.</p>
+                <a href="{% url 'reportes:informe_trimestral_form' %}" class="btn btn-success btn-sm w-100">
+                    <i class="bi bi-graph-up me-1"></i>Generar Informe Trimestral
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reportes Adicionales -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-clipboard-data me-2"></i>
+                <strong>Reportes Adicionales</strong>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'reportes:asistencia_form' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-calendar-check me-1"></i>Reporte de Asistencia
+                    </a>
+                    
+                    <a href="{% url 'reportes:terapeutas_form' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-person-badge me-1"></i>Reporte de Terapeutas
+                    </a>
+                    
+                    <a href="{% url 'reportes:grupos' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-people-fill me-1"></i>Reporte de Grupos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-3">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Nota:</strong> Todos los reportes pueden exportarse en formato PDF y algunos en Excel para análisis adicional.
+</div>
+{% endblock %}

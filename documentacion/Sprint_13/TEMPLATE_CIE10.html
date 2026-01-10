@@ -1,0 +1,49 @@
+<!-- MODIFICAR TEMPLATE crear_valoracion_inicial.html -->
+<!-- Buscar la sección de "Diagnóstico" -->
+
+<!-- REEMPLAZAR la sección de diagnóstico con esto: -->
+
+<div class="card mb-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-clipboard2-pulse me-2"></i>Diagnóstico</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label">Diagnóstico Profesional <span class="text-danger">*</span></label>
+            {{ form.diagnostico_profesional }}
+            <small class="form-text text-muted">Descripción del diagnóstico</small>
+        </div>
+        
+        <!-- BÚSQUEDA CIE-10 -->
+        <div class="mb-3 cie10-autocomplete">
+            <label class="form-label">
+                <i class="bi bi-search me-1"></i>Buscar Código CIE-10
+            </label>
+            {{ form.diagnostico_cie10_search }}
+            <small class="form-text text-muted">
+                Escriba el código o descripción (ej: F84.0 o "autismo")
+            </small>
+            
+            <!-- Contenedor de resultados -->
+            <div id="cie10-results" class="cie10-results"></div>
+            
+            <!-- Campo oculto con ID seleccionado -->
+            {{ form.diagnostico_cie10 }}
+            
+            <!-- Mostrar código seleccionado -->
+            <div id="cie10-selected" style="display:none;"></div>
+        </div>
+        
+        <!-- Campo manual (alternativo) -->
+        <div class="mb-3">
+            <label class="form-label">O escriba código CIE-10 manualmente</label>
+            {{ form.diagnostico_cie10_texto }}
+            <small class="form-text text-muted">
+                Solo si el código no está en el catálogo
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- Al final del archivo, ANTES de {% endblock %}, agregar: -->
+{% include 'procedimientos/widgets/cie10_autocomplete.html' %}

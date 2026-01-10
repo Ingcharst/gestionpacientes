@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Reporte de Asistencia{% endblock %}
+{% block page_title %}Reporte de Asistencia de Pacientes{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-calendar-check me-2"></i>
+                <strong>Generar Reporte de Asistencia</strong>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Reporte consolidado de asistencia de todos los pacientes en el mes seleccionado.
+                </p>
+                
+                <form method="GET" id="reporteForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="mes" class="form-label">Mes *</label>
+                            <select class="form-select" id="mes" name="mes" required>
+                                {% for num, nombre in meses %}
+                                <option value="{{ num }}" {% if num == mes_actual %}selected{% endif %}>
+                                    {{ nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="anio" class="form-label">Año *</label>
+                            <select class="form-select" id="anio" name="anio" required>
+                                {% for anio in anios %}
+                                <option value="{{ anio }}" {% if anio == anio_actual %}selected{% endif %}>
+                                    {{ anio }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-info" onclick="generarPDF()">
+                            <i class="bi bi-file-pdf me-1"></i>Generar PDF
+                        </button>
+                        <a href="{% url 'reportes:dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generarPDF() {
+    const mes = document.getElementById('mes').value;
+    const anio = document.getElementById('anio').value;
+    const url = `/reportes/asistencia/pdf/?mes=${mes}&anio=${anio}`;
+    window.open(url, '_blank');
+}
+</script>
+{% endblock %}

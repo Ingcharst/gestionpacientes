@@ -1,0 +1,94 @@
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Usuario</th>
+                <th>Nombre Completo</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Registro</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        {% if usuario.foto_perfil %}
+                        <img src="{{ usuario.foto_perfil.url }}" alt="{{ usuario.get_full_name }}" 
+                             class="rounded-circle me-2" width="40" height="40">
+                        {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        {% endif %}
+                        <strong>{{ usuario.username }}</strong>
+                    </div>
+                </td>
+                <td>{{ usuario.get_full_name }}</td>
+                <td>
+                    <a href="mailto:{{ usuario.email }}">{{ usuario.email }}</a>
+                </td>
+                <td>
+                    {% if usuario.rol == 'ADMIN' %}
+                        <span class="badge bg-danger">{{ usuario.get_rol_display }}</span>
+                    {% elif usuario.rol == 'TERAPEUTA' %}
+                        <span class="badge bg-primary">{{ usuario.get_rol_display }}</span>
+                    {% elif usuario.rol == 'COORDINADOR' %}
+                        <span class="badge bg-warning text-dark">{{ usuario.get_rol_display }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span>
+                    {% endif %}
+                </td>
+                <td id="estado-{{ usuario.id }}">
+                    {% if usuario.estado == 'ACTIVO' %}
+                        <span class="badge bg-success">Activo</span>
+                    {% elif usuario.estado == 'INACTIVO' %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                    {% elif usuario.estado == 'SUSPENDIDO' %}
+                        <span class="badge bg-danger">Suspendido</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <small class="text-muted">{{ usuario.date_joined|date:"d/m/Y" }}</small>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'usuario_detail' usuario.pk %}" 
+                           class="btn btn-outline-info" 
+                           title="Ver detalle">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        {% if user.es_admin or user == usuario %}
+                        <a href="{% url 'usuario_update' usuario.pk %}" 
+                           class="btn btn-outline-primary" 
+                           title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% endif %}
+                        {% if user.es_admin and user != usuario %}
+                        <button class="btn btn-outline-warning"
+                                hx-post="{% url 'usuario_toggle_estado' usuario.pk %}"
+                                hx-target="#estado-{{ usuario.id }}"
+                                hx-swap="outerHTML"
+                                title="Cambiar estado">
+                            <i class="bi bi-toggle-on"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-3"></i>
+                    <p class="mb-0">No se encontraron usuarios</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

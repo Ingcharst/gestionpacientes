@@ -1,0 +1,188 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mis Evoluciones{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="bi bi-file-medical-fill me-2"></i>
+                Mis Evoluciones Registradas
+            </h2>
+            <p class="text-muted mb-0">
+                Evoluciones registradas por {{ request.user.get_full_name }}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'procedimientos:crear_evolucion' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Nueva Evolución
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Registradas</h5>
+                    <h2 class="mb-0">{{ estadisticas.total_registradas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Firmadas</h5>
+                    <h2 class="mb-0">{{ estadisticas.total_firmadas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Pendientes</h5>
+                    <h2 class="mb-0">{{ estadisticas.total_pendientes }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control" value="{{ request.GET.fecha_desde }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control" value="{{ request.GET.fecha_hasta }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Paciente</label>
+                    <input type="text" name="paciente" class="form-control" placeholder="Buscar paciente..." value="{{ request.GET.paciente }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'procedimientos:mis_evoluciones' %}" class="btn btn-outline-secondary">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Listado de Evoluciones -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Historial de Evoluciones</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if evoluciones %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Terapia</th>
+                            <th>Grupo</th>
+                            <th>Desempeño</th>
+                            <th>Asistencia</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evolucion in evoluciones %}
+                        <tr>
+                            <td>
+                                <strong>{{ evolucion.fecha_sesion|date:"d/m/Y" }}</strong><br>
+                                <small class="text-muted">
+                                    {{ evolucion.hora_inicio|time:"H:i" }} - {{ evolucion.hora_fin|time:"H:i" }}
+                                </small>
+                            </td>
+                            <td>
+                                <strong>{{ evolucion.paciente.nombre_completo }}</strong><br>
+                                <small class="text-muted">{{ evolucion.paciente.numero_documento }}</small>
+                            </td>
+                            <td>{{ evolucion.terapia.nombre }}</td>
+                            <td>
+                                {% if evolucion.grupo %}
+                                    {{ evolucion.grupo.nombre }}
+                                {% else %}
+                                    <span class="text-muted">Individual</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if evolucion.desempeno == 'EXCELENTE' %}
+                                    <span class="badge bg-success">Excelente</span>
+                                {% elif evolucion.desempeno == 'BUENO' %}
+                                    <span class="badge bg-primary">Bueno</span>
+                                {% elif evolucion.desempeno == 'REGULAR' %}
+                                    <span class="badge bg-warning">Regular</span>
+                                {% elif evolucion.desempeno == 'REQUIERE_APOYO' %}
+                                    <span class="badge bg-info">Requiere Apoyo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">No Participó</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if evolucion.asistio %}
+                                    <i class="bi bi-check-circle-fill text-success"></i> Sí
+                                {% else %}
+                                    <i class="bi bi-x-circle-fill text-danger"></i> No
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if evolucion.firmado %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-shield-check"></i> Firmada
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-pencil"></i> Borrador
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'procedimientos:detalle_evolucion' evolucion.id %}" 
+                                        class="btn btn-outline-primary" 
+                                        title="Ver">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if not evolucion.firmado %}
+                                    <a href="{% url 'procedimientos:editar_evolucion' evolucion.id %}" 
+                                        class="btn btn-outline-warning" 
+                                        title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="text-muted mt-3">No hay evoluciones registradas</p>
+                <a href="{% url 'procedimientos:crear_evolucion' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Registrar Primera Evolución
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

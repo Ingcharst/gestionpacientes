@@ -1,0 +1,94 @@
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Número Admisión</th>
+                <th>Nombre Completo</th>
+                <th>Documento</th>
+                <th>Edad</th>
+                <th>Diagnóstico</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for paciente in pacientes %}
+            <tr>
+                <!--td><strong>{{ paciente.numero_historia_clinica }}</strong></td-->
+                <td>
+                    <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="text-decoration-none">
+                        {{ paciente.numero_admision }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="text-decoration-none">
+                        {{ paciente.nombre_completo }}
+                    </a>
+                </td>
+                <td>{{ paciente.get_tipo_documento_display }} {{ paciente.numero_documento }}</td>
+                <td>{{ paciente.edad }} años</td>
+                <td><small>{{ paciente.diagnostico_principal|truncatewords:5 }}</small></td>
+                <td>
+                    {% if paciente.estado == 'ACTIVO' %}
+                    <span class="badge bg-success">Activo</span>
+                    {% elif paciente.estado == 'ADMITIDO' %}
+                    <span class="badge bg-primary">Admitido</span>
+                    {% elif paciente.estado == 'PENDIENTE_VALORACION' %}
+                    <span class="badge bg-info text-dark">Pendiente Valoración</span>                    
+                    {% elif paciente.estado == 'PENDIENTE_ASIGNACION' %}
+                    <span class="badge bg-info text-dark">Pendiente Asignación</span>
+                    {% elif paciente.estado == 'DADO_ALTA' %}
+                    <span class="badge bg-secondary">Dado de Alta</span>
+                    {% elif paciente.estado == 'INACTIVO' %}
+                    <span class="badge bg-secondary">Inactivo</span>
+                    {% elif paciente.estado == 'SUSPENDIDO' %}
+                    <span class="badge bg-warning">Suspendido</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" 
+                           class="btn btn-info" title="Ver">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'procedimientos:paciente_update' paciente.pk %}" 
+                           class="btn btn-warning" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="bi bi-inbox display-4 text-muted"></i>
+                    <p class="text-muted mt-3">No se encontraron pacientes</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Paginación -->
+{% if is_paginated %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

@@ -1,0 +1,9 @@
+numero_documento_paciente,nombre_grupo,numero_terapias_asignadas,fecha_inicio,dias_asistencia_json,estado
+1234567890,Fonoaudiología Grupo A,20,2023-01-20,"[""Lunes"",""Miércoles"",""Viernes""]",ACTIVA
+1234567890,Terapia Ocupacional Grupo A,20,2023-01-20,"[""Lunes"",""Miércoles"",""Viernes""]",ACTIVA
+9876543210,Fonoaudiología Grupo B,15,2023-01-25,"[""Martes"",""Jueves""]",ACTIVA
+5551234567,Fonoaudiología Grupo A,30,2023-02-01,"[""Lunes"",""Miércoles"",""Viernes""]",ACTIVA
+5551234567,Terapia Ocupacional Grupo A,30,2023-02-01,"[""Lunes"",""Miércoles"",""Viernes""]",ACTIVA
+5551234567,Psicología Grupo A,30,2023-02-01,"[""Lunes"",""Miércoles""]",ACTIVA
+7778889999,Psicología Grupo A,12,2023-02-20,"[""Lunes"",""Miércoles""]",ACTIVA
+3334445555,Grupo Integral TEA,25,2023-02-10,"[""Lunes"",""Miércoles"",""Viernes""]",ACTIVA

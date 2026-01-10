@@ -1,0 +1,254 @@
+# ============================================================================
+# 🚀 SPRINT 1 - INSTALACIÓN RÁPIDA (15 MINUTOS)
+# ============================================================================
+
+## ✅ CHECKLIST RÁPIDO
+
+```
+[ ] 1. Modificar modelo Paciente (5 min)
+[ ] 2. Agregar modelo ValoracionInicial (2 min)
+[ ] 3. Agregar formularios (2 min)
+[ ] 4. Agregar vistas (2 min)
+[ ] 5. Agregar URLs (1 min)
+[ ] 6. Copiar templates (1 min)
+[ ] 7. Crear migraciones (2 min)
+[ ] 8. Probar funcionamiento (5 min - opcional)
+```
+
+---
+
+## 🎯 PASO 1: MODIFICAR MODELO PACIENTE (5 minutos)
+
+**Archivo:** `apps/procedimientos/models.py`
+
+### 1.1. Buscar clase Estado (línea ~26) y REEMPLAZAR:
+
+```python
+class Estado(models.TextChoices):
+    ADMITIDO = 'ADMITIDO', _('Admitido - Sin Valorar')
+    PENDIENTE_VALORACION = 'PENDIENTE_VALORACION', _('Pendiente Valoración')
+    PENDIENTE_ASIGNACION = 'PENDIENTE_ASIGNACION', _('Pendiente Asignación Terapias')
+    ACTIVO = 'ACTIVO', _('Activo en Tratamiento')
+    INACTIVO = 'INACTIVO', _('Inactivo')
+    SUSPENDIDO = 'SUSPENDIDO', _('Suspendido')
+    DADO_ALTA = 'DADO_ALTA', _('Dado de Alta')
+```
+
+### 1.2. DESPUÉS del campo numero_historia_clinica (línea ~166), AGREGAR:
+
+```python
+numero_admision = models.CharField(
+    max_length=50,
+    unique=True,
+    verbose_name='Número de Admisión',
+    help_text='Número de admisión del paciente (ingresado manualmente)'
+)
+
+firma_acudiente = models.TextField(
+    blank=True,
+    verbose_name='Firma Digital Acudiente',
+    help_text='Firma del acudiente en formato base64'
+)
+
+fecha_firma_acudiente = models.DateTimeField(
+    null=True,
+    blank=True,
+    verbose_name='Fecha y Hora de Firma'
+)
+
+ip_firma = models.GenericIPAddressField(
+    null=True,
+    blank=True,
+    verbose_name='IP donde se firmó'
+)
+```
+
+### 1.3. CAMBIAR campo estado (línea ~184):
+
+```python
+estado = models.CharField(
+    max_length=30,  # ✅ Cambiar de 20 a 30
+    choices=Estado.choices,
+    default=Estado.ADMITIDO,  # ✅ Cambiar de ACTIVO a ADMITIDO
+    verbose_name='Estado'
+)
+```
+
+---
+
+## 🎯 PASO 2: AGREGAR MODELO VALORACION INICIAL (2 minutos)
+
+**Archivo:** `apps/procedimientos/models.py`
+
+**Ubicación:** AL FINAL del archivo, antes del cierre
+
+Copiar TODO el contenido de: `SPRINT1_MODELO_VALORACION_INICIAL.py`
+
+---
+
+## 🎯 PASO 3: AGREGAR FORMULARIOS (2 minutos)
+
+**Archivo:** `apps/procedimientos/forms.py`
+
+**Ubicación:** AL FINAL del archivo
+
+Copiar TODO el contenido de: `SPRINT1_FORMULARIOS.py`
+
+---
+
+## 🎯 PASO 4: AGREGAR VISTAS (2 minutos)
+
+**Archivo:** `apps/procedimientos/views.py`
+
+**Ubicación:** AL FINAL del archivo
+
+Copiar TODO el contenido de: `SPRINT1_VISTAS.py`
+
+---
+
+## 🎯 PASO 5: AGREGAR URLs (1 minuto)
+
+**Archivo:** `apps/procedimientos/urls.py`
+
+AGREGAR estas líneas dentro de `urlpatterns`:
+
+```python
+# SPRINT 1: ADMISIÓN Y VALORACIÓN
+path('admision/', views.admision_paciente, name='admision_paciente'),
+path('pacientes/pendientes-valoracion/', views.pacientes_pendientes_valoracion, name='pacientes_pendientes_valoracion'),
+path('pacientes/<int:paciente_id>/valoracion/crear/', views.crear_valoracion_inicial, name='crear_valoracion_inicial'),
+path('pacientes/<int:paciente_id>/valoracion/', views.ver_valoracion_inicial, name='ver_valoracion_inicial'),
+path('pacientes/<int:paciente_id>/valoracion/editar/', views.editar_valoracion_inicial, name='editar_valoracion_inicial'),
+path('valoracion/<int:valoracion_id>/completar/', views.completar_valoracion, name='completar_valoracion'),
+path('pacientes/pendientes-asignacion/', views.pacientes_pendientes_asignacion, name='pacientes_pendientes_asignacion'),
+```
+
+---
+
+## 🎯 PASO 6: COPIAR TEMPLATES (1 minuto)
+
+Copiar todos los archivos de la carpeta `templates/` a:
+
+```
+tu_proyecto/templates/procedimientos/
+```
+
+Archivos:
+- admision_paciente.html
+- pacientes_pendientes_valoracion.html
+- crear_valoracion_inicial.html
+- ver_valoracion_inicial.html
+- pacientes_pendientes_asignacion.html
+
+---
+
+## 🎯 PASO 7: CREAR MIGRACIONES (2 minutos)
+
+```bash
+# Detener el servidor si está corriendo
+Ctrl + C
+
+# Crear migración
+python manage.py makemigrations
+
+# IMPORTANTE: Django preguntará por valor por defecto para numero_admision
+# Opción 1: Escribe: 1
+# Luego escribe: 'ADM-LEGACY-0000'
+
+# Aplicar migración
+python manage.py migrate
+
+# Reiniciar servidor
+python manage.py runserver
+```
+
+---
+
+## 🎯 PASO 8 (OPCIONAL): ACTUALIZAR SIDEBAR
+
+Si quieres agregar enlaces en el menú lateral:
+
+**Archivo:** `templates/base/base.html`
+
+Agregar en la sección del menú:
+
+```html
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'procedimientos:admision_paciente' %}">
+        <i class="bi bi-person-plus me-2"></i> Admisión
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'procedimientos:pacientes_pendientes_valoracion' %}">
+        <i class="bi bi-clipboard2-pulse me-2"></i> Pendientes Valoración
+    </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'procedimientos:pacientes_pendientes_asignacion' %}">
+        <i class="bi bi-people me-2"></i> Pendientes Asignación
+    </a>
+</li>
+```
+
+---
+
+## ✅ VERIFICACIÓN RÁPIDA
+
+### 1. Verificar migraciones:
+```bash
+python manage.py showmigrations procedimientos
+```
+Debe mostrar la última migración marcada con [X]
+
+### 2. Probar admisión:
+- Ir a: `http://localhost:8000/procedimientos/admision/`
+- Llenar formulario
+- Guardar
+- ✅ Debe crear paciente con estado ADMITIDO
+
+### 3. Probar valoración:
+- Ir a: `http://localhost:8000/procedimientos/pacientes/pendientes-valoracion/`
+- Seleccionar paciente
+- Crear valoración
+- ✅ Debe cambiar estado a PENDIENTE_ASIGNACION
+
+---
+
+## 🐛 SOLUCIÓN RÁPIDA DE PROBLEMAS
+
+### Error: "numero_admision cannot be null"
+```bash
+python manage.py shell
+
+from apps.procedimientos.models import Paciente
+for i, p in enumerate(Paciente.objects.filter(numero_admision__isnull=True), 1):
+    p.numero_admision = f"ADM-LEGACY-{i:04d}"
+    p.save()
+```
+
+### Error: "No module named 'apps.procedimientos.forms'"
+Verificar que agregaste los formularios en `forms.py`
+
+### Error: "NoReverseMatch at /"
+Verificar que agregaste las URLs correctamente
+
+---
+
+## 📊 RESUMEN
+
+**Tiempo total:** 15 minutos  
+**Archivos modificados:** 4 (models.py, forms.py, views.py, urls.py)  
+**Templates nuevos:** 5  
+**Migraciones:** 1  
+
+---
+
+## 🎯 PRÓXIMO PASO
+
+Una vez completado Sprint 1, continuar con Sprint 2:
+- Asignación a múltiples grupos
+- Número de terapias por asignación
+
+---
+
+**¡Sprint 1 Completado!** ✅

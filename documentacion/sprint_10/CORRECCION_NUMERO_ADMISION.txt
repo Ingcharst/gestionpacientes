@@ -1,0 +1,52 @@
+# CORRECCIÓN: Campo Número de Admisión
+
+## 1. FORMULARIO (apps/procedimientos/forms.py)
+
+Verificar que PacienteForm incluya 'numero_admision':
+
+class PacienteForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            'nombres', 'apellidos', 'tipo_documento', 'numero_documento',
+            'fecha_nacimiento', 'genero', 'foto',
+            'telefono', 'email', 'direccion', 'ciudad',
+            'nombre_responsable', 'parentesco_responsable',
+            'telefono_responsable', 'email_responsable',
+            'diagnostico_principal', 'alergias', 'medicamentos', 'eps',
+            'numero_admision',  # ← AGREGAR ESTA LÍNEA
+            'observaciones', 'necesidades_especiales',
+        ]
+
+## 2. TEMPLATE admision_paciente.html (YA CORREGIDO)
+Campo agregado correctamente con input manual.
+
+## 3. TEMPLATE procedimiento/form.html (SI EXISTE)
+
+Si usas un template genérico para crear pacientes, agregar:
+
+<div class="mb-3">
+    <label class="form-label">Número de Admisión <span class="text-danger">*</span></label>
+    <input type="text" name="numero_admision" class="form-control" 
+           value="{{ form.numero_admision.value|default:'' }}" 
+           placeholder="ADM-20251130-0001" required>
+    <small class="form-text text-muted">Formato: ADM-YYYYMMDD-####</small>
+</div>
+
+## 4. VISTA (apps/procedimientos/views.py)
+
+En paciente_crear, verificar que se maneje el campo:
+
+@login_required
+def paciente_crear(request):
+    if request.method == 'POST':
+        form = PacienteForm(request.POST, request.FILES)
+        if form.is_valid():
+            paciente = form.save(commit=False)
+            paciente.estado = Paciente.Estado.ADMITIDO  # ← IMPORTANTE
+            paciente.creado_por = request.user
+            paciente.save()
+            # ...
+
+✅ Template corregido
+✅ Campo visible y editable

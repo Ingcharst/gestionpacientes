@@ -1,0 +1,7 @@
+nombre,codigo_terapia,capacidad_maxima,hora_inicio,hora_fin,dias_json,descripcion
+Fonoaudiología Grupo A,FONO,6,07:00,08:00,"[""Lunes"",""Miércoles"",""Viernes""]",Grupo de fonoaudiología para niños con TEA nivel inicial
+Fonoaudiología Grupo B,FONO,6,08:00,09:00,"[""Martes"",""Jueves""]",Grupo de fonoaudiología para niños con retraso del lenguaje
+Terapia Ocupacional Grupo A,TO,8,09:00,10:00,"[""Lunes"",""Miércoles"",""Viernes""]",Grupo de terapia ocupacional para desarrollo de habilidades motoras
+Terapia Ocupacional Grupo B,TO,6,10:00,11:00,"[""Martes"",""Jueves""]",Grupo de terapia ocupacional para niños con dificultades de integración sensorial
+Psicología Grupo A,PSICO,5,14:00,15:00,"[""Lunes"",""Miércoles""]",Grupo de psicología para niños con TEA y problemas conductuales
+Grupo Integral TEA,INTEGRAL,4,07:00,09:00,"[""Lunes"",""Miércoles"",""Viernes""]",Grupo multidisciplinario para TEA severo

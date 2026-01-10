@@ -1,0 +1,6 @@
+nombres,apellidos,tipo_documento,numero_documento,fecha_nacimiento,genero,numero_admision,diagnostico_principal,estado,fecha_ingreso,ciudad,telefono,nombre_responsable,telefono_responsable
+Juan Carlos,Pérez García,CC,1234567890,2018-03-15,M,ADM-20230115-0001,Trastorno del Espectro Autista,ACTIVO,2023-01-15,Barranquilla,3001234567,María García,3009876543
+Ana María,López Torres,TI,9876543210,2019-07-22,F,ADM-20230120-0002,Retraso en el desarrollo del lenguaje,ACTIVO,2023-01-20,Barranquilla,3112345678,Pedro López,3118765432
+Carlos Andrés,Martínez Silva,CC,5551234567,2017-11-08,M,ADM-20230125-0003,Trastorno del Espectro Autista,ACTIVO,2023-01-25,Soledad,3204567890,Laura Silva,3201234567
+María Fernanda,Rodríguez Díaz,TI,7778889999,2020-02-14,F,ADM-20230201-0004,Trastorno por déficit de atención,ACTIVO,2023-02-01,Barranquilla,3156789012,Roberto Rodríguez,3159876543
+Luis Miguel,Sánchez Ruiz,CC,3334445555,2018-09-30,M,ADM-20230205-0005,Trastorno del Espectro Autista,ACTIVO,2023-02-05,Barranquilla,3187654321,Carmen Ruiz,3189012345

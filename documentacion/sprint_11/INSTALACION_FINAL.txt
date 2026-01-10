@@ -1,0 +1,49 @@
+# INSTALACIÓN FINAL - ADAPTADA AL CÓDIGO EXISTENTE
+
+## ⚡ 4 PASOS (5 minutos)
+
+### 1. CORREGIR FUNCIÓN EXISTENTE (apps/grupos/views.py)
+
+Línea ~116 (dentro de "if exito:"), AGREGAR:
+
+```python
+# Cambiar estado del paciente a ACTIVO
+if paciente.estado in ['ADMITIDO', 'PENDIENTE_VALORACION', 'PENDIENTE_ASIGNACION']:
+    paciente.estado = Paciente.Estado.ACTIVO
+    paciente.save(update_fields=['estado'])
+```
+
+### 2. AGREGAR 4 VISTAS NUEVAS (apps/grupos/views.py)
+
+Copiar TODO de: CORRECCION_VIEWS_ADAPTADA.py
+(Desde "@login_required def paciente_grupos..." hasta el final)
+Pegar AL FINAL del archivo views.py
+
+### 3. AGREGAR 4 URLs (apps/grupos/urls.py)
+
+Copiar las 4 URLs de: URLS_ADAPTADAS.py
+Pegar en urlpatterns
+
+### 4. COPIAR TEMPLATE
+
+Copiar: template_paciente_grupos.html
+A: templates/grupos/paciente_grupos.html
+
+## ✅ LISTO
+
+```bash
+python manage.py runserver
+```
+
+## 🔍 VERIFICAR
+
+1. Asignar paciente a grupo → estado cambia a ACTIVO ✅
+2. Ver paciente → botón "Gestionar Grupos"
+3. Agregar/eliminar grupos funciona
+
+## 📁 ARCHIVOS
+
+1. CORRECCION_VIEWS_ADAPTADA.py - Código adaptado
+2. URLS_ADAPTADAS.py - URLs
+3. template_paciente_grupos.html - Template
+4. BOTON_GESTIONAR_GRUPOS.html - Botón

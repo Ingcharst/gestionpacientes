@@ -1,0 +1,133 @@
+# GUÍA RÁPIDA: IMPORTACIÓN DE DATOS PARA IA
+
+## 🎯 OBJETIVO
+Cargar datos históricos de la clínica al sistema para entrenar modelo de IA.
+
+## 📋 PASOS (30 minutos)
+
+### PASO 1: PREPARAR TUS DATOS
+1. Exporta datos de tu sistema actual a Excel/CSV
+2. Descarga las plantillas:
+   - plantilla_pacientes.csv
+   - plantilla_valoraciones.csv
+   - plantilla_grupos.csv
+   - plantilla_asignaciones.csv
+
+### PASO 2: LLENAR PLANTILLAS
+Usa las plantillas como guía, reemplaza datos de ejemplo con datos reales:
+
+**plantilla_pacientes.csv:**
+- Nombres, apellidos, documento, fecha nacimiento
+- Diagnóstico principal
+- Datos de contacto
+
+**plantilla_valoraciones.csv (CRÍTICO PARA IA):**
+- Documento del paciente
+- Diagnóstico CIE-10 (F84.0, F80.1, F90.0, etc.)
+- Nivel funcionalidad (INDEPENDIENTE/SEMI_DEPENDIENTE/DEPENDIENTE)
+- Problemas detectados en JSON (copiar formato exacto)
+
+**plantilla_grupos.csv:**
+- Nombre del grupo
+- Código terapia (FONO, TO, PSICO, INTEGRAL)
+- Capacidad, horarios, días
+
+**plantilla_asignaciones.csv (CRÍTICO PARA IA):**
+- Documento paciente + nombre grupo
+- Número de terapias asignadas
+- Fechas, días de asistencia
+
+### PASO 3: CREAR USUARIO SISTEMA
+```bash
+python manage.py shell
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
+User.objects.create_user(
+    username='sistema',
+    email='sistema@clinica.com',
+    password='sistema123',
+    first_name='Sistema',
+    last_name='Importación'
+)
+exit()
+```
+
+### PASO 4: COPIAR ARCHIVOS
+Copiar las 4 plantillas CSV llenas + script a la raíz del proyecto:
+```
+/tea_management/
+  ├── manage.py
+  ├── plantilla_pacientes.csv        ← AQUÍ
+  ├── plantilla_valoraciones.csv     ← AQUÍ
+  ├── plantilla_grupos.csv           ← AQUÍ
+  ├── plantilla_asignaciones.csv     ← AQUÍ
+  └── import_datos_ia.py             ← AQUÍ
+```
+
+### PASO 5: EJECUTAR IMPORTACIÓN
+```bash
+python manage.py shell < import_datos_ia.py
+```
+
+O manualmente:
+```bash
+python manage.py shell
+exec(open('import_datos_ia.py').read())
+```
+
+### PASO 6: VERIFICAR
+```bash
+python manage.py shell
+
+from apps.procedimientos.models import Paciente, ValoracionInicial
+from apps.grupos.models import AsignacionGrupo
+
+print(f"Pacientes: {Paciente.objects.count()}")
+print(f"Valoraciones: {ValoracionInicial.objects.count()}")
+print(f"Asignaciones: {AsignacionGrupo.objects.count()}")
+
+# Ver ejemplo
+p = Paciente.objects.first()
+print(f"\nPaciente: {p.nombre_completo}")
+print(f"Valoración: {p.valoracion_inicial.diagnostico_cie10}")
+print(f"Problemas: {p.valoracion_inicial.problemas_detectados}")
+```
+
+## ⚠️ ERRORES COMUNES
+
+**"Paciente no encontrado":**
+→ El documento en valoraciones/asignaciones no coincide con pacientes
+
+**"Terapia no encontrada":**
+→ Código de terapia incorrecto (usar: FONO, TO, PSICO, INTEGRAL)
+
+**"JSON decode error":**
+→ Formato de JSON incorrecto en problemas_detectados o días
+
+**"Usuario no existe":**
+→ Crear usuario 'sistema' primero (Paso 3)
+
+## 📊 MÍNIMO RECOMENDADO
+
+Para IA básica:
+- ✅ 50 pacientes
+- ✅ 50 valoraciones con problemas_detectados completos
+- ✅ 5 grupos terapéuticos
+- ✅ 100 asignaciones
+
+Para IA robusta:
+- ⭐ 200+ pacientes
+- ⭐ 200+ valoraciones
+- ⭐ 10+ grupos
+- ⭐ 500+ asignaciones
+
+## 🎯 PRÓXIMO PASO
+
+Una vez importados los datos:
+1. Exportar dataset para entrenamiento
+2. Análisis exploratorio de datos
+3. Entrenar modelo inicial
+4. Integrar al sistema
+
+¿Listo para continuar con análisis de datos?

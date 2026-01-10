@@ -1,0 +1,110 @@
+# RESUMEN: IMPORTACIÓN DE DATOS PARA IA
+
+## 📦 ARCHIVOS ENTREGADOS
+
+### 📋 GUÍAS (Leer primero):
+1. GUIA_RAPIDA_IMPORTACION.txt ⭐
+   → Pasos 1-6 (30 minutos)
+   
+2. GUIA_IMPORTACION_DATOS_IA.txt
+   → Detalles técnicos completos
+
+### 📄 PLANTILLAS CSV (Llenar con tus datos):
+3. plantilla_pacientes.csv
+   → 5 pacientes de ejemplo
+   
+4. plantilla_valoraciones.csv ⭐ CRÍTICO
+   → Incluye diagnósticos CIE-10 y problemas JSON
+   
+5. plantilla_grupos.csv
+   → 6 grupos terapéuticos ejemplo
+   
+6. plantilla_asignaciones.csv ⭐ CRÍTICO
+   → Relación paciente-grupo
+
+### 🔧 SCRIPT:
+7. import_datos_ia.py
+   → Script de importación automática
+
+## 🎯 QUÉ HACER
+
+### PASO 1: Exportar tus datos actuales
+- Pacientes de la clínica
+- Valoraciones profesionales realizadas
+- Grupos terapéuticos existentes
+- Asignaciones históricas (quién fue a qué grupo)
+
+### PASO 2: Adaptar plantillas
+- Abrir cada CSV en Excel
+- Reemplazar datos de ejemplo con datos reales
+- RESPETAR formato de columnas
+- IMPORTANTE: JSON en valoraciones debe estar exacto
+
+### PASO 3: Importar
+```bash
+# Copiar archivos a raíz del proyecto
+# Ejecutar script
+python manage.py shell < import_datos_ia.py
+```
+
+## 📊 DATOS MÍNIMOS PARA IA
+
+✅ **Básico (para empezar):**
+- 50 pacientes
+- 50 valoraciones completas
+- 5 grupos
+- 100 asignaciones
+
+⭐ **Ideal (modelo robusto):**
+- 200+ pacientes
+- 200+ valoraciones
+- 10+ grupos
+- 500+ asignaciones
+
+## 🔑 DATOS CRÍTICOS PARA IA
+
+### MUY IMPORTANTE:
+1. **diagnostico_cie10** (F84.0, F80.1, etc.)
+2. **problemas_detectados** (JSON con tipo, severidad)
+3. **Asignaciones completas** (quién fue asignado dónde)
+
+### IMPORTANTE:
+- Nivel funcionalidad (INDEPENDIENTE/SEMI_DEPENDIENTE/DEPENDIENTE)
+- Número de terapias asignadas
+- Severidad de problemas
+
+## ⚠️ NOTAS IMPORTANTES
+
+1. **UTF-8:** Guardar CSVs en UTF-8 (Excel → Guardar como → CSV UTF-8)
+
+2. **JSON:** No modificar formato de JSON en problemas_detectados
+   Ejemplo correcto:
+   ```
+   "[{""tipo"":""LENGUAJE"",""severidad"":""SEVERA""}]"
+   ```
+
+3. **Fechas:** Formato YYYY-MM-DD (2023-01-15)
+
+4. **Horas:** Formato HH:MM (07:00, 14:30)
+
+5. **Documentos:** Deben coincidir entre archivos
+
+## 🚀 PRÓXIMOS PASOS
+
+Una vez importados los datos:
+1. ✅ Verificar importación exitosa
+2. 📊 Exportar dataset para análisis
+3. 🤖 Entrenar modelo inicial
+4. 🔗 Integrar al sistema Django
+5. 📈 Mejora continua
+
+## 💡 TIPS
+
+- Empieza con pocos datos (50-100) para probar
+- Verifica que se importen correctamente
+- Luego importa el resto
+- Haz backup antes de importar
+
+## ❓ ¿DUDAS?
+
+Errores comunes en GUIA_RAPIDA_IMPORTACION.txt

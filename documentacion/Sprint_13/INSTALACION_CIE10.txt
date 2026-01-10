@@ -1,0 +1,142 @@
+# INSTALACIÓN: AUTOCOMPLETADO CIE-10
+
+## 📦 ARCHIVOS GENERADOS
+
+1. MODELO_CIE10.py - Modelo + modificación ValoracionInicial
+2. codigos_cie10.csv - 90+ códigos relevantes TEA/pediatría
+3. cargar_cie10.py - Script de importación
+4. VISTA_AJAX_CIE10.py - Vistas AJAX búsqueda
+5. URLS_CIE10.py - URLs API
+6. widget_cie10_autocomplete.html - Widget JavaScript
+7. FORM_CIE10.py - Modificación formulario
+8. TEMPLATE_CIE10.html - Modificación template
+
+## ⚡ INSTALACIÓN (15 minutos)
+
+### PASO 1: AGREGAR MODELO (5 min)
+
+**Archivo:** apps/procedimientos/models.py
+
+1. Copiar clase CodigoCIE10 de MODELO_CIE10.py
+2. Pegar ANTES de clase ValoracionInicial
+3. MODIFICAR ValoracionInicial:
+   - Cambiar diagnostico_cie10 de CharField a ForeignKey
+   - Agregar campo diagnostico_cie10_texto
+
+### PASO 2: MIGRAR BASE DE DATOS (2 min)
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### PASO 3: CARGAR DATOS CIE-10 (3 min)
+
+1. Copiar codigos_cie10.csv a raíz del proyecto
+2. Copiar cargar_cie10.py a raíz del proyecto
+3. Ejecutar:
+
+```bash
+python manage.py shell < cargar_cie10.py
+```
+
+O manualmente:
+```bash
+python manage.py shell
+exec(open('cargar_cie10.py').read())
+```
+
+### PASO 4: AGREGAR VISTAS (2 min)
+
+**Archivo:** apps/procedimientos/views.py
+
+Copiar las 2 funciones de VISTA_AJAX_CIE10.py al final:
+- buscar_cie10()
+- obtener_cie10()
+
+### PASO 5: AGREGAR URLs (1 min)
+
+**Archivo:** apps/procedimientos/urls.py
+
+Agregar las 2 URLs de URLS_CIE10.py
+
+### PASO 6: CREAR WIDGET (1 min)
+
+Crear archivo: templates/procedimientos/widgets/cie10_autocomplete.html
+Copiar contenido de: widget_cie10_autocomplete.html
+
+### PASO 7: MODIFICAR FORMULARIO (1 min)
+
+**Archivo:** apps/procedimientos/forms.py
+
+En clase ValoracionInicialForm:
+- Agregar campo diagnostico_cie10_search
+- Actualizar Meta.fields
+- Actualizar Meta.widgets
+- Copiar __init__ de FORM_CIE10.py
+
+### PASO 8: MODIFICAR TEMPLATE (2 min)
+
+**Archivo:** templates/procedimientos/crear_valoracion_inicial.html
+
+1. Buscar sección "Diagnóstico"
+2. Reemplazar con código de TEMPLATE_CIE10.html
+3. Al final (antes de {% endblock %}), agregar:
+   {% include 'procedimientos/widgets/cie10_autocomplete.html' %}
+
+### PASO 9: REINICIAR SERVIDOR
+
+```bash
+python manage.py runserver
+```
+
+## ✅ VERIFICAR
+
+1. Ir a crear valoración inicial
+2. En sección "Diagnóstico":
+   - Debe aparecer campo "Buscar Código CIE-10"
+3. Escribir "F84" o "autismo"
+4. Deben aparecer resultados en dropdown
+5. Seleccionar uno
+6. Debe mostrarse el código seleccionado
+
+## 🎯 FUNCIONALIDADES
+
+✅ Búsqueda en tiempo real (AJAX)
+✅ 90+ códigos TEA, TDAH, desarrollo, etc.
+✅ Búsqueda por código o descripción
+✅ Búsqueda por categoría
+✅ Dropdown con resultados
+✅ Campo manual alternativo
+✅ Integración con IA (diagnósticos estructurados)
+
+## ⚠️ ERRORES COMUNES
+
+**"CodigoCIE10 no definido":**
+→ No agregaste el modelo o no migraste
+
+**"No se encontraron resultados":**
+→ No ejecutaste el script de carga
+
+**"TypeError en AJAX":**
+→ No agregaste las vistas o URLs
+
+**Widget no aparece:**
+→ No incluiste el template del widget
+
+## 📊 ESTADÍSTICAS CARGADAS
+
+- Trastornos generalizados del desarrollo: 9 códigos
+- Trastornos del lenguaje: 6 códigos
+- Trastornos hipercinéticos (TDAH): 4 códigos
+- Parálisis cerebral: 7 códigos
+- Discapacidad intelectual: 6 códigos
+- Y más...
+
+Total: 90+ códigos relevantes para clínica TEA
+
+## 🔄 AGREGAR MÁS CÓDIGOS
+
+1. Editar codigos_cie10.csv
+2. Agregar líneas: codigo,descripcion,categoria
+3. Re-ejecutar: python manage.py shell < cargar_cie10.py

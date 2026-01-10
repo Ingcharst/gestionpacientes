@@ -1,0 +1,293 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-clipboard2-pulse me-2"></i>{{ titulo }}</h2>
+            <p class="text-muted mb-0">
+                <span class="badge {% if valoracion.completada %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {% if valoracion.completada %}Completada{% else %}En Proceso{% endif %}
+                </span>
+                Código: <strong>{{ valoracion.codigo_valoracion }}</strong>
+            </p>
+        </div>
+        <div>
+            {% if not valoracion.completada %}
+            <a href="{% url 'procedimientos:editar_valoracion_inicial' paciente.pk %}" class="btn btn-warning">
+                <i class="bi bi-pencil me-2"></i>Editar
+            </a>
+            {% endif %}
+            <a href="{% url 'procedimientos:paciente_detail' paciente.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Columna Principal -->
+        <div class="col-lg-8">
+            <!-- Información del Paciente -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Paciente</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> {{ paciente.nombre_completo }}</p>
+                            <p><strong>N° Admisión:</strong> {{ paciente.numero_admision }}</p>
+                            <p><strong>Edad:</strong> {{ paciente.edad }} años</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Documento:</strong> {{ paciente.numero_documento }}</p>
+                            <p><strong>Diagnóstico:</strong> {{ paciente.diagnostico_principal }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de la Valoración -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Información de la Valoración</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Fecha:</strong> {{ valoracion.fecha_valoracion|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Profesional:</strong> {{ valoracion.profesional.get_full_name }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            {% if valoracion.duracion_valoracion %}
+                            <p><strong>Duración:</strong> {{ valoracion.duracion_valoracion }} minutos</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motivo y Antecedentes -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-medical me-2"></i>Motivo y Antecedentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">Motivo de Consulta</h6>
+                        <p>{{ valoracion.motivo_consulta }}</p>
+                    </div>
+
+                    {% if valoracion.antecedentes_personales %}
+                    <div class="mb-3">
+                        <h6 class="text-primary">Antecedentes Personales</h6>
+                        <p>{{ valoracion.antecedentes_personales }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if valoracion.antecedentes_familiares %}
+                    <div class="mb-3">
+                        <h6 class="text-primary">Antecedentes Familiares</h6>
+                        <p>{{ valoracion.antecedentes_familiares }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if valoracion.desarrollo_evolutivo %}
+                    <div class="mb-3">
+                        <h6 class="text-primary">Desarrollo Evolutivo</h6>
+                        <p>{{ valoracion.desarrollo_evolutivo }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Problemas Detectados -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Problemas Detectados ({{ valoracion.cantidad_problemas }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if valoracion.problemas_detectados %}
+                    <div class="list-group">
+                        {% for problema in valoracion.problemas_detectados %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">{{ problema.tipo }}</span>
+                                <span class="badge {% if problema.severidad == 'LEVE' %}bg-success{% elif problema.severidad == 'MODERADA' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                    {{ problema.severidad }}
+                                </span>
+                            </div>
+                            <p class="mb-1"><strong>{{ problema.descripcion }}</strong></p>
+                            {% if problema.observaciones %}
+                            <p class="mb-0 text-muted small">{{ problema.observaciones }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No se registraron problemas específicos</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Evaluación por Áreas -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-card-checklist me-2"></i>Evaluación por Áreas</h5>
+                </div>
+                <div class="card-body">
+                    {% if valoracion.evaluacion_lenguaje %}
+                    <div class="mb-3">
+                        <h6 class="text-success">Lenguaje</h6>
+                        <p>{{ valoracion.evaluacion_lenguaje }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if valoracion.evaluacion_motora %}
+                    <div class="mb-3">
+                        <h6 class="text-success">Motora</h6>
+                        <p>{{ valoracion.evaluacion_motora }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if valoracion.evaluacion_cognitiva %}
+                    <div class="mb-3">
+                        <h6 class="text-success">Cognitiva</h6>
+                        <p>{{ valoracion.evaluacion_cognitiva }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if valoracion.evaluacion_conductual %}
+                    <div class="mb-3">
+                        <h6 class="text-success">Conductual</h6>
+                        <p>{{ valoracion.evaluacion_conductual }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if valoracion.evaluacion_social %}
+                    <div class="mb-3">
+                        <h6 class="text-success">Social</h6>
+                        <p>{{ valoracion.evaluacion_social }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Observaciones Generales -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Observaciones Generales</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ valoracion.observaciones_generales }}</p>
+                    {% if valoracion.nivel_funcionalidad %}
+                    <p><strong>Nivel de Funcionalidad:</strong> 
+                        <span class="badge bg-info">{{ valoracion.get_nivel_funcionalidad_display }}</span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Diagnóstico -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-clipboard2-heart me-2"></i>Diagnóstico</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ valoracion.diagnostico_profesional }}</p>
+                    {% if valoracion.diagnostico_cie10 %}
+                    <p><strong>Código CIE-10:</strong> {{ valoracion.diagnostico_cie10 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Lateral -->
+        <div class="col-lg-4">
+            <!-- Recomendaciones -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header" style="background-color: #6f42c1; color: white;">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Recomendaciones</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Terapias Recomendadas:</h6>
+                    <ul class="list-unstyled">
+                        {% for terapia in valoracion.terapias_recomendadas.all %}
+                        <li><i class="bi bi-check-circle text-success me-2"></i>{{ terapia.nombre }}</li>
+                        {% empty %}
+                        <li class="text-muted">No especificadas</li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if valoracion.numero_sesiones_recomendado %}
+                    <p><strong>Sesiones:</strong> {{ valoracion.numero_sesiones_recomendado }}</p>
+                    {% endif %}
+
+                    {% if valoracion.frecuencia_recomendada %}
+                    <p><strong>Frecuencia:</strong> {{ valoracion.frecuencia_recomendada }}</p>
+                    {% endif %}
+
+                    {% if valoracion.duracion_estimada_tratamiento %}
+                    <p><strong>Duración:</strong> {{ valoracion.duracion_estimada_tratamiento }}</p>
+                    {% endif %}
+
+                    {% if valoracion.observaciones_recomendaciones %}
+                    <hr>
+                    <h6>Observaciones:</h6>
+                    <p class="small">{{ valoracion.observaciones_recomendaciones }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Interconsulta -->
+            {% if valoracion.requiere_interconsulta %}
+            <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Interconsulta</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Requiere interconsulta con:</strong></p>
+                    <p>{{ valoracion.especialidades_interconsulta }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Estado -->
+            <div class="card">
+                <div class="card-header {% if valoracion.completada %}bg-success text-white{% else %}bg-warning{% endif %}">
+                    <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Estado</h5>
+                </div>
+                <div class="card-body">
+                    {% if valoracion.completada %}
+                    <p class="text-success mb-0">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Valoración Completada</strong>
+                    </p>
+                    <small class="text-muted">{{ valoracion.fecha_completada|date:"d/m/Y H:i" }}</small>
+                    <hr>
+                    <p class="mb-0">
+                        <strong>Estado del Paciente:</strong><br>
+                        <span class="badge bg-info">{{ paciente.get_estado_display }}</span>
+                    </p>
+                    {% else %}
+                    <p class="text-warning mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Valoración en Proceso</strong>
+                    </p>
+                    <hr>
+                    <a href="{% url 'procedimientos:editar_valoracion_inicial' paciente.pk %}" class="btn btn-warning w-100">
+                        <i class="bi bi-pencil me-2"></i>Completar Valoración
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

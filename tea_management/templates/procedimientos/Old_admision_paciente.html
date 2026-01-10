@@ -1,0 +1,347 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-person-plus-fill me-2"></i>{{ titulo }}</h2>
+            <p class="text-muted mb-0">Complete el formulario para admitir un nuevo paciente</p>
+        </div>
+        <a href="{% url 'procedimientos:paciente_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <form method="post" enctype="multipart/form-data" id="admisionForm">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Columna Principal -->
+            <div class="col-lg-8">
+                <!-- Información Personal -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person me-2"></i>Información Personal</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                                {{ form.nombres }}
+                                {% if form.nombres.errors %}
+                                <div class="invalid-feedback d-block">{{ form.nombres.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                                {{ form.apellidos }}
+                                {% if form.apellidos.errors %}
+                                <div class="invalid-feedback d-block">{{ form.apellidos.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
+                                {{ form.tipo_documento }}
+                                {% if form.tipo_documento.errors %}
+                                <div class="invalid-feedback d-block">{{ form.tipo_documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Número de Documento <span class="text-danger">*</span></label>
+                                {{ form.numero_documento }}
+                                {% if form.numero_documento.errors %}
+                                <div class="invalid-feedback d-block">{{ form.numero_documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                                {{ form.fecha_nacimiento }}
+                                {% if form.fecha_nacimiento.errors %}
+                                <div class="invalid-feedback d-block">{{ form.fecha_nacimiento.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Género <span class="text-danger">*</span></label>
+                                {{ form.genero }}
+                                {% if form.genero.errors %}
+                                <div class="invalid-feedback d-block">{{ form.genero.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Fotografía</label>
+                                {{ form.foto }}
+                                {% if form.foto.errors %}
+                                <div class="invalid-feedback d-block">{{ form.foto.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Contacto -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-telephone me-2"></i>Información de Contacto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                <div class="invalid-feedback d-block">{{ form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Dirección</label>
+                                {{ form.direccion }}
+                                {% if form.direccion.errors %}
+                                <div class="invalid-feedback d-block">{{ form.direccion.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Ciudad</label>
+                                {{ form.ciudad }}
+                                {% if form.ciudad.errors %}
+                                <div class="invalid-feedback d-block">{{ form.ciudad.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Responsable/Acudiente -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="bi bi-people me-2"></i>Información del Acudiente/Responsable</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+                                {{ form.nombre_responsable }}
+                                {% if form.nombre_responsable.errors %}
+                                <div class="invalid-feedback d-block">{{ form.nombre_responsable.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Parentesco <span class="text-danger">*</span></label>
+                                {{ form.parentesco_responsable }}
+                                {% if form.parentesco_responsable.errors %}
+                                <div class="invalid-feedback d-block">{{ form.parentesco_responsable.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                                {{ form.telefono_responsable }}
+                                {% if form.telefono_responsable.errors %}
+                                <div class="invalid-feedback d-block">{{ form.telefono_responsable.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.email_responsable }}
+                                {% if form.email_responsable.errors %}
+                                <div class="invalid-feedback d-block">{{ form.email_responsable.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información Médica -->
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>Información Médica Básica</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Diagnóstico Principal <span class="text-danger">*</span></label>
+                            {{ form.diagnostico_principal }}
+                            {% if form.diagnostico_principal.errors %}
+                            <div class="invalid-feedback d-block">{{ form.diagnostico_principal.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Alergias</label>
+                                {{ form.alergias }}
+                                {% if form.alergias.errors %}
+                                <div class="invalid-feedback d-block">{{ form.alergias.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Medicamentos Actuales</label>
+                                {{ form.medicamentos }}
+                                {% if form.medicamentos.errors %}
+                                <div class="invalid-feedback d-block">{{ form.medicamentos.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">EPS</label>
+                            {{ form.eps }}
+                            {% if form.eps.errors %}
+                            <div class="invalid-feedback d-block">{{ form.eps.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>Observaciones</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones Generales</label>
+                            {{ form.observaciones }}
+                            {% if form.observaciones.errors %}
+                            <div class="invalid-feedback d-block">{{ form.observaciones.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Necesidades Especiales</label>
+                            {{ form.necesidades_especiales }}
+                            {% if form.necesidades_especiales.errors %}
+                            <div class="invalid-feedback d-block">{{ form.necesidades_especiales.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Lateral -->
+            <div class="col-lg-4">
+                <!-- Número de Admisión -->
+                <div class="card mb-4 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-hash me-2"></i>Número de Admisión</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Número de Admisión <span class="text-danger">*</span></label>
+                            {{ form.numero_admision }}
+                            <small class="form-text text-muted">
+                                Formato: ADM-YYYYMMDD-####
+                            </small>
+                            {% if form.numero_admision.errors %}
+                            <div class="invalid-feedback d-block">{{ form.numero_admision.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Firma Digital -->
+                {% if mostrar_firma %}
+                <div class="card mb-4 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-pen me-2"></i>Firma del Acudiente</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Firma Digital</label>
+                            <div class="border rounded" style="background: #f8f9fa;">
+                                <canvas id="signaturePad" width="350" height="200" style="cursor: crosshair;"></canvas>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearSignature">
+                                    <i class="bi bi-x-circle me-1"></i>Limpiar Firma
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">
+                                El acudiente debe firmar en el recuadro
+                            </small>
+                        </div>
+                        {{ form.firma_acudiente_data }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Botones de Acción -->
+                <div class="card border-0">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Admitir Paciente
+                            </button>
+                            <a href="{% url 'procedimientos:paciente_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuración de Signature Pad
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('signaturePad');
+    if (canvas) {
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)'
+        });
+
+        // Limpiar firma
+        document.getElementById('clearSignature').addEventListener('click', function() {
+            signaturePad.clear();
+        });
+
+        // Guardar firma antes de enviar formulario
+        document.getElementById('admisionForm').addEventListener('submit', function(e) {
+            if (!signaturePad.isEmpty()) {
+                const dataURL = signaturePad.toDataURL();
+                document.getElementById('id_firma_acudiente_data').value = dataURL;
+            }
+        });
+    }
+});
+</script>
+
+<!-- Signature Pad Library -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+{% endblock %}

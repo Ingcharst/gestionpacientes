@@ -1,0 +1,333 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Recomendaciones de Grupos - {{ paciente.nombre_completo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .score-badge {
+        font-size: 1.1rem;
+        padding: 0.5rem 0.8rem;
+        font-weight: bold;
+    }
+    
+    .recomendacion-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .recomendacion-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+    
+    .top-recommendation {
+        border-width: 3px !important;
+        box-shadow: 0 0.5rem 1rem rgba(0,128,0,0.2);
+    }
+    
+    .razon-item {
+        padding: 0.3rem 0;
+        font-size: 0.95rem;
+    }
+    
+    .alerta-custom {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="bi bi-robot me-2 text-primary"></i>
+                Recomendaciones de Grupos para {{ paciente.nombre_completo }}
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="bi bi-calendar-check me-1"></i>
+                Basado en valoración del {{ valoracion.fecha_valoracion|date:"d/m/Y" }}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'grupos:exportar_recomendaciones' paciente.id %}" 
+               class="btn btn-outline-success me-2"
+               target="_blank">
+                <i class="bi bi-file-pdf me-1"></i> Exportar PDF
+            </a>
+            <a href="{% url 'procedimientos:paciente_detail' paciente.id %}" 
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Paciente
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Paciente -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-person-badge me-2"></i>Perfil del Paciente
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-2">
+                    <strong><i class="bi bi-cake me-1"></i>Edad:</strong><br>
+                    {{ paciente.edad }} años
+                </div>
+                <div class="col-md-2">
+                    <strong><i class="bi bi-gender-ambiguous me-1"></i>Género:</strong><br>
+                    {{ paciente.get_genero_display }}
+                </div>
+                <div class="col-md-3">
+                    <strong><i class="bi bi-clipboard-pulse me-1"></i>Diagnóstico:</strong><br>
+                    {{ valoracion.diagnostico_principal|truncatechars:30 }}
+                </div>
+                <div class="col-md-2">
+                    <strong><i class="bi bi-bar-chart me-1"></i>Nivel:</strong><br>
+                    {{ valoracion.get_nivel_funcionamiento_display|default:"No especificado" }}
+                </div>
+                <div class="col-md-3">
+                    <strong><i class="bi bi-search me-1"></i>Evaluados:</strong><br>
+                    {{ total_compatibles }} de {{ total_evaluados }} grupos
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje de estado -->
+    {% if mensaje %}
+    <div class="alert {% if recomendaciones %}alert-success{% else %}alert-warning{% endif %}">
+        <i class="bi {% if recomendaciones %}bi-check-circle{% else %}bi-exclamation-triangle{% endif %} me-2"></i>
+        {{ mensaje }}
+    </div>
+    {% endif %}
+
+    <!-- Recomendaciones -->
+    {% if recomendaciones %}
+    <h4 class="mb-3">
+        <i class="bi bi-stars me-2"></i>Grupos Recomendados
+        <small class="text-muted">(Ordenados por compatibilidad)</small>
+    </h4>
+    
+    <div class="row">
+        {% for rec in recomendaciones %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 recomendacion-card {% if forloop.first %}border-success top-recommendation{% endif %}">
+                <!-- Header del grupo -->
+                <div class="card-header {% if forloop.first %}bg-success text-white{% else %}bg-light{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if forloop.first %}
+                                <i class="bi bi-trophy-fill me-2"></i>
+                            {% endif %}
+                            <strong>{{ rec.grupo.nombre }}</strong>
+                        </div>
+                        <span class="badge score-badge {% if rec.score >= 85 %}bg-success{% elif rec.score >= 70 %}bg-primary{% elif rec.score >= 50 %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ rec.score }}% Match
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Cuerpo del grupo -->
+                <div class="card-body">
+                    <!-- Información básica -->
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-activity me-1"></i>Terapia:
+                                </small><br>
+                                <strong>{{ rec.grupo.terapia.nombre }}</strong>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-people me-1"></i>Rango Edad:
+                                </small><br>
+                                <strong>{{ rec.grupo.edad_minima }}-{{ rec.grupo.edad_maxima }} años</strong>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-week me-1"></i>Horario:
+                                </small><br>
+                                <strong>
+                                    {{ rec.grupo.get_dias_semana_display|default:"No especificado" }}
+                                    {% if rec.grupo.hora_inicio %}
+                                        <br>{{ rec.grupo.hora_inicio|time:"H:i" }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person-check me-1"></i>Disponibilidad:
+                                </small><br>
+                                {% if rec.disponible %}
+                                    <span class="badge bg-success">
+                                        {{ rec.cupos }} cupo{{ rec.cupos|pluralize }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        Lista de espera
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Razones de compatibilidad -->
+                    <div class="mb-3">
+                        <strong class="text-success d-block mb-2">
+                            <i class="bi bi-check-circle me-1"></i>¿Por qué es compatible?
+                        </strong>
+                        <div class="ps-3">
+                            {% for razon in rec.razones %}
+                            <div class="razon-item">
+                                {{ razon }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Alertas -->
+                    {% if rec.alertas %}
+                    <div class="mb-0">
+                        <strong class="d-block mb-2">
+                            <i class="bi bi-exclamation-circle me-1"></i>Consideraciones:
+                        </strong>
+                        {% for alerta in rec.alertas %}
+                        <div class="alert alert-{{ alerta.tipo }} alerta-custom">
+                            <i class="{{ alerta.icono }} me-1"></i>
+                            {{ alerta.mensaje }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Footer con acciones -->
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'grupos:detalle_grupo' rec.grupo.id %}" 
+                           class="btn btn-outline-info btn-sm"
+                           target="_blank">
+                            <i class="bi bi-eye me-1"></i> Ver Detalles
+                        </a>
+                        
+                        {% if rec.disponible %}
+                        <a href="{% url 'grupos:asignar_desde_recomendacion' paciente.id rec.grupo.id %}" 
+                           class="btn btn-success btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i> Asignar a Este Grupo
+                        </a>
+                        {% else %}
+                        <button class="btn btn-warning btn-sm" 
+                                onclick="alert('Funcionalidad de lista de espera en desarrollo')">
+                            <i class="bi bi-clock me-1"></i> Lista de Espera
+                        </button>
+                        {% endif %}
+                        
+                        {% if mostrar_debug %}
+                        <a href="{% url 'grupos:debug_recomendacion' paciente.id rec.grupo.id %}" 
+                           class="btn btn-outline-secondary btn-sm"
+                           target="_blank"
+                           title="Ver detalles técnicos (solo staff)">
+                            <i class="bi bi-code-slash"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <!-- No hay recomendaciones -->
+    <div class="alert alert-warning">
+        <h5><i class="bi bi-exclamation-triangle me-2"></i>No se encontraron grupos compatibles</h5>
+        <p class="mb-2">Considere las siguientes opciones:</p>
+        <ul>
+            <li>Crear un nuevo grupo terapéutico para este rango de edad</li>
+            <li>Revisar los criterios de edad de los grupos existentes</li>
+            <li>Actualizar la valoración del paciente si ha cambiado su situación</li>
+            <li>Consultar con el equipo terapéutico sobre opciones de terapia individual</li>
+        </ul>
+        <div class="mt-3">
+            <a href="{% url 'grupos:crear_grupo' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Crear Nuevo Grupo
+            </a>
+            <a href="{% url 'procedimientos:editar_valoracion' valoracion.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-pencil me-1"></i> Actualizar Valoración
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Información sobre el sistema -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>¿Cómo funciona el Sistema de Recomendación?
+            </h5>
+        </div>
+        <div class="card-body">
+            <p>El sistema analiza múltiples factores para recomendar los grupos más adecuados:</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="bi bi-check2-circle text-success me-2"></i>Factores Evaluados:</h6>
+                    <ul>
+                        <li><strong>Compatibilidad de edad (35%):</strong> Pacientes con edades similares aprenden mejor juntos</li>
+                        <li><strong>Disponibilidad de cupos (25%):</strong> Prioriza grupos con espacio disponible</li>
+                        <li><strong>Nivel de funcionamiento (15%):</strong> Grupos con niveles similares facilitan el progreso</li>
+                        <li><strong>Historial del grupo (10%):</strong> Grupos con mejor tasa de éxito histórica</li>
+                        <li><strong>Balance y experiencia (10%):</strong> Distribución equitativa y madurez del grupo</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="bi bi-star text-warning me-2"></i>Interpretación del Score:</h6>
+                    <ul>
+                        <li><span class="badge bg-success">85-100%</span> = Excelente compatibilidad</li>
+                        <li><span class="badge bg-primary">70-84%</span> = Buena compatibilidad</li>
+                        <li><span class="badge bg-warning text-dark">50-69%</span> = Compatibilidad moderada</li>
+                        <li><span class="badge bg-secondary">&lt;50%</span> = Requiere evaluación adicional</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <small>
+                            <i class="bi bi-lightbulb me-1"></i>
+                            <strong>Nota:</strong> Las recomendaciones son sugerencias basadas en criterios objetivos. 
+                            La decisión final debe considerar el criterio profesional del terapeuta.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animación de entrada para las cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.recomendacion-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s, transform 0.5s';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 50);
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Informe Mensual - Reportes{% endblock %}
+{% block page_title %}Informe Mensual por Paciente{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                <strong>Generar Informe Mensual para Facturación</strong>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Este informe incluye todas las terapias y procedimientos realizados por el paciente en el mes seleccionado.
+                    Es útil para la generación de facturas y cobros.
+                </p>
+                
+                <form method="GET" id="reporteForm">
+                    <div class="mb-3">
+                        <label for="paciente" class="form-label">Paciente *</label>
+                        <select class="form-select" id="paciente" name="paciente" required>
+                            <option value="">Seleccione un paciente...</option>
+                            {% for paciente in pacientes %}
+                            <option value="{{ paciente.id }}">
+                                {{ paciente.nombre_completo }} - HC: {{ paciente.numero_historia_clinica }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="mes" class="form-label">Mes *</label>
+                            <select class="form-select" id="mes" name="mes" required>
+                                {% for num, nombre in meses %}
+                                <option value="{{ num }}" {% if num == mes_actual %}selected{% endif %}>
+                                    {{ nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="anio" class="form-label">Año *</label>
+                            <select class="form-select" id="anio" name="anio" required>
+                                {% for anio in anios %}
+                                <option value="{{ anio }}" {% if anio == anio_actual %}selected{% endif %}>
+                                    {{ anio }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" onclick="generarPDF()">
+                            <i class="bi bi-file-pdf me-1"></i>Generar PDF
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="generarExcel()">
+                            <i class="bi bi-file-excel me-1"></i>Generar Excel
+                        </button>
+                        <a href="{% url 'reportes:dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generarPDF() {
+    const pacienteId = document.getElementById('paciente').value;
+    const mes = document.getElementById('mes').value;
+    const anio = document.getElementById('anio').value;
+    
+    if (!pacienteId) {
+        alert('Por favor seleccione un paciente');
+        return;
+    }
+    
+    const url = `/reportes/informe-mensual-paciente/${pacienteId}/pdf/?mes=${mes}&anio=${anio}`;
+    window.open(url, '_blank');
+}
+
+function generarExcel() {
+    const pacienteId = document.getElementById('paciente').value;
+    const mes = document.getElementById('mes').value;
+    const anio = document.getElementById('anio').value;
+    
+    if (!pacienteId) {
+        alert('Por favor seleccione un paciente');
+        return;
+    }
+    
+    const url = `/reportes/informe-mensual-paciente/${pacienteId}/excel/?mes=${mes}&anio=${anio}`;
+    window.location.href = url;
+}
+</script>
+{% endblock %}

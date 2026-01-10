@@ -1,0 +1,47 @@
+# PASOS RÁPIDOS: CIE-10 Autocompletado (15 min)
+
+## 1️⃣ MODELO (apps/procedimientos/models.py)
+- Copiar clase CodigoCIE10 de MODELO_CIE10.py
+- Pegar ANTES de ValoracionInicial
+- Modificar campo diagnostico_cie10 en ValoracionInicial
+
+## 2️⃣ MIGRAR
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+## 3️⃣ CARGAR DATOS
+- Copiar codigos_cie10.csv y cargar_cie10.py a raíz
+- Ejecutar: python manage.py shell < cargar_cie10.py
+
+## 4️⃣ VISTAS (apps/procedimientos/views.py)
+- Copiar 2 funciones de VISTA_AJAX_CIE10.py al final
+
+## 5️⃣ URLs (apps/procedimientos/urls.py)
+- Agregar 2 URLs de URLS_CIE10.py
+
+## 6️⃣ WIDGET
+- Crear: templates/procedimientos/widgets/cie10_autocomplete.html
+- Copiar de: widget_cie10_autocomplete.html
+
+## 7️⃣ FORMULARIO (apps/procedimientos/forms.py)
+- Modificar ValoracionInicialForm según FORM_CIE10.py
+
+## 8️⃣ TEMPLATE (templates/procedimientos/crear_valoracion_inicial.html)
+- Reemplazar sección "Diagnóstico" con TEMPLATE_CIE10.html
+- Agregar include del widget al final
+
+## 9️⃣ REINICIAR
+```bash
+python manage.py runserver
+```
+
+## ✅ PROBAR
+- Crear valoración
+- Buscar "F84" o "autismo"
+- Ver dropdown con resultados
+- Seleccionar código
+
+## 📁 ARCHIVOS (8 total)
+Ver INSTALACION_CIE10.txt para detalles completos

@@ -1,0 +1,69 @@
+<!-- Card de Cupo Disponible en Grupo -->
+{% if grupo %}
+<div class="card border-0 shadow-sm mb-3 {% if not grupo.tiene_cupo %}border-danger{% endif %}">
+    <div class="card-body">
+        <h6 class="card-title mb-3">
+            <i class="bi bi-info-circle me-2"></i>Estado de Cupos
+        </h6>
+        
+        <div class="mb-3">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Ocupación</span>
+                <span class="fw-semibold">
+                    {{ grupo.pacientes_actuales }}/{{ grupo.capacidad_maxima }}
+                </span>
+            </div>
+            <div class="progress" style="height: 15px;">
+                <div class="progress-bar 
+                    {% if grupo.porcentaje_ocupacion >= 90 %}bg-danger
+                    {% elif grupo.porcentaje_ocupacion >= 70 %}bg-warning
+                    {% else %}bg-success{% endif %}"
+                    role="progressbar"
+                    style="width: {{ grupo.porcentaje_ocupacion }}%"
+                    aria-valuenow="{{ grupo.porcentaje_ocupacion }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100">
+                    {{ grupo.porcentaje_ocupacion }}%
+                </div>
+            </div>
+        </div>
+
+        <div class="row text-center">
+            <div class="col-6">
+                <div class="p-2 bg-light rounded">
+                    <h5 class="mb-0 fw-bold 
+                        {% if grupo.cupos_disponibles == 0 %}text-danger
+                        {% elif grupo.cupos_disponibles <= 2 %}text-warning
+                        {% else %}text-success{% endif %}">
+                        {{ grupo.cupos_disponibles }}
+                    </h5>
+                    <small class="text-muted">Disponibles</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="p-2 bg-light rounded">
+                    <h5 class="mb-0 fw-bold">{{ grupo.pacientes_actuales }}</h5>
+                    <small class="text-muted">Asignados</small>
+                </div>
+            </div>
+        </div>
+
+        {% if grupo.esta_lleno %}
+        <div class="alert alert-danger border-0 mt-3 mb-0">
+            <i class="bi bi-x-circle me-2"></i>
+            <small>Grupo lleno - No hay cupos disponibles</small>
+        </div>
+        {% elif grupo.cupos_disponibles <= 2 %}
+        <div class="alert alert-warning border-0 mt-3 mb-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <small>Pocos cupos disponibles</small>
+        </div>
+        {% else %}
+        <div class="alert alert-success border-0 mt-3 mb-0">
+            <i class="bi bi-check-circle me-2"></i>
+            <small>Cupos disponibles</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

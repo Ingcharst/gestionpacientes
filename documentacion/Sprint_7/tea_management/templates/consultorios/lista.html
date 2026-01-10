@@ -1,0 +1,104 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Consultorios - TEA Management{% endblock %}
+{% block page_title %}Gestión de Consultorios{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Lista de Consultorios</h5>
+        {% if user.es_admin %}
+        <a href="{% url 'consultorios:consultorio_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo Consultorio
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="Buscar consultorio...">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select">
+                    <option value="">Todos los pisos</option>
+                    <option value="0">Planta Baja</option>
+                    <option value="1">Piso 1</option>
+                    <option value="2">Piso 2</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="DISPONIBLE">Disponible</option>
+                    <option value="OCUPADO">Ocupado</option>
+                    <option value="MANTENIMIENTO">Mantenimiento</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Piso</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consultorio in consultorios %}
+                    <tr>
+                        <td><strong>{{ consultorio.codigo }}</strong></td>
+                        <td>{{ consultorio.nombre }}</td>
+                        <td><small>{{ consultorio.get_tipo_display }}</small></td>
+                        <td>Piso {{ consultorio.piso }}</td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-people me-1"></i>{{ consultorio.capacidad }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if consultorio.estado == 'DISPONIBLE' %}
+                            <span class="badge bg-success">Disponible</span>
+                            {% elif consultorio.estado == 'OCUPADO' %}
+                            <span class="badge bg-warning">Ocupado</span>
+                            {% elif consultorio.estado == 'MANTENIMIENTO' %}
+                            <span class="badge bg-info">Mantenimiento</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'consultorios:consultorio_detail' consultorio.pk %}" 
+                                   class="btn btn-info" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if user.es_admin %}
+                                <a href="{% url 'consultorios:consultorio_update' consultorio.pk %}" 
+                                   class="btn btn-warning" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <p class="text-muted mt-3">No hay consultorios registrados</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Disponibilidad - TEA Management{% endblock %}
+{% block page_title %}Disponibilidad de Consultorios{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Disponibilidad</h5>
+        {% if user.es_admin or user.puede_gestionar_terapias %}
+        <a href="{% url 'disponibilidad_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Nueva Disponibilidad
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <select class="form-select" name="consultorio" onchange="this.form.submit()">
+                    <option value="">Todos los consultorios</option>
+                    {% for c in consultorios %}
+                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Consultorio</th>
+                        <th>Terapeuta</th>
+                        <th>Fecha</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for disp in disponibilidades %}
+                    <tr>
+                        <td>{{ disp.consultorio.nombre }}</td>
+                        <td>{{ disp.terapeuta.get_full_name|default:"-" }}</td>
+                        <td>{{ disp.fecha|date:"d/m/Y" }}</td>
+                        <td>{{ disp.hora_inicio }}</td>
+                        <td>{{ disp.hora_fin }}</td>
+                        <td>
+                            <span class="badge bg-{% if disp.estado == 'DISPONIBLE' %}success{% elif disp.estado == 'OCUPADO' %}danger{% else %}warning{% endif %}">
+                                {{ disp.get_estado_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No hay registros</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

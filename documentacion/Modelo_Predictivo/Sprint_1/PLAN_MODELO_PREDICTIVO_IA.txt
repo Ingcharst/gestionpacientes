@@ -1,0 +1,1027 @@
+# MODELO PREDICTIVO: Asignación Inteligente de Pacientes a Grupos Terapéuticos
+
+## 🎯 OBJETIVO
+
+Desarrollar un sistema de Machine Learning que recomiende automáticamente los grupos terapéuticos más adecuados para cada paciente, basándose en:
+- Valoración inicial (diagnóstico, severidad, edad)
+- Características del paciente (comportamiento, habilidades)
+- Disponibilidad y capacidad de grupos
+- Historial de asignaciones exitosas
+
+## 📊 FASES DEL PROYECTO
+
+### FASE 1: Análisis de Datos y Preparación (1 semana)
+### FASE 2: Desarrollo del Modelo (1-2 semanas)
+### FASE 3: Integración con Django (1 semana)
+### FASE 4: Testing y Ajustes (1 semana)
+### FASE 5: Producción y Monitoreo (Continuo)
+
+## 📋 FASE 1: ANÁLISIS DE DATOS
+
+### 1.1 Datos de Entrada (Features)
+
+**De la Valoración Inicial:**
+- Edad del paciente
+- Diagnóstico principal (CIE-10)
+- Nivel de severidad (leve/moderado/severo)
+- Áreas afectadas (comunicación, social, conductual, sensorial)
+- Habilidades actuales (lenguaje, motricidad, autonomía)
+- Dificultades principales
+- Objetivos terapéuticos prioritarios
+
+**Del Paciente:**
+- Género
+- Edad cronológica
+- Edad de desarrollo
+- Nivel de escolaridad
+- Medicación actual
+- Diagnósticos secundarios
+
+**De los Grupos Disponibles:**
+- Tipo de terapia (lenguaje, ocupacional, conductual, etc.)
+- Rango de edad objetivo
+- Nivel de funcionamiento del grupo
+- Capacidad actual (disponibilidad)
+- Horarios disponibles
+
+### 1.2 Datos de Salida (Target)
+
+**Objetivo Principal:**
+Recomendar top 3-5 grupos con score de compatibilidad (0-100%)
+
+**Criterios de Éxito:**
+- Compatibilidad de edad (±2 años)
+- Nivel de funcionamiento similar
+- Necesidades terapéuticas alineadas
+- Disponibilidad de cupo
+- Balance de género (opcional)
+
+### 1.3 Dataset Histórico
+
+**Fuentes:**
+- Asignaciones anteriores exitosas
+- Asignaciones con cambios/reasignaciones
+- Evoluciones de pacientes en grupos
+- Feedback de profesionales
+
+**Métricas de Éxito:**
+- Paciente permaneció en grupo >6 meses = éxito
+- Paciente fue reasignado <3 meses = no exitoso
+- Progreso en evoluciones = muy exitoso
+
+## 🧠 FASE 2: DESARROLLO DEL MODELO
+
+### 2.1 Enfoque Propuesto: Sistema Híbrido
+
+**Opción A: Sistema Basado en Reglas + ML (RECOMENDADA)**
+
+Ventajas:
+✅ Interpretable y explicable
+✅ No requiere gran cantidad de datos iniciales
+✅ Se puede mejorar incrementalmente
+✅ Combina conocimiento experto + aprendizaje
+
+Componentes:
+1. **Motor de Reglas (70%)**: Filtros duros y heurísticas
+2. **ML Scoring (30%)**: Refinamiento y ranking
+
+**Opción B: ML Puro (Clasificación Multiclase)**
+
+Ventajas:
+✅ Aprende patrones complejos
+✅ Mejora con más datos
+✅ Descubre relaciones no obvias
+
+Desventajas:
+❌ Requiere dataset grande (>500 ejemplos)
+❌ Menos interpretable
+❌ Más difícil de ajustar
+
+**Opción C: Sistema de Recomendación (Collaborative Filtering)**
+
+Similar a Netflix/Amazon, pero requiere mucho historial.
+
+### 2.2 Arquitectura Propuesta (Híbrida)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     ENTRADA: Valoración                     │
+│  (edad, diagnóstico, severidad, áreas afectadas, etc.)     │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+         ┌───────────▼──────────┐
+         │   FILTROS DUROS      │
+         │  (Reglas de Negocio) │
+         └───────────┬──────────┘
+                     │
+         ┌───────────▼──────────────────────────────────────┐
+         │  Edad compatible?        NO → Descartar         │
+         │  Nivel adecuado?         NO → Descartar         │
+         │  Terapia correcta?       NO → Descartar         │
+         │  Tiene cupo disponible?  NO → Marcar "lleno"    │
+         └───────────┬──────────────────────────────────────┘
+                     │
+         ┌───────────▼──────────┐
+         │ GRUPOS CANDIDATOS    │
+         │   (Filtrados)        │
+         └───────────┬──────────┘
+                     │
+         ┌───────────▼──────────┐
+         │   SCORING ML         │
+         │ (Random Forest)      │
+         └───────────┬──────────┘
+                     │
+         ┌───────────▼──────────────────────────────────────┐
+         │  Features: edad_match, nivel_match,              │
+         │  progreso_similar, balance_grupo, etc.           │
+         │  → Score: 0-100%                                 │
+         └───────────┬──────────────────────────────────────┘
+                     │
+         ┌───────────▼──────────┐
+         │   RANKING FINAL      │
+         │   Top 5 Grupos       │
+         └───────────┬──────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────┐
+│              SALIDA: Recomendaciones                        │
+│  Grupo A - 95% match - Disponible                          │
+│  Grupo B - 87% match - Disponible                          │
+│  Grupo C - 82% match - Lista de espera                     │
+│  ...                                                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 2.3 Algoritmos Específicos
+
+**ETAPA 1: Filtros Duros (Reglas)**
+```python
+def filtrar_grupos_candidatos(paciente, valoracion, grupos):
+    candidatos = []
+    for grupo in grupos:
+        # Regla 1: Edad compatible
+        if not (grupo.edad_minima <= paciente.edad <= grupo.edad_maxima):
+            continue
+            
+        # Regla 2: Tipo de terapia necesario
+        if grupo.terapia not in valoracion.terapias_requeridas:
+            continue
+            
+        # Regla 3: Nivel apropiado
+        if abs(grupo.nivel_funcionamiento - valoracion.nivel_paciente) > 1:
+            continue
+            
+        # Regla 4: Tiene cupo o lista de espera
+        if grupo.cupo_lleno and not grupo.acepta_lista_espera:
+            continue
+            
+        candidatos.append(grupo)
+    
+    return candidatos
+```
+
+**ETAPA 2: Scoring ML (Random Forest)**
+```python
+# Features para el modelo
+features = [
+    'edad_paciente',
+    'edad_promedio_grupo',
+    'diferencia_edad',
+    'nivel_funcionamiento_paciente',
+    'nivel_funcionamiento_grupo',
+    'match_areas_afectadas',  # % de overlap
+    'match_objetivos',  # % de overlap
+    'grupo_genero_balance',  # ratio M/F
+    'cupos_disponibles',
+    'dias_desde_ultima_asignacion',
+    'tasa_exito_historica_grupo',
+    'progreso_promedio_grupo'
+]
+
+# Target
+target = 'asignacion_exitosa'  # 1 = éxito, 0 = no exitoso
+
+# Modelo
+from sklearn.ensemble import RandomForestClassifier
+model = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,
+    min_samples_split=5
+)
+```
+
+**ETAPA 3: Ajuste de Score**
+```python
+def calcular_score_final(grupo, prediccion_ml, reglas):
+    # ML contribuye 70%
+    score_ml = prediccion_ml * 0.7
+    
+    # Reglas de negocio contribuyen 30%
+    score_reglas = (
+        reglas['edad_exacta'] * 0.10 +
+        reglas['nivel_exacto'] * 0.10 +
+        reglas['disponibilidad'] * 0.10
+    )
+    
+    score_final = (score_ml + score_reglas) * 100
+    return round(score_final, 2)
+```
+
+### 2.4 Features Engineering
+
+**Features Calculadas:**
+
+1. **edad_match_score**: 
+   - 100% si edad_paciente == edad_promedio_grupo
+   - -10% por cada año de diferencia
+
+2. **nivel_match_score**:
+   - 100% si nivel_paciente == nivel_grupo
+   - 50% si diferencia = 1 nivel
+   - 0% si diferencia > 1 nivel
+
+3. **areas_overlap_score**:
+   ```python
+   areas_paciente = set(valoracion.areas_afectadas)
+   areas_grupo = set(grupo.areas_enfoque)
+   overlap = len(areas_paciente & areas_grupo) / len(areas_paciente)
+   score = overlap * 100
+   ```
+
+4. **tasa_exito_grupo**:
+   ```python
+   asignaciones = grupo.asignaciones_historicas
+   exitosas = asignaciones.filter(
+       duracion_meses__gte=6,
+       cambio_grupo=False
+   ).count()
+   tasa = (exitosas / asignaciones.count()) * 100
+   ```
+
+5. **balance_genero**:
+   - Bonus si agregar paciente mejora balance M/F
+   - Neutro si balance ya está bien
+
+6. **disponibilidad_score**:
+   - 100% si tiene cupos
+   - 50% si está en lista de espera
+   - 0% si cerrado
+
+## 🔧 FASE 3: IMPLEMENTACIÓN EN DJANGO
+
+### 3.1 Estructura de Archivos
+
+```
+apps/
+├── ml_models/
+│   ├── __init__.py
+│   ├── predictor.py           # Motor principal
+│   ├── reglas.py              # Motor de reglas
+│   ├── scoring.py             # Cálculo de scores
+│   ├── features.py            # Feature engineering
+│   ├── entrenar_modelo.py     # Script de entrenamiento
+│   └── models/
+│       └── grupo_recomendador.pkl  # Modelo entrenado
+│
+├── grupos/
+│   ├── models.py              # Modelos existentes
+│   ├── views.py               # Vista de recomendaciones
+│   ├── urls.py                # URLs
+│   └── templates/
+│       └── grupos/
+│           └── recomendaciones.html
+│
+└── procedimientos/
+    └── models.py              # Valoracion, Paciente
+```
+
+### 3.2 Código Principal
+
+**apps/ml_models/predictor.py**
+```python
+import numpy as np
+import pandas as pd
+import pickle
+from django.db.models import Count, Avg
+from apps.grupos.models import GrupoTerapeutico, AsignacionGrupo
+from apps.procedimientos.models import Valoracion
+from .reglas import FiltrosReglas
+from .features import FeatureExtractor
+from .scoring import ScoreCalculator
+
+class GrupoRecomendador:
+    """
+    Sistema de recomendación de grupos terapéuticos
+    Combina reglas de negocio + ML
+    """
+    
+    def __init__(self):
+        self.modelo_ml = self._cargar_modelo()
+        self.filtros = FiltrosReglas()
+        self.feature_extractor = FeatureExtractor()
+        self.score_calculator = ScoreCalculator()
+    
+    def _cargar_modelo(self):
+        """Cargar modelo ML entrenado"""
+        try:
+            with open('apps/ml_models/models/grupo_recomendador.pkl', 'rb') as f:
+                return pickle.load(f)
+        except FileNotFoundError:
+            # Si no hay modelo, usar solo reglas
+            return None
+    
+    def recomendar_grupos(self, paciente, valoracion, top_n=5):
+        """
+        Recomienda grupos para un paciente basándose en su valoración
+        
+        Args:
+            paciente: Instancia de Paciente
+            valoracion: Instancia de Valoracion
+            top_n: Número de recomendaciones a retornar
+            
+        Returns:
+            Lista de dicts con grupos recomendados y scores
+        """
+        # PASO 1: Obtener todos los grupos activos
+        grupos = GrupoTerapeutico.objects.filter(estado='ACTIVO')
+        
+        # PASO 2: Aplicar filtros duros (reglas de negocio)
+        grupos_candidatos = self.filtros.aplicar_filtros(
+            grupos, paciente, valoracion
+        )
+        
+        if not grupos_candidatos:
+            return {
+                'recomendaciones': [],
+                'mensaje': 'No se encontraron grupos compatibles. Considere crear un nuevo grupo.'
+            }
+        
+        # PASO 3: Extraer features para cada grupo
+        recomendaciones = []
+        for grupo in grupos_candidatos:
+            features = self.feature_extractor.extraer_features(
+                paciente, valoracion, grupo
+            )
+            
+            # PASO 4: Calcular score
+            if self.modelo_ml:
+                # Usar ML si está disponible
+                score_ml = self._predecir_score_ml(features)
+            else:
+                # Usar solo reglas
+                score_ml = 0.5
+            
+            score_final = self.score_calculator.calcular_score(
+                grupo, features, score_ml
+            )
+            
+            # PASO 5: Preparar recomendación
+            recomendacion = {
+                'grupo': grupo,
+                'score': score_final,
+                'disponible': grupo.cupos_disponibles > 0,
+                'cupos': grupo.cupos_disponibles,
+                'razones': self._generar_explicacion(features, score_final),
+                'alertas': self._generar_alertas(grupo, paciente, features)
+            }
+            
+            recomendaciones.append(recomendacion)
+        
+        # PASO 6: Ordenar por score y retornar top N
+        recomendaciones.sort(key=lambda x: x['score'], reverse=True)
+        
+        return {
+            'recomendaciones': recomendaciones[:top_n],
+            'mensaje': f'Se encontraron {len(recomendaciones)} grupos compatibles'
+        }
+    
+    def _predecir_score_ml(self, features):
+        """Predecir probabilidad de éxito con ML"""
+        features_array = np.array([list(features.values())])
+        probabilidad = self.modelo_ml.predict_proba(features_array)[0][1]
+        return probabilidad
+    
+    def _generar_explicacion(self, features, score):
+        """Generar explicación legible del score"""
+        razones = []
+        
+        if features['edad_match_score'] > 80:
+            razones.append("Edad muy compatible con el grupo")
+        elif features['edad_match_score'] > 60:
+            razones.append("Edad compatible")
+        else:
+            razones.append("Edad ligeramente fuera del rango ideal")
+        
+        if features['nivel_match_score'] == 100:
+            razones.append("Nivel de funcionamiento ideal")
+        elif features['nivel_match_score'] >= 50:
+            razones.append("Nivel de funcionamiento adecuado")
+        
+        if features['areas_overlap_score'] > 70:
+            razones.append("Áreas de trabajo altamente alineadas")
+        elif features['areas_overlap_score'] > 40:
+            razones.append("Áreas de trabajo parcialmente alineadas")
+        
+        if features['tasa_exito_grupo'] > 80:
+            razones.append("Grupo con alta tasa de éxito histórica")
+        
+        return razones
+    
+    def _generar_alertas(self, grupo, paciente, features):
+        """Generar alertas o consideraciones especiales"""
+        alertas = []
+        
+        if grupo.cupos_disponibles == 0:
+            alertas.append({
+                'tipo': 'warning',
+                'mensaje': 'Sin cupos disponibles - Se requiere lista de espera'
+            })
+        elif grupo.cupos_disponibles <= 2:
+            alertas.append({
+                'tipo': 'info',
+                'mensaje': f'Solo {grupo.cupos_disponibles} cupo(s) disponible(s)'
+            })
+        
+        if features['diferencia_edad'] > 2:
+            alertas.append({
+                'tipo': 'warning',
+                'mensaje': 'Diferencia de edad significativa con promedio del grupo'
+            })
+        
+        if features['nivel_match_score'] < 50:
+            alertas.append({
+                'tipo': 'warning',
+                'mensaje': 'Nivel de funcionamiento diferente - Requiere evaluación adicional'
+            })
+        
+        return alertas
+```
+
+### 3.3 Vista Django
+
+**apps/grupos/views.py**
+```python
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from apps.procedimientos.models import Paciente, Valoracion
+from apps.ml_models.predictor import GrupoRecomendador
+
+@login_required
+def recomendar_grupos_paciente(request, paciente_id):
+    """Vista para mostrar recomendaciones de grupos"""
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    # Obtener última valoración
+    valoracion = Valoracion.objects.filter(
+        paciente=paciente
+    ).order_by('-fecha_valoracion').first()
+    
+    if not valoracion:
+        messages.warning(request, 'El paciente no tiene valoración inicial.')
+        return redirect('procedimientos:paciente_detail', paciente_id=paciente_id)
+    
+    # Obtener recomendaciones
+    recomendador = GrupoRecomendador()
+    resultado = recomendador.recomendar_grupos(paciente, valoracion, top_n=5)
+    
+    context = {
+        'paciente': paciente,
+        'valoracion': valoracion,
+        'recomendaciones': resultado['recomendaciones'],
+        'mensaje': resultado['mensaje'],
+    }
+    
+    return render(request, 'grupos/recomendaciones.html', context)
+```
+
+## 📊 FASE 4: ENTRENAMIENTO DEL MODELO
+
+### 4.1 Preparación de Datos
+
+**apps/ml_models/preparar_datos.py**
+```python
+import pandas as pd
+from django.db.models import Count, Avg, Q
+from apps.grupos.models import AsignacionGrupo
+from apps.procedimientos.models import EvolucionPaciente
+
+def preparar_dataset_entrenamiento():
+    """
+    Crea dataset para entrenar el modelo
+    Usa asignaciones históricas como ejemplos
+    """
+    
+    datos = []
+    
+    # Obtener todas las asignaciones históricas
+    asignaciones = AsignacionGrupo.objects.filter(
+        fecha_inicio__isnull=False
+    ).select_related(
+        'paciente', 'grupo', 'grupo__terapia'
+    )
+    
+    for asignacion in asignaciones:
+        # Calcular si fue exitosa
+        exitosa = calcular_exito_asignacion(asignacion)
+        
+        # Extraer features en el momento de la asignación
+        features = extraer_features_asignacion(asignacion)
+        
+        # Agregar target
+        features['asignacion_exitosa'] = exitosa
+        
+        datos.append(features)
+    
+    # Crear DataFrame
+    df = pd.DataFrame(datos)
+    
+    # Guardar
+    df.to_csv('apps/ml_models/data/training_data.csv', index=False)
+    
+    return df
+
+def calcular_exito_asignacion(asignacion):
+    """
+    Determina si una asignación fue exitosa
+    
+    Criterios:
+    - Permaneció >6 meses = exitosa
+    - Progreso positivo en evoluciones = muy exitosa
+    - Cambio antes de 3 meses = no exitosa
+    """
+    from datetime import timedelta
+    from django.utils import timezone
+    
+    if asignacion.estado == 'ACTIVA':
+        # Aún activa
+        dias = (timezone.now().date() - asignacion.fecha_inicio).days
+        if dias > 180:  # >6 meses
+            return True
+        else:
+            return None  # No incluir en training (muy reciente)
+    
+    elif asignacion.estado == 'FINALIZADA':
+        if asignacion.fecha_fin:
+            dias = (asignacion.fecha_fin - asignacion.fecha_inicio).days
+            
+            # Verificar progreso en evoluciones
+            evoluciones = EvolucionPaciente.objects.filter(
+                paciente=asignacion.paciente,
+                grupo=asignacion.grupo,
+                fecha_sesion__range=[asignacion.fecha_inicio, asignacion.fecha_fin]
+            ).order_by('fecha_sesion')
+            
+            if evoluciones.count() >= 3:
+                # Comparar primera y última evolución
+                primera = evoluciones.first()
+                ultima = evoluciones.last()
+                
+                progreso = (
+                    (ultima.promedio_evaluacion or 0) - 
+                    (primera.promedio_evaluacion or 0)
+                )
+                
+                if dias > 180 and progreso > 0:
+                    return True  # Muy exitosa
+                elif dias > 180:
+                    return True  # Exitosa (permaneció)
+                elif dias < 90:
+                    return False  # No exitosa (cambió rápido)
+                else:
+                    return True  # Medianamente exitosa
+            
+            # Sin evoluciones suficientes
+            if dias > 180:
+                return True
+            elif dias < 90:
+                return False
+            else:
+                return None  # No usar para training
+    
+    return None
+
+def extraer_features_asignacion(asignacion):
+    """Extraer features de una asignación histórica"""
+    paciente = asignacion.paciente
+    grupo = asignacion.grupo
+    
+    # Edad al momento de asignación
+    edad_asignacion = calcular_edad_en_fecha(
+        paciente.fecha_nacimiento,
+        asignacion.fecha_inicio
+    )
+    
+    # Edad promedio del grupo en ese momento
+    edad_promedio_grupo = grupo.asignaciones.filter(
+        estado='ACTIVA',
+        fecha_inicio__lte=asignacion.fecha_inicio
+    ).aggregate(
+        promedio=Avg('paciente__edad')
+    )['promedio'] or edad_asignacion
+    
+    features = {
+        'edad_paciente': edad_asignacion,
+        'edad_promedio_grupo': edad_promedio_grupo,
+        'diferencia_edad': abs(edad_asignacion - edad_promedio_grupo),
+        'genero_paciente': 1 if paciente.genero == 'M' else 0,
+        'capacidad_grupo': grupo.capacidad_maxima,
+        'cupos_momento_asignacion': grupo.capacidad_maxima - grupo.asignaciones.filter(
+            estado='ACTIVA',
+            fecha_inicio__lte=asignacion.fecha_inicio
+        ).count(),
+        # Agregar más features según disponibilidad
+    }
+    
+    return features
+
+def calcular_edad_en_fecha(fecha_nacimiento, fecha_referencia):
+    """Calcular edad en una fecha específica"""
+    edad = fecha_referencia.year - fecha_nacimiento.year
+    if fecha_referencia.month < fecha_nacimiento.month or \
+       (fecha_referencia.month == fecha_nacimiento.month and 
+        fecha_referencia.day < fecha_nacimiento.day):
+        edad -= 1
+    return edad
+```
+
+### 4.2 Entrenamiento
+
+**apps/ml_models/entrenar_modelo.py**
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+import pickle
+
+def entrenar_modelo_recomendacion():
+    """Entrena el modelo de recomendación de grupos"""
+    
+    # 1. Cargar datos
+    print("Cargando datos...")
+    df = pd.read_csv('apps/ml_models/data/training_data.csv')
+    
+    # Filtrar solo casos con resultado conocido
+    df = df[df['asignacion_exitosa'].notna()]
+    
+    print(f"Dataset: {len(df)} asignaciones")
+    print(f"Exitosas: {df['asignacion_exitosa'].sum()}")
+    print(f"No exitosas: {(~df['asignacion_exitosa'].astype(bool)).sum()}")
+    
+    # 2. Preparar features y target
+    features_cols = [col for col in df.columns if col != 'asignacion_exitosa']
+    X = df[features_cols]
+    y = df['asignacion_exitosa']
+    
+    # 3. Split train/test
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+    
+    # 4. Entrenar modelo
+    print("\nEntrenando Random Forest...")
+    model = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=10,
+        min_samples_split=5,
+        min_samples_leaf=2,
+        random_state=42,
+        class_weight='balanced'  # Importante si hay desbalance
+    )
+    
+    model.fit(X_train, y_train)
+    
+    # 5. Evaluar
+    print("\nEvaluando modelo...")
+    y_pred = model.predict(X_test)
+    
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred))
+    
+    print("\nConfusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+    
+    # Cross-validation
+    cv_scores = cross_val_score(model, X, y, cv=5)
+    print(f"\nCross-validation scores: {cv_scores}")
+    print(f"Mean CV score: {cv_scores.mean():.3f} (+/- {cv_scores.std():.3f})")
+    
+    # 6. Feature importance
+    print("\nFeature Importance:")
+    feature_importance = pd.DataFrame({
+        'feature': features_cols,
+        'importance': model.feature_importances_
+    }).sort_values('importance', ascending=False)
+    print(feature_importance)
+    
+    # 7. Guardar modelo
+    print("\nGuardando modelo...")
+    with open('apps/ml_models/models/grupo_recomendador.pkl', 'wb') as f:
+        pickle.dump(model, f)
+    
+    print("✅ Modelo entrenado y guardado exitosamente!")
+    
+    return model, feature_importance
+
+if __name__ == '__main__':
+    # Configurar Django
+    import os
+    import django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tea_management.settings')
+    django.setup()
+    
+    # Entrenar
+    entrenar_modelo_recomendacion()
+```
+
+## 🎨 FASE 5: INTERFAZ DE USUARIO
+
+### 5.1 Template de Recomendaciones
+
+**templates/grupos/recomendaciones.html**
+```django
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Recomendaciones de Grupos - {{ paciente.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="bi bi-robot me-2"></i>
+                Recomendaciones de Grupos para {{ paciente.nombre_completo }}
+            </h2>
+            <p class="text-muted mb-0">
+                Basado en valoración del {{ valoracion.fecha_valoracion|date:"d/m/Y" }}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'procedimientos:paciente_detail' paciente.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Paciente
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Paciente -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>Perfil del Paciente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Edad:</strong> {{ paciente.edad }} años
+                </div>
+                <div class="col-md-3">
+                    <strong>Diagnóstico:</strong> {{ valoracion.diagnostico_principal }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Nivel:</strong> {{ valoracion.get_nivel_funcionamiento_display }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Áreas Afectadas:</strong> {{ valoracion.areas_afectadas|truncatewords:3 }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje -->
+    {% if mensaje %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>{{ mensaje }}
+    </div>
+    {% endif %}
+
+    <!-- Recomendaciones -->
+    {% if recomendaciones %}
+    <div class="row">
+        {% for rec in recomendaciones %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 {% if forloop.first %}border-success border-3{% endif %}">
+                <!-- Header -->
+                <div class="card-header {% if forloop.first %}bg-success text-white{% else %}bg-light{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            {% if forloop.first %}
+                                <i class="bi bi-trophy-fill me-2"></i>
+                            {% endif %}
+                            {{ rec.grupo.nombre }}
+                        </h5>
+                        <span class="badge {% if rec.score >= 85 %}bg-success{% elif rec.score >= 70 %}bg-primary{% else %}bg-warning{% endif %} fs-6">
+                            {{ rec.score }}% Match
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body">
+                    <!-- Info del Grupo -->
+                    <div class="mb-3">
+                        <p class="mb-2">
+                            <strong><i class="bi bi-activity me-1"></i>Terapia:</strong>
+                            {{ rec.grupo.terapia.nombre }}
+                        </p>
+                        <p class="mb-2">
+                            <strong><i class="bi bi-people me-1"></i>Rango Edad:</strong>
+                            {{ rec.grupo.edad_minima }}-{{ rec.grupo.edad_maxima }} años
+                        </p>
+                        <p class="mb-2">
+                            <strong><i class="bi bi-calendar-week me-1"></i>Horario:</strong>
+                            {{ rec.grupo.get_dias_semana_display }} • {{ rec.grupo.hora_inicio|time:"H:i" }}
+                        </p>
+                        <p class="mb-0">
+                            <strong><i class="bi bi-person-check me-1"></i>Disponibilidad:</strong>
+                            {% if rec.disponible %}
+                                <span class="badge bg-success">{{ rec.cupos }} cupo(s) disponible(s)</span>
+                            {% else %}
+                                <span class="badge bg-warning">Lista de espera</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Razones -->
+                    <div class="mb-3">
+                        <strong class="text-success"><i class="bi bi-check-circle me-1"></i>Por qué es compatible:</strong>
+                        <ul class="mt-2">
+                            {% for razon in rec.razones %}
+                            <li>{{ razon }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Alertas -->
+                    {% if rec.alertas %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-exclamation-triangle me-1"></i>Consideraciones:</strong>
+                        {% for alerta in rec.alertas %}
+                        <div class="alert alert-{{ alerta.tipo }} alert-sm mt-2 mb-0">
+                            {{ alerta.mensaje }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'grupos:detalle_grupo' rec.grupo.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-eye me-1"></i> Ver Grupo
+                        </a>
+                        {% if rec.disponible %}
+                        <a href="{% url 'grupos:asignar_paciente_grupo' paciente.id rec.grupo.id %}" class="btn btn-success btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i> Asignar a Este Grupo
+                        </a>
+                        {% else %}
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalListaEspera{{ rec.grupo.id }}">
+                            <i class="bi bi-clock me-1"></i> Lista de Espera
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        No se encontraron grupos compatibles. Considere:
+        <ul class="mt-2">
+            <li>Ajustar los criterios de búsqueda</li>
+            <li>Crear un nuevo grupo terapéutico</li>
+            <li>Revisar la valoración del paciente</li>
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Información Adicional -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>¿Cómo funcionan las recomendaciones?</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                El sistema analiza múltiples factores para recomendar los grupos más adecuados:
+            </p>
+            <ul>
+                <li><strong>Compatibilidad de edad:</strong> Pacientes con edades similares aprenden mejor juntos</li>
+                <li><strong>Nivel de funcionamiento:</strong> Grupos con niveles similares permiten mejor progreso</li>
+                <li><strong>Áreas terapéuticas:</strong> Alineación entre necesidades del paciente y enfoque del grupo</li>
+                <li><strong>Disponibilidad:</strong> Cupos actuales y capacidad del grupo</li>
+                <li><strong>Historial de éxito:</strong> Grupos con mejor tasa de progreso histórica</li>
+            </ul>
+            <p class="mb-0">
+                <em>El score de compatibilidad (%) refleja qué tan bien el paciente encaja con el grupo según estos criterios.</em>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+```
+
+## 📈 FASE 6: MÉTRICAS Y MONITOREO
+
+### 6.1 Métricas del Sistema
+
+**Métricas a Monitorear:**
+
+1. **Precisión de Recomendaciones**
+   - % de recomendaciones top-1 que resultaron en asignaciones exitosas
+   - % de recomendaciones top-3 que incluyeron la asignación final
+
+2. **Uso del Sistema**
+   - Frecuencia de consultas
+   - % de recomendaciones que resultaron en asignación
+   - Tiempo promedio hasta asignación
+
+3. **Calidad del Modelo**
+   - Accuracy, Precision, Recall
+   - Feature importance drift
+   - Necesidad de re-entrenamiento
+
+### 6.2 Dashboard de Métricas
+
+```python
+# apps/ml_models/metricas.py
+from django.db.models import Count, Avg
+from datetime import timedelta
+from django.utils import timezone
+
+def calcular_metricas_modelo():
+    """Calcular métricas de performance del modelo"""
+    
+    # Últimos 30 días
+    fecha_inicio = timezone.now().date() - timedelta(days=30)
+    
+    # Recomendaciones generadas
+    # (Guardar en tabla RecomendacionGenerada al usar el sistema)
+    
+    # Asignaciones realizadas después de recomendación
+    # Comparar con grupo recomendado
+    
+    metricas = {
+        'total_recomendaciones': 0,
+        'asignaciones_desde_recomendacion': 0,
+        'match_top1': 0,
+        'match_top3': 0,
+        'precision': 0.0,
+    }
+    
+    return metricas
+```
+
+## 🚀 ROADMAP DE IMPLEMENTACIÓN
+
+### Sprint 1 (1 semana): Fundamentos
+- [ ] Crear estructura de archivos
+- [ ] Implementar motor de reglas básico
+- [ ] Crear vista de recomendaciones
+- [ ] Template básico
+
+### Sprint 2 (1 semana): Features Engineering
+- [ ] Implementar extracción de features
+- [ ] Crear script de preparación de datos
+- [ ] Generar dataset inicial
+- [ ] Validar calidad de datos
+
+### Sprint 3 (1 semana): Modelo ML
+- [ ] Entrenar primer modelo
+- [ ] Evaluar performance
+- [ ] Integrar modelo con predictor
+- [ ] Testing inicial
+
+### Sprint 4 (1 semana): Integración y UX
+- [ ] Mejorar template UI
+- [ ] Agregar explicaciones
+- [ ] Sistema de alertas
+- [ ] Testing con usuarios
+
+### Sprint 5 (Continuo): Mejora Continua
+- [ ] Recopilar feedback
+- [ ] Re-entrenar modelo
+- [ ] Ajustar reglas
+- [ ] Optimizar features
+
+## ✅ CHECKLIST INICIAL
+
+Antes de comenzar, verificar:
+- [ ] Django proyecto funcionando
+- [ ] Modelos Paciente, Valoracion, GrupoTerapeutico creados
+- [ ] Al menos 50 asignaciones históricas en BD
+- [ ] scikit-learn instalado: `pip install scikit-learn pandas numpy --break-system-packages`
+- [ ] Estructura de carpetas creada
+- [ ] Tests unitarios preparados
+
+## 🎯 PRÓXIMOS PASOS INMEDIATOS
+
+1. **Revisar disponibilidad de datos históricos**
+2. **Decidir: Sistema híbrido o solo reglas inicialmente**
+3. **Crear estructura de archivos**
+4. **Implementar versión 1.0 con reglas**
+5. **Iterar hacia ML cuando haya suficientes datos**
+
+¿Quieres que comience con alguna fase específica?

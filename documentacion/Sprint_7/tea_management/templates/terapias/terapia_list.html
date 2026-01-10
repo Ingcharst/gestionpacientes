@@ -1,0 +1,90 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Terapias - TEA Management{% endblock %}
+{% block page_title %}Catálogo de Terapias{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Lista de Terapias</h5>
+        {% if user.es_admin %}
+        <a href="{% url 'terapias:terapia_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Nueva Terapia
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="Buscar terapia...">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select">
+                    <option value="">Todas las especialidades</option>
+                    <option value="LENGUAJE">Lenguaje</option>
+                    <option value="OCUPACIONAL">Ocupacional</option>
+                    <option value="FISICA">Física</option>
+                    <option value="CONDUCTUAL">Conductual (ABA)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for terapia in terapias %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title">{{ terapia.nombre }}</h6>
+                            {% if terapia.activo %}
+                            <span class="badge bg-success">Activa</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactiva</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="card-text text-muted small">
+                            {{ terapia.descripcion_corta|default:terapia.descripcion|truncatewords:20 }}
+                        </p>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>{{ terapia.duracion_formateada }}
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                <i class="bi bi-people me-1"></i>{{ terapia.get_modalidad_display }}
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                <i class="bi bi-cash me-1"></i>{{ terapia.costo_formateado }}
+                            </small>
+                        </div>
+                        
+                        <span class="badge bg-info">{{ terapia.get_especialidad_display }}</span>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'terapias:terapia_detail' terapia.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i>Ver Detalle
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-4 text-muted"></i>
+                    <p class="text-muted mt-3">No hay terapias registradas</p>
+                    {% if user.es_admin %}
+                    <a href="{% url 'terapias:terapia_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Crear Primera Terapia
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+# ⚡ QUICK START - MVP RECOMENDADOR DE GRUPOS
+
+## 🎯 INSTALACIÓN EN 5 PASOS (15 minutos)
+
+### 1️⃣ DESCOMPRIMIR ARCHIVOS (1 min)
+```bash
+# Descomprimir en tu proyecto Django
+unzip MVP_RECOMENDADOR_GRUPOS.zip -d tu_proyecto/
+```
+
+### 2️⃣ COPIAR ARCHIVOS (3 min)
+```bash
+cd tu_proyecto
+
+# Copiar motor IA
+cp -r mvp_recomendador/ml_models apps/
+
+# Copiar vistas
+cp mvp_recomendador/views.py apps/grupos/views_recomendador.py
+
+# Copiar template
+cp mvp_recomendador/templates/recomendaciones.html apps/grupos/templates/grupos/
+```
+
+### 3️⃣ CONFIGURAR URLS (3 min)
+
+Editar: **apps/grupos/urls.py**
+
+```python
+# AGREGAR AL INICIO:
+from .views_recomendador import (
+    recomendar_grupos_paciente,
+    asignar_desde_recomendacion,
+    exportar_recomendaciones,
+    debug_recomendacion
+)
+
+# AGREGAR A urlpatterns:
+urlpatterns = [
+    # ... existentes ...
+    
+    # RECOMENDACIONES IA
+    path('paciente/<int:paciente_id>/recomendar-grupos/',
+         recomendar_grupos_paciente, 
+         name='recomendar_grupos_paciente'),
+    path('paciente/<int:paciente_id>/asignar-grupo/<int:grupo_id>/',
+         asignar_desde_recomendacion, 
+         name='asignar_desde_recomendacion'),
+]
+```
+
+### 4️⃣ REGISTRAR APP (2 min)
+
+Editar: **settings.py**
+
+```python
+INSTALLED_APPS = [
+    # ... existentes ...
+    'apps.ml_models',  # AGREGAR ESTA LÍNEA
+]
+```
+
+### 5️⃣ AGREGAR BOTÓN (2 min)
+
+Editar: **apps/procedimientos/templates/procedimientos/paciente_detail.html**
+
+```html
+<!-- En la sección de botones: -->
+<a href="{% url 'grupos:recomendar_grupos_paciente' paciente.id %}" 
+   class="btn btn-primary">
+    <i class="bi bi-robot me-1"></i> Recomendar Grupos IA
+</a>
+```
+
+### 6️⃣ REINICIAR Y PROBAR (2 min)
+
+```bash
+# Reiniciar servidor
+python manage.py runserver
+
+# Ir a: http://localhost:8000/procedimientos/pacientes/1/
+# Clic en: "Recomendar Grupos IA"
+```
+
+## ✅ VERIFICACIÓN
+
+Si todo funciona, verás:
+```
+✓ Página con título "Recomendaciones de Grupos"
+✓ Card con perfil del paciente
+✓ Cards con grupos recomendados
+✓ Scores de compatibilidad (0-100%)
+✓ Razones de por qué es compatible
+✓ Botones para asignar
+```
+
+## 🔧 SI HAY ERRORES
+
+### Error: ModuleNotFoundError
+```bash
+# Verificar que existe:
+ls apps/ml_models/__init__.py
+
+# Si no existe, crearlo:
+touch apps/ml_models/__init__.py
+```
+
+### Error: NoReverseMatch
+```python
+# Verificar namespace en urls.py principal:
+path('grupos/', include('apps.grupos.urls', namespace='grupos')),
+```
+
+### No aparecen grupos
+```bash
+# Verificar que hay grupos activos:
+python manage.py shell
+>>> from apps.grupos.models import GrupoTerapeutico
+>>> GrupoTerapeutico.objects.filter(estado='ACTIVO').count()
+```
+
+## 📊 EJEMPLO DE RESULTADO
+
+```
+┌────────────────────────────────────────────────────┐
+│ 🏆 Grupo A - Lenguaje Infantil         [95% Match]│
+│    ✓ Edad perfectamente compatible                │
+│    ✓ Nivel de funcionamiento ideal                │
+│    ✓ 2 cupos disponibles                          │
+│    [Ver Detalles] [✅ Asignar]                     │
+│                                                    │
+│ Grupo B - Habilidades Sociales         [87% Match]│
+│    ✓ Edad muy compatible                          │
+│    ✓ Grupo con buen historial                     │
+│    ⚠️ Solo 1 cupo disponible                      │
+│    [Ver Detalles] [Asignar]                       │
+└────────────────────────────────────────────────────┘
+```
+
+## 🎯 PRÓXIMOS PASOS
+
+1. **Probar con varios pacientes**
+2. **Recopilar feedback de usuarios**
+3. **Ajustar pesos si es necesario**
+4. **Ver documentación completa en:**
+   - GUIA_INSTALACION_MVP.txt (detalles)
+   - MVP_README.txt (características)
+
+## 💡 AJUSTES RÁPIDOS
+
+### Cambiar peso de edad:
+```python
+# apps/ml_models/scoring.py línea ~11
+PESOS = {
+    'edad': 0.40,  # Cambiar de 0.35 a 0.40
+    # ...
+}
+```
+
+### Cambiar margen de edad:
+```python
+# apps/ml_models/reglas.py línea ~51
+edad_min = grupo.edad_minima - 2  # Cambiar de -1 a -2
+```
+
+## 📞 ¿NECESITAS AYUDA?
+
+1. Lee: **GUIA_INSTALACION_MVP.txt** (completa)
+2. Lee: **MVP_README.txt** (características)
+3. Revisa logs del servidor
+
+## 🎉 ¡LISTO!
+
+**Tiempo total: 15 minutos**
+**Complejidad: Baja**
+**Resultado: Sistema IA funcional**
+
+¡Ahora tienes recomendaciones inteligentes de grupos! 🚀

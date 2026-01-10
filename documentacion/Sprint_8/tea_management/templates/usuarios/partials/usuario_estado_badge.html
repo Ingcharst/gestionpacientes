@@ -1,0 +1,9 @@
+<span id="estado-{{ usuario.id }}">
+    {% if usuario.estado == 'ACTIVO' %}
+        <span class="badge bg-success">Activo</span>
+    {% elif usuario.estado == 'INACTIVO' %}
+        <span class="badge bg-secondary">Inactivo</span>
+    {% elif usuario.estado == 'SUSPENDIDO' %}
+        <span class="badge bg-danger">Suspendido</span>
+    {% endif %}
+</span>

@@ -1,0 +1,193 @@
+# 🔧 RESUMEN: Todos los Errores Encontrados y Solucionados
+
+## 🎯 TU MODELO ES DIFERENTE AL ESPERADO
+
+El código del MVP asumía campos estándar, pero tu modelo tiene una estructura diferente.
+
+---
+
+## ❌ ERROR #1: NoReverseMatch - paciente_detail
+
+**Error:** 
+```
+NoReverseMatch: Reverse for 'paciente_detail' with keyword arguments 
+'{'paciente_id': 12}' not found
+```
+
+**Causa:** URL espera `pk`, no `paciente_id`
+
+**Solución:**
+```python
+# views_recomendador.py - Líneas 66 y 157
+# Cambiar:
+return redirect('procedimientos:paciente_detail', paciente_id=paciente_id)
+# Por:
+return redirect('procedimientos:paciente_detail', pk=paciente_id)
+```
+
+---
+
+## ❌ ERROR #2: FieldError - 'estado'
+
+**Error:**
+```
+FieldError: Cannot resolve keyword 'estado' into field
+```
+
+**Causa:** Modelo usa `activo` (boolean), no `estado`
+
+**Solución:**
+```python
+# predictor.py - Línea 38
+# Cambiar:
+GrupoTerapeutico.objects.filter(estado='ACTIVO')
+# Por:
+GrupoTerapeutico.objects.filter(activo=True)
+
+# reglas.py - Línea 62
+# Cambiar:
+if grupo.estado != 'ACTIVO':
+# Por:
+if not grupo.activo:
+```
+
+---
+
+## ❌ ERROR #3: AttributeError - 'edad_minima'
+
+**Error:**
+```
+AttributeError: 'GrupoTerapeutico' object has no attribute 'edad_minima'
+```
+
+**Causa:** Modelo NO tiene campos `edad_minima` ni `edad_maxima`
+
+**Solución:** Código ahora es flexible y funciona sin estos campos
+
+```python
+# reglas.py
+def _edad_compatible(self, paciente, grupo):
+    # Verificar si existen los campos
+    if not hasattr(grupo, 'edad_minima') or not hasattr(grupo, 'edad_maxima'):
+        return True  # Aceptar si no hay rangos
+    # ... resto del código
+
+# features.py
+def _calcular_edad_match(self, paciente, grupo):
+    # Verificar si existen los campos
+    if not hasattr(grupo, 'edad_minima') or not hasattr(grupo, 'edad_maxima'):
+        return 75  # Score neutro
+    # ... resto del código
+```
+
+---
+
+## ✅ SOLUCIÓN FINAL: Aplicar Correcciones
+
+### Método Rápido (Recomendado):
+
+```bash
+# 1. Descomprimir el ZIP actualizado
+unzip -o MVP_RECOMENDADOR_GRUPOS.zip
+
+# 2. Copiar archivos corregidos
+cp mvp_recomendador/ml_models/predictor.py apps/ml_models/
+cp mvp_recomendador/ml_models/reglas.py apps/ml_models/
+cp mvp_recomendador/ml_models/features.py apps/ml_models/
+cp mvp_recomendador/views.py apps/grupos/views_recomendador.py
+
+# 3. Reiniciar servidor
+python manage.py runserver
+```
+
+### Verificación:
+
+```bash
+# Ir a cualquier paciente
+http://localhost:8000/procedimientos/pacientes/13/
+
+# Clic en "Recomendar Grupos IA"
+# Debe mostrar recomendaciones SIN errores
+```
+
+---
+
+## 🎯 CAMPOS QUE TU MODELO SÍ TIENE
+
+Basado en los errores, tu modelo `GrupoTerapeutico` tiene:
+
+✅ `activo` (BooleanField) - en lugar de 'estado'
+✅ `cupos_disponibles` (calculado o campo)
+✅ `capacidad_maxima`
+✅ `terapia` (ForeignKey)
+❌ NO tiene `edad_minima`
+❌ NO tiene `edad_maxima`
+❌ NO tiene `estado`
+
+---
+
+## 💡 MEJORAS OPCIONALES (Después)
+
+Si quieres filtros por edad, agrega estos campos:
+
+```python
+# apps/grupos/models.py
+class GrupoTerapeutico(models.Model):
+    # ... campos existentes ...
+    
+    edad_minima = models.IntegerField(
+        'Edad Mínima', 
+        null=True, 
+        blank=True
+    )
+    edad_maxima = models.IntegerField(
+        'Edad Máxima', 
+        null=True, 
+        blank=True
+    )
+```
+
+Luego:
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+## 📊 ESTADO ACTUAL
+
+**Sistema Funciona:** ✅ SÍ  
+**Con Filtros de Edad:** ❌ NO (se deshabilitaron)  
+**Score de Compatibilidad:** ✅ SÍ (usa otros factores)
+
+**Factores Activos:**
+- ✅ Disponibilidad de cupos (25%)
+- ✅ Historial del grupo (10%)
+- ✅ Balance del grupo (10%)
+- ⚠️ Edad (35%) - Score neutro sin campos
+- ⚠️ Nivel funcionamiento (15%) - Si existe en valoración
+
+---
+
+## 🚀 PRÓXIMOS PASOS
+
+1. ✅ Aplicar correcciones
+2. ✅ Probar con pacientes reales
+3. ⏳ (Opcional) Agregar campos de edad
+4. ⏳ (Opcional) Configurar rangos por grupo
+5. ⏳ Ajustar pesos según feedback
+
+---
+
+## 📞 ARCHIVOS ENTREGADOS
+
+1. **MVP_RECOMENDADOR_GRUPOS.zip** - Código completo corregido
+2. **PARCHE_CAMPOS_FALTANTES.txt** - Guía del último error
+3. **PARCHE_CAMPO_ESTADO.txt** - Guía error estado
+4. **FIX_NOREVERSEMATCH_ERROR.txt** - Guía error redirect
+5. **RESUMEN_ERRORES_Y_SOLUCIONES.txt** - Este archivo
+
+---
+
+¡El sistema ahora está listo para funcionar! 🎉
