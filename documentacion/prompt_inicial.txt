@@ -1,0 +1,12 @@
+Un centro de salud especializado en atención a niños con Trastorno del Espectro Autista (TEA) y otras condiciones del neurodesarrollo requiere un sistema de gestión web que permita organizar pacientes en grupos de atención, gestionar terapias y mantener un registro detallado de intervenciones especializadas. 
+Tarea:
+Desarrollar el proyecto usando la metodología agile o scrum y avanzar por sprints. 
+Objective: 
+Construir un backend robusto y modular que soporte la gestión integral de usuarios, roles, consultorios y catálogo de terapias, preparando la base tecnológica para futuras expansiones del sistema. 
+Conocimiento: 
+Características del Sistema: - Tecnología: Django (Backend), MySQL (Base de Datos), Django template- bootstrap - htmx (Frontend) - Metodología: Desarrollo Modular e Iterativo - Metodología agile o scrum y avanzar por sprints - Catálogo Detallado de Terapias: - Terapias Médicas y Psiquiátricas - Terapias del Lenguaje y Comunicación - Terapias de Estimulación y Desarrollo - Terapias Complementarias - Intervenciones Clínicas Asociadas.
+Instrucciones:
+El asistente debe: 1. Diseñar modelos de Django para: - Usuarios y Roles - Consultorios - Catálogo Maestro de Terapias - Procedimientos Terapéuticos 2. Implementar estructura de directorios siguiendo mejores prácticas de Django 3. Crear endpoints REST para CRUD de: - Usuarios - Roles - Consultorios - Terapias - Procedimientos. Al terminar el sprint, se avanza con el siguiente Módulo. Restricciones Críticas: - Seguir estrictamente metodología agile o scrum - Modularidad en diseño de componentes - Consideraciones de Seguridad: - Implementar autenticación robusta - Control de acceso basado en roles - Encriptación de datos sensibles - Validación de entrada de datos.
+Ejemplos:
+Ejemplo de Modelo de Usuario: python class Usuario(models.Model): ROLES = [ ('ADMIN', 'Administrador'), ('TERAPEUTA', 'Terapeuta'), ('COORDINADOR', 'Coordinador') ]
+nombre = models.CharField(max_length=100) email = models.EmailField(unique=True) rol = models.CharField(max_length=20, choices=ROLES) fecha_registro = models.DateTimeField(auto_now_add=True) Ejemplo de Prueba Unitaria: python def test_crear_usuario_valido(self): usuario = Usuario.objects.create( nombre="María Rodríguez", email="maria@centro.com", rol="TERAPEUTA" ) self.assertTrue(isinstance(usuario, Usuario)) self.assertEqual(usuario.rol, "TERAPEUTA")

@@ -1,0 +1,3 @@
+<span class="badge bg-{% if consultorio.estado == 'DISPONIBLE' %}success{% elif consultorio.estado == 'OCUPADO' %}danger{% elif consultorio.estado == 'MANTENIMIENTO' %}warning{% else %}secondary{% endif %}">
+    {{ consultorio.get_estado_display }}
+</span>

@@ -1,0 +1,30 @@
+# Testing Dependencies for TEA Management System
+
+# Core testing
+pytest==7.4.3
+pytest-django==4.7.0
+pytest-cov==4.1.0
+coverage==7.3.2
+
+# Testing utilities
+factory-boy==3.3.0
+faker==20.1.0
+freezegun==1.4.0
+responses==0.24.1
+
+# Quality
+flake8==6.1.0
+black==23.12.0
+isort==5.13.2
+pylint==3.0.3
+
+# Performance
+pytest-xdist==3.5.0  # Parallel testing
+pytest-timeout==2.2.0
+
+# Django specific
+django-debug-toolbar==4.2.0
+django-extensions==3.2.3
+
+# HTML Reports
+pytest-html==4.1.1

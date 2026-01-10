@@ -1,0 +1,103 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sesiones Terapéuticas - TEA Management{% endblock %}
+{% block page_title %}Sesiones Terapéuticas{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-calendar-heart me-2"></i>Sesiones Terapéuticas</h5>
+        <a href="{% url 'procedimientos:sesion_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Nueva Sesión
+        </a>
+    </div>
+    
+    <div class="card-body">
+        <!-- Filtros -->
+        <form method="get" class="row mb-4">
+            <div class="col-md-3">
+                <input type="date" name="fecha" class="form-control" placeholder="Fecha" value="{{ fecha_seleccionada }}">
+            </div>
+            <div class="col-md-3">
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    {% for value, label in estados %}
+                    <option value="{{ value }}" {% if estado_seleccionado == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Terapia</th>
+                        <th>Terapeuta</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sesion in sesiones %}
+                    <tr>
+                        <td>
+                            <strong>{{ sesion.paciente.nombre_completo }}</strong><br>
+                            <small class="text-muted">{{ sesion.paciente.numero_historia_clinica }}</small>
+                        </td>
+                        <td>{{ sesion.terapia.nombre }}</td>
+                        <td>{{ sesion.terapeuta.get_full_name }}</td>
+                        <td>{{ sesion.fecha|date:"d/m/Y" }}</td>
+                        <td>
+                            {{ sesion.hora_inicio }} - {{ sesion.hora_fin }}<br>
+                            <small class="text-muted">{{ sesion.duracion_minutos }} min</small>
+                        </td>
+                        <td>
+                            {% if sesion.estado == 'PROGRAMADA' %}
+                            <span class="badge bg-info">{{ sesion.get_estado_display }}</span>
+                            {% elif sesion.estado == 'EN_CURSO' %}
+                            <span class="badge bg-primary">{{ sesion.get_estado_display }}</span>
+                            {% elif sesion.estado == 'COMPLETADA' %}
+                            <span class="badge bg-success">{{ sesion.get_estado_display }}</span>
+                            {% elif sesion.estado == 'CANCELADA' %}
+                            <span class="badge bg-danger">{{ sesion.get_estado_display }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ sesion.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'procedimientos:sesion_detail' sesion.pk %}" 
+                                   class="btn btn-outline-info" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'procedimientos:sesion_update' sesion.pk %}" 
+                                   class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-3"></i>
+                            <p class="mb-0">No hay sesiones registradas</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

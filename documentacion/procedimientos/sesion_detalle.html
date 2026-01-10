@@ -1,0 +1,106 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sesión - TEA Management{% endblock %}
+{% block page_title %}Detalle de Sesión Terapéutica{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">Información General</h5>
+                <hr>
+                <p><strong>Número:</strong> {{ sesion.numero_sesion }}</p>
+                <p><strong>Fecha:</strong> {{ sesion.fecha|date:"d/m/Y" }}</p>
+                <p><strong>Hora:</strong> {{ sesion.hora_inicio }} - {{ sesion.hora_fin }}</p>
+                <p><strong>Duración:</strong> {{ sesion.duracion_minutos }} min</p>
+                <p>
+                    <strong>Estado:</strong>
+                    {% if sesion.estado == 'PROGRAMADA' %}
+                    <span class="badge bg-info">{{ sesion.get_estado_display }}</span>
+                    {% elif sesion.estado == 'COMPLETADA' %}
+                    <span class="badge bg-success">{{ sesion.get_estado_display }}</span>
+                    {% elif sesion.estado == 'CANCELADA' %}
+                    <span class="badge bg-danger">{{ sesion.get_estado_display }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ sesion.get_estado_display }}</span>
+                    {% endif %}
+                </p>
+                
+                <hr>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'procedimientos:sesion_update' sesion.pk %}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    <a href="{% url 'procedimientos:sesion_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Paciente -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-person me-2"></i>Paciente</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nombre:</strong> {{ sesion.paciente.nombre_completo }}</p>
+                        <p><strong>Historia Clínica:</strong> {{ sesion.paciente.numero_historia_clinica }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Edad:</strong> {{ sesion.paciente.edad }} años</p>
+                        <p><strong>Diagnóstico:</strong> {{ sesion.paciente.diagnostico_tea }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'procedimientos:paciente_detail' sesion.paciente.pk %}" class="btn btn-sm btn-outline-primary">
+                    Ver perfil completo
+                </a>
+            </div>
+        </div>
+
+        <!-- Terapia -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-heart-pulse me-2"></i>Terapia</h5>
+                <h6>{{ sesion.terapia.nombre }}</h6>
+                <p class="text-muted">{{ sesion.terapia.descripcion_corta }}</p>
+                <p><strong>Terapeuta:</strong> {{ sesion.terapeuta.get_full_name }}</p>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        {% if sesion.observaciones %}
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-chat-left-text me-2"></i>Observaciones</h5>
+                <div>{{ sesion.observaciones|linebreaks }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Objetivos -->
+        {% if sesion.objetivos_sesion %}
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-bullseye me-2"></i>Objetivos de la Sesión</h5>
+                <div>{{ sesion.objetivos_sesion|linebreaks }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Progreso -->
+        {% if sesion.progreso_observado %}
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-graph-up me-2"></i>Progreso Observado</h5>
+                <div>{{ sesion.progreso_observado|linebreaks }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

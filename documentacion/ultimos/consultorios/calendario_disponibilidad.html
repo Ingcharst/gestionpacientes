@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Calendario - TEA Management{% endblock %}
+{% block page_title %}Calendario de Disponibilidad{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Calendario de Disponibilidad</h5>
+    </div>
+    
+    <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+            <a href="?fecha_inicio={{ fecha_inicio|date:'Y-m-d' }}" class="btn btn-outline-secondary">
+                <i class="bi bi-chevron-left"></i> Anterior
+            </a>
+            <h5>{{ fecha_inicio|date:"d/m/Y" }} - {{ fecha_fin|date:"d/m/Y" }}</h5>
+            <a href="?fecha_inicio={{ fecha_inicio|date:'Y-m-d' }}" class="btn btn-outline-secondary">
+                Siguiente <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Consultorio</th>
+                        {% for i in "1234567" %}
+                        <th class="text-center">Día {{ forloop.counter }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consultorio, dias in calendario.items %}
+                    <tr>
+                        <td><strong>{{ consultorio.nombre }}</strong></td>
+                        {% for fecha, disponibilidades in dias.items %}
+                        <td class="text-center">
+                            {% if disponibilidades %}
+                                {% for d in disponibilidades %}
+                                <span class="badge bg-{% if d.estado == 'DISPONIBLE' %}success{% else %}danger{% endif %} d-block mb-1">
+                                    {{ d.hora_inicio }} - {{ d.hora_fin }}
+                                </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
