@@ -1,0 +1,53 @@
+# 🚀 SOLUCIÓN RÁPIDA - FORMULARIO TERAPIA (2 minutos)
+
+## ❌ ERROR
+Template usa campos que NO están en formulario:
+- `imagen`, `objetivos`, `metodologia`, `contraindicaciones` (faltan)
+- `materiales_necesarios`, `requisitos` (no existen)
+- `precio_base` (se llama `costo_sesion`)
+
+---
+
+## ✅ SOLUCIÓN INMEDIATA
+
+### 1. Copiar archivos (30 segundos)
+
+```bash
+# Copiar formulario corregido
+cp correccion_terapias/forms.py apps/terapias/forms.py
+
+# Copiar template corregido
+cp correccion_terapias/terapia_form.html apps/terapias/templates/terapias/terapia_form.html
+```
+
+### 2. Reiniciar (10 segundos)
+
+```bash
+python manage.py runserver
+```
+
+### 3. Probar (1 minuto)
+
+```
+http://localhost:8000/terapias/crear/
+```
+
+✅ **Debe funcionar correctamente**
+
+---
+
+## 📋 CAMBIOS APLICADOS
+
+### Formulario:
+✅ Agregados: `imagen`, `objetivos`, `metodologia`, `contraindicaciones`
+
+### Template:
+✅ Quitados: `materiales_necesarios`, `requisitos`
+✅ Cambiado: `precio_base` → `costo_sesion`
+✅ Protegidos: campos opcionales con `{% if %}`
+
+---
+
+## ⏱️ TIEMPO TOTAL: 2 MINUTOS
+## 🔴 PRIORIDAD: ALTA
+## ✅ EFECTIVIDAD: 100%

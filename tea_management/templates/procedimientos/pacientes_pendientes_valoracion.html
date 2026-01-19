@@ -13,7 +13,7 @@
         </div>
         <div>
             <a href="{% url 'procedimientos:admision_paciente' %}" class="btn btn-primary">
-                <i class="bi bi-person-plus me-2"></i>Nueva Admisión
+                <i class="bi bi-person-plus me-2"></i>Nuevo Registro
             </a>
         </div>
     </div>
@@ -116,11 +116,16 @@
                                        title="Ver Detalles">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{% url 'procedimientos:crear_valoracion_inicial' paciente.pk %}" 
-                                       class="btn btn-outline-success" 
-                                       title="Realizar Valoración">
-                                        <i class="bi bi-clipboard2-check"></i> Valorar
+                                    <a href="{% url 'procedimientos:valoraciones_paciente' paciente.id %}" 
+                                    class="btn btn-sm btn-info">
+                                        <i class="bi bi-clipboard-check me-1"></i>Valorar
                                     </a>
+                                    <!-- ✅ NUEVO: Botón Completar Valoraciones -->
+                                    <button type="button" 
+                                            class="btn btn-sm btn-success ms-2" 
+                                            onclick="confirmarCompletar('{{ paciente.nombre_completo }}', {{ paciente.id }})">
+                                        <i class="bi bi-check-circle me-1"></i>Completar
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -140,6 +145,27 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+function confirmarCompletar(nombrePaciente, pacienteId) {
+    // Pregunta de seguridad
+    const mensaje = `¿Está seguro de marcar las valoraciones como completadas?\n\n` +
+                    `Paciente: ${nombrePaciente}\n\n` +
+                    `Al confirmar:\n` +
+                    `• El paciente pasará a "Pendiente de Asignación"\n` +
+                    `• Desaparecerá de esta lista\n` +
+                    `• Podrá asignarlo a grupos terapéuticos\n\n` +
+                    `¿Desea continuar?`;
+    
+    if (confirm(mensaje)) {
+        // Redirigir a la vista que cambia el estado
+        window.location.href = `/procedimientos/pacientes/${pacienteId}/completar-valoraciones/`;
+    }
+}
+</script>
+{% endblock %}
+
 {% endblock %}
 
 {% block extra_css %}

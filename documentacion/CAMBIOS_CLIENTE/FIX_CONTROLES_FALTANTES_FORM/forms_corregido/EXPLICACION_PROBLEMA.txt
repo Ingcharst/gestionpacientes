@@ -1,0 +1,284 @@
+# 🔴 PROBLEMA IDENTIFICADO: Campos sin controles en el formulario
+
+## ❌ SÍNTOMA
+
+Los siguientes campos aparecen SOLO con etiquetas (labels) pero SIN controles de entrada:
+
+### Información Médica:
+- Alergias
+- Medicamentos Actuales  
+- EPS
+
+### Fechas de Atención:
+- Fecha de Ingreso
+- Fecha de Alta (Opcional)
+- Motivo de Inactividad (Opcional)
+
+### Observaciones:
+- Observaciones Generales
+- Necesidades Especiales
+
+---
+
+## 🔍 CAUSA DEL PROBLEMA
+
+**Archivo:** `apps/procedimientos/forms.py`
+
+### Error 1: Sintaxis rota en línea 41-44
+
+```python
+# ❌ INCORRECTO:
+'diagnostico_principal': forms.TextInput(attrs={
+    'class': 'form-control',
+    'placeholder': 'Solo si no está en catálogo (ej: Z99.9)'
+}),         'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+```
+
+**Problema:** 
+- Falta salto de línea entre campos
+- Confunde al parser de Python
+- Causa que algunos widgets no se procesen
+
+---
+
+### Error 2: Widget duplicado para diagnostico_principal
+
+```python
+# Línea 41-43
+'diagnostico_principal': forms.TextInput(...),
+
+# Línea 49 (duplicado)
+'diagnostico_principal': forms.Textarea(...),
+```
+
+**Problema:** Python solo toma el último, pero el primero rompe la sintaxis
+
+---
+
+### Error 3: Falta widget para EPS
+
+```python
+widgets = {
+    # ... otros campos ...
+    'alergias': forms.Textarea(...),
+    'medicamentos': forms.Textarea(...),
+    # ❌ FALTA: 'eps': forms.TextInput(...)
+}
+```
+
+**Problema:** Sin widget explícito, usa widget por defecto del modelo sin clases CSS
+
+---
+
+## ✅ SOLUCIÓN
+
+### PASO 1: Abrir archivo (5 seg)
+```
+apps/procedimientos/forms.py
+```
+
+### PASO 2: Buscar clase PacienteForm (10 seg)
+```python
+class PacienteForm(forms.ModelForm):
+```
+
+### PASO 3: REEMPLAZAR toda la sección widgets (1 min)
+
+**BORRAR desde línea 39 hasta línea 53:**
+```python
+        widgets = {
+            'codigo_enfermedad': forms.HiddenInput(),
+            # ... hasta ...
+            'motivo_inactividad': forms.Textarea(...),
+        }
+```
+
+**COPIAR Y PEGAR el código del archivo:**
+```
+PacienteForm_CORREGIDO.py
+```
+
+---
+
+## 📋 CÓDIGO CORREGIDO
+
+```python
+widgets = {
+    # Información Personal
+    'nombres': forms.TextInput(attrs={'class': 'form-control'}),
+    'apellidos': forms.TextInput(attrs={'class': 'form-control'}),
+    'tipo_documento': forms.Select(attrs={'class': 'form-select'}),
+    'numero_documento': forms.TextInput(attrs={'class': 'form-control'}),
+    'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+    'genero': forms.Select(attrs={'class': 'form-select'}),
+    'foto': forms.FileInput(attrs={'class': 'form-control'}),
+    
+    # Contacto
+    'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+    'email': forms.EmailInput(attrs={'class': 'form-control'}),
+    'direccion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+    'ciudad': forms.TextInput(attrs={'class': 'form-control'}),
+    
+    # Responsable
+    'nombre_responsable': forms.TextInput(attrs={'class': 'form-control'}),
+    'parentesco_responsable': forms.TextInput(attrs={'class': 'form-control'}),
+    'telefono_responsable': forms.TextInput(attrs={'class': 'form-control'}),
+    'email_responsable': forms.EmailInput(attrs={'class': 'form-control'}),
+    
+    # ✅ INFORMACIÓN MÉDICA (CORREGIDO)
+    'codigo_enfermedad': forms.HiddenInput(),
+    'diagnostico_principal': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+    'alergias': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+    'medicamentos': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+    'eps': forms.TextInput(attrs={
+        'class': 'form-control'
+    }),
+    
+    # ✅ FECHAS (CORREGIDO)
+    'fecha_ingreso': forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }),
+    'fecha_alta': forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }),
+    
+    # ✅ OBSERVACIONES (CORREGIDO)
+    'observaciones': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 3
+    }),
+    'necesidades_especiales': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 3
+    }),
+    'motivo_inactividad': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+}
+```
+
+---
+
+## 🚀 APLICAR CORRECCIÓN (2 minutos)
+
+### Opción A: Copiar archivo completo
+
+1. Abrir `PacienteForm_CORREGIDO.py`
+2. Copiar TODO el contenido
+3. Abrir `apps/procedimientos/forms.py`
+4. Buscar `class PacienteForm(forms.ModelForm):`
+5. REEMPLAZAR desde línea 11 hasta línea 72
+6. Guardar
+
+### Opción B: Editar manualmente
+
+1. Abrir `apps/procedimientos/forms.py`
+2. Buscar línea 39: `widgets = {`
+3. BORRAR desde línea 39 hasta 53
+4. PEGAR el código corregido de arriba
+5. Guardar
+
+---
+
+## ✅ VERIFICAR
+
+```bash
+# Reiniciar servidor
+python manage.py runserver
+```
+
+**Abrir navegador:**
+```
+http://127.0.0.1:8000/procedimientos/pacientes/registrar/
+```
+
+**Verificar que AHORA SÍ aparecen los controles:**
+
+```
+☑ Alergias: [Textarea visible]
+☑ Medicamentos: [Textarea visible]
+☑ EPS: [Input visible]
+☑ Fecha Ingreso: [Date picker visible]
+☑ Fecha Alta: [Date picker visible]
+☑ Motivo Inactividad: [Textarea visible]
+☑ Observaciones: [Textarea visible]
+☑ Necesidades Especiales: [Textarea visible]
+```
+
+---
+
+## 📊 ANTES VS DESPUÉS
+
+### ANTES (con error):
+```
+Alergias
+[NADA - solo label]
+
+Medicamentos Actuales
+[NADA - solo label]
+
+EPS
+[NADA - solo label]
+```
+
+### DESPUÉS (corregido):
+```
+Alergias
+┌─────────────────────────────┐
+│                             │
+│  [Textarea para escribir]   │
+│                             │
+└─────────────────────────────┘
+
+Medicamentos Actuales
+┌─────────────────────────────┐
+│                             │
+│  [Textarea para escribir]   │
+│                             │
+└─────────────────────────────┘
+
+EPS
+┌─────────────────────────────┐
+│  [Input para escribir]      │
+└─────────────────────────────┘
+```
+
+---
+
+## 🎯 CAMBIOS REALIZADOS
+
+1. ✅ Corregida sintaxis rota en línea 41-44
+2. ✅ Eliminada definición duplicada de diagnostico_principal
+3. ✅ Agregado widget para EPS
+4. ✅ Agregados widgets para TODOS los campos
+5. ✅ Agregados placeholders descriptivos
+6. ✅ Clases CSS correctas en todos los widgets
+7. ✅ Formato limpio y organizado
+
+---
+
+## ⏱️ TIEMPO: 2 MINUTOS
+
+1. Abrir forms.py: 10 seg
+2. Buscar PacienteForm: 10 seg
+3. Copiar y pegar: 30 seg
+4. Guardar: 5 seg
+5. Reiniciar servidor: 30 seg
+6. Verificar: 30 seg
+
+---
+
+**¡Problema resuelto!** ✅  
+**Todos los controles ahora visibles** ✅

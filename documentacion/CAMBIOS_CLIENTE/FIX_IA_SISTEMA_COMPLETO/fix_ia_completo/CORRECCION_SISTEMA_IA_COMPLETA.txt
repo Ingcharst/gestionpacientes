@@ -1,0 +1,534 @@
+# 🔴 PROBLEMA IDENTIFICADO: SISTEMA IA NO DETECTA VALORACIONES
+
+## CAUSA RAÍZ
+
+El sistema IA (predictor, features, reglas) está diseñado para **una sola valoración** (`ValoracionInicial`),
+pero el nuevo modelo es **múltiples valoraciones** por terapeuta (`ValoracionProfesional`).
+
+---
+
+## ✅ SOLUCIÓN: ACTUALIZAR 3 ARCHIVOS
+
+### 1. predictor.py - Cambiar lógica principal
+### 2. features.py - Adaptar extracción de features
+### 3. vista recomendar_grupos - Pasar valoraciones correctamente
+
+---
+
+# ARCHIVO 1: predictor.py
+
+## Ubicación: `apps/ml_models/predictor.py`
+
+```python
+"""
+Grupo Recomendador - Motor Principal ACTUALIZADO
+Sistema de recomendación para múltiples valoraciones por terapeuta
+"""
+
+from .reglas import FiltrosReglas
+from .features import FeatureExtractor
+from .scoring import ScoreCalculator
+
+
+class GrupoRecomendador:
+    """
+    Sistema de recomendación de grupos terapéuticos
+    MVP - Basado en reglas (sin ML)
+    ACTUALIZADO: Soporta múltiples valoraciones profesionales
+    """
+    
+    def __init__(self):
+        self.filtros = FiltrosReglas()
+        self.feature_extractor = FeatureExtractor()
+        self.score_calculator = ScoreCalculator()
+    
+    def recomendar_grupos(self, paciente, grupos_disponibles=None, valoraciones=None, top_n=5):
+        """
+        Recomienda grupos para un paciente - ACTUALIZADO
+        
+        Args:
+            paciente: Instancia de Paciente
+            grupos_disponibles: QuerySet de GrupoTerapeutico (opcional)
+            valoraciones: QuerySet de ValoracionProfesional (NUEVO - múltiples)
+            top_n: Número de recomendaciones a retornar
+            
+        Returns:
+            Dict con recomendaciones y mensaje
+        """
+        # CAMBIO 1: Obtener valoraciones si no se pasan
+        if valoraciones is None:
+            from apps.procedimientos.models import ValoracionProfesional
+            valoraciones = ValoracionProfesional.objects.filter(
+                paciente=paciente
+            ).select_related('terapia', 'terapeuta')
+        
+        # CAMBIO 2: Verificar que existan valoraciones
+        if not valoraciones.exists():
+            return {
+                'recomendaciones': [],
+                'mensaje': 'El paciente no tiene valoraciones registradas. Debe completar al menos una valoración por terapeuta.',
+                'total_grupos_evaluados': 0,
+                'grupos_filtrados': 0,
+                'error': True
+            }
+        
+        # CAMBIO 3: Extraer terapias de TODAS las valoraciones
+        terapias_valoradas = list(
+            valoraciones.values_list('terapia_id', flat=True).distinct()
+        )
+        
+        # PASO 1: Obtener grupos disponibles filtrando por terapias valoradas
+        if grupos_disponibles is None:
+            from apps.grupos.models import GrupoTerapeutico
+            grupos_disponibles = GrupoTerapeutico.objects.filter(
+                activo=True,
+                terapia_id__in=terapias_valoradas  # NUEVO: Filtrar por terapias valoradas
+            )
+        
+        # PASO 2: Aplicar filtros duros
+        grupos_candidatos = self.filtros.aplicar_filtros(
+            grupos_disponibles, 
+            paciente, 
+            valoraciones=valoraciones  # CAMBIO: Pasar valoraciones (plural)
+        )
+        
+        if not grupos_candidatos:
+            return {
+                'recomendaciones': [],
+                'mensaje': f'No se encontraron grupos compatibles para las terapias valoradas: {", ".join([str(t) for t in Terapia.objects.filter(id__in=terapias_valoradas).values_list("nombre", flat=True)])}',
+                'total_grupos_evaluados': grupos_disponibles.count(),
+                'grupos_filtrados': 0
+            }
+        
+        # PASO 3: Calcular scores para cada candidato
+        recomendaciones = []
+        
+        for grupo in grupos_candidatos:
+            # CAMBIO 4: Buscar valoración específica de la terapia del grupo
+            valoracion_grupo = valoraciones.filter(terapia=grupo.terapia).first()
+            
+            # Extraer features
+            features = self.feature_extractor.extraer_features(
+                paciente, 
+                grupo, 
+                valoracion=valoracion_grupo,  # Valoración específica de esta terapia
+                valoraciones_todas=valoraciones  # NUEVO: Todas las valoraciones
+            )
+            
+            # Calcular score
+            score_final = self.score_calculator.calcular_score(
+                grupo, 
+                features
+            )
+            
+            # Generar explicación
+            razones = self._generar_explicacion(features, score_final)
+            
+            # Generar alertas
+            alertas = self._generar_alertas(grupo, paciente, features)
+            
+            # Crear recomendación
+            recomendacion = {
+                'grupo': grupo,
+                'score': score_final,
+                'disponible': grupo.cupos_disponibles > 0,
+                'cupos': grupo.cupos_disponibles,
+                'razones': razones,
+                'alertas': alertas,
+                'features': features,
+                'valoracion_usada': valoracion_grupo,  # NUEVO
+            }
+            
+            recomendaciones.append(recomendacion)
+        
+        # PASO 4: Ordenar por score descendente
+        recomendaciones.sort(key=lambda x: x['score'], reverse=True)
+        
+        # PASO 5: Retornar top N
+        return {
+            'recomendaciones': recomendaciones[:top_n],
+            'mensaje': f'Se encontraron {len(recomendaciones)} grupos compatibles',
+            'total_grupos_evaluados': grupos_disponibles.count(),
+            'grupos_filtrados': len(grupos_candidatos),
+            'paciente': {
+                'nombre': paciente.nombre_completo,
+                'edad': paciente.edad_actual,
+                'genero': paciente.genero
+            },
+            'valoraciones_count': valoraciones.count(),  # NUEVO
+            'terapias_valoradas': terapias_valoradas,  # NUEVO
+        }
+    
+    def _generar_explicacion(self, features, score):
+        """Genera explicación legible - SIN CAMBIOS"""
+        razones = []
+        
+        edad_score = features.get('edad_match_score', 0)
+        if edad_score >= 95:
+            razones.append("✓ Edad perfectamente compatible con el grupo")
+        elif edad_score >= 80:
+            razones.append("✓ Edad muy compatible con el grupo")
+        elif edad_score >= 60:
+            razones.append("✓ Edad compatible con el grupo")
+        else:
+            razones.append("⚠ Edad ligeramente fuera del rango ideal")
+        
+        nivel_score = features.get('nivel_match_score', 0)
+        if nivel_score == 100:
+            razones.append("✓ Nivel de funcionamiento ideal para el grupo")
+        elif nivel_score >= 70:
+            razones.append("✓ Nivel de funcionamiento adecuado")
+        elif nivel_score >= 50:
+            razones.append("⚠ Nivel de funcionamiento aceptable con supervisión")
+        
+        cupos = features.get('cupos_disponibles', 0)
+        if cupos >= 3:
+            razones.append(f"✓ Grupo con buena disponibilidad ({cupos} cupos)")
+        elif cupos > 0:
+            razones.append(f"✓ Cupo disponible ({cupos} restante{'s' if cupos > 1 else ''})")
+        else:
+            razones.append("⚠ Sin cupos actuales (lista de espera disponible)")
+        
+        tasa_exito = features.get('tasa_exito_grupo', 0)
+        if tasa_exito >= 80:
+            razones.append("✓ Grupo con excelente historial de resultados")
+        elif tasa_exito >= 60:
+            razones.append("✓ Grupo con buen historial de resultados")
+        
+        if not razones:
+            razones.append(f"Grupo compatible con score de {score}%")
+        
+        return razones
+    
+    def _generar_alertas(self, grupo, paciente, features):
+        """Genera alertas - SIN CAMBIOS"""
+        alertas = []
+        
+        cupos = features.get('cupos_disponibles', 0)
+        if cupos == 0:
+            alertas.append({
+                'tipo': 'warning',
+                'icono': 'bi-exclamation-triangle',
+                'mensaje': 'Sin cupos disponibles - Se requiere lista de espera'
+            })
+        elif cupos <= 2:
+            alertas.append({
+                'tipo': 'info',
+                'icono': 'bi-info-circle',
+                'mensaje': f'Solo {cupos} cupo(s) disponible(s)'
+            })
+        
+        diferencia_edad = features.get('diferencia_edad', 0)
+        if diferencia_edad > 2:
+            alertas.append({
+                'tipo': 'warning',
+                'icono': 'bi-calendar-x',
+                'mensaje': f'Diferencia de edad significativa ({diferencia_edad:.1f} años)'
+            })
+        
+        return alertas
+    
+    # Resto de métodos sin cambios...
+    def ajustar_pesos_scoring(self, nuevos_pesos):
+        self.score_calculator.ajustar_pesos(nuevos_pesos)
+    
+    def obtener_pesos_actuales(self):
+        return self.score_calculator.PESOS.copy()
+```
+
+---
+
+# ARCHIVO 2: reglas.py
+
+## Ubicación: `apps/ml_models/reglas.py`
+
+**CAMBIO:** Actualizar método `aplicar_filtros` para aceptar múltiples valoraciones
+
+```python
+"""
+Motor de Reglas - Filtros Duros ACTUALIZADO
+"""
+
+from django.db.models import Count, Q
+
+
+class FiltrosReglas:
+    """Aplica filtros duros - ACTUALIZADO para múltiples valoraciones"""
+    
+    def aplicar_filtros(self, grupos, paciente, valoraciones=None):
+        """
+        Filtra grupos según reglas de negocio - ACTUALIZADO
+        
+        Args:
+            grupos: QuerySet de GrupoTerapeutico
+            paciente: Instancia de Paciente
+            valoraciones: QuerySet de ValoracionProfesional (NUEVO - plural)
+            
+        Returns:
+            Lista de grupos que pasan todos los filtros
+        """
+        candidatos = []
+        
+        for grupo in grupos:
+            # FILTRO 1: Edad compatible
+            if not self._edad_compatible(paciente, grupo):
+                continue
+            
+            # FILTRO 2: Estado activo y con cupo
+            if not self._grupo_disponible(grupo):
+                continue
+            
+            # FILTRO 3: Nivel de funcionamiento
+            # CAMBIO: Buscar valoración de la terapia específica
+            if valoraciones:
+                valoracion_grupo = valoraciones.filter(terapia=grupo.terapia).first()
+                if valoracion_grupo and not self._nivel_compatible(valoracion_grupo, grupo):
+                    continue
+            
+            # Grupo pasó todos los filtros
+            candidatos.append(grupo)
+        
+        return candidatos
+    
+    def _edad_compatible(self, paciente, grupo):
+        """Verifica edad - SIN CAMBIOS"""
+        if paciente.edad_actual is None:
+            return False
+        edad = paciente.edad_actual
+        edad_min = grupo.edad_minima - 1
+        edad_max = grupo.edad_maxima + 1
+        return edad_min <= edad <= edad_max
+    
+    def _grupo_disponible(self, grupo):
+        """Verifica disponibilidad - SIN CAMBIOS"""
+        if not grupo.activo:
+            return False
+        tiene_cupo = grupo.cupos_disponibles > 0
+        acepta_lista = hasattr(grupo, 'acepta_lista_espera') and grupo.acepta_lista_espera
+        return tiene_cupo or acepta_lista
+    
+    def _nivel_compatible(self, valoracion, grupo):
+        """Compatibilidad nivel - SIN CAMBIOS"""
+        if not hasattr(grupo, 'nivel_funcionamiento') or grupo.nivel_funcionamiento is None:
+            return True
+        if not hasattr(valoracion, 'nivel_funcionamiento') or valoracion.nivel_funcionamiento is None:
+            return True
+        
+        niveles_map = {
+            'LEVE': 1,
+            'MODERADO': 2,
+            'SEVERO': 3,
+            'PROFUNDO': 4
+        }
+        
+        nivel_paciente = niveles_map.get(valoracion.nivel_funcionamiento, 2)
+        nivel_grupo = niveles_map.get(grupo.nivel_funcionamiento, 2)
+        
+        return abs(nivel_paciente - nivel_grupo) <= 1
+```
+
+---
+
+# ARCHIVO 3: features.py
+
+## Ubicación: `apps/ml_models/features.py`
+
+**CAMBIO:** Actualizar `extraer_features` para aceptar múltiples valoraciones
+
+```python
+"""
+Feature Extractor ACTUALIZADO - Soporta múltiples valoraciones
+"""
+
+from django.db.models import Avg, Count
+from datetime import datetime
+
+
+class FeatureExtractor:
+    """Extrae features - ACTUALIZADO"""
+    
+    def extraer_features(self, paciente, grupo, valoracion=None, valoraciones_todas=None):
+        """
+        Extrae features - ACTUALIZADO
+        
+        Args:
+            paciente: Instancia de Paciente
+            grupo: Instancia de GrupoTerapeutico
+            valoracion: Valoración específica de la terapia del grupo (opcional)
+            valoraciones_todas: QuerySet con TODAS las valoraciones (NUEVO)
+            
+        Returns:
+            Dict con features calculadas
+        """
+        features = {
+            # Features de edad
+            'edad_paciente': paciente.edad_actual,
+            'edad_minima_grupo': grupo.edad_minima if hasattr(grupo, 'edad_minima') else None,
+            'edad_maxima_grupo': grupo.edad_maxima if hasattr(grupo, 'edad_maxima') else None,
+            'edad_match_score': self._calcular_edad_match(paciente, grupo),
+            'diferencia_edad': self._calcular_diferencia_edad(paciente, grupo),
+            
+            # Features de disponibilidad
+            'cupos_disponibles': grupo.cupos_disponibles,
+            'capacidad_total': grupo.capacidad_maxima,
+            'porcentaje_ocupacion': self._calcular_ocupacion(grupo),
+            'disponibilidad_score': self._calcular_disponibilidad_score(grupo),
+            
+            # Features de grupo
+            'tasa_exito_grupo': self._calcular_tasa_exito(grupo),
+            'experiencia_grupo': self._calcular_experiencia_grupo(grupo),
+            'balance_genero': self._calcular_balance_genero(grupo, paciente),
+            
+            # NUEVO: Features de valoraciones múltiples
+            'numero_valoraciones': valoraciones_todas.count() if valoraciones_todas else 0,
+        }
+        
+        # Features adicionales si hay valoración específica
+        if valoracion:
+            features.update({
+                'nivel_match_score': self._calcular_nivel_match(valoracion, grupo),
+                'areas_overlap_score': self._calcular_areas_overlap(valoracion, grupo),
+            })
+        else:
+            # Sin valoración específica, valores neutros
+            features.update({
+                'nivel_match_score': 75,
+                'areas_overlap_score': 75,
+            })
+        
+        return features
+    
+    def _calcular_edad_match(self, paciente, grupo):
+        """Calcula match de edad - SIN CAMBIOS"""
+        # Verificar que existan los campos
+        if not hasattr(grupo, 'edad_minima') or not hasattr(grupo, 'edad_maxima'):
+            return 75  # Valor neutro si no hay rangos
+        
+        if grupo.edad_minima is None or grupo.edad_maxima is None:
+            return 75
+        
+        edad = paciente.edad_actual
+        if edad is None:
+            return 0
+        
+        edad_min = grupo.edad_minima
+        edad_max = grupo.edad_maxima
+        edad_centro = (edad_min + edad_max) / 2
+        rango = edad_max - edad_min
+        
+        if edad < edad_min - 1:
+            return max(0, 100 - (edad_min - edad) * 20)
+        elif edad > edad_max + 1:
+            return max(0, 100 - (edad - edad_max) * 20)
+        
+        if rango == 0:
+            return 100 if edad == edad_centro else 80
+        
+        distancia_normalizada = abs(edad - edad_centro) / (rango / 2)
+        score = 100 * (1 - distancia_normalizada * 0.3)
+        
+        return max(0, min(100, score))
+    
+    # Resto de métodos sin cambios...
+    # (copiar el resto de los métodos del archivo original)
+```
+
+---
+
+# VISTA RECOMENDACIÓN
+
+## Ubicación: `apps/grupos/views.py` (o donde tengas la vista)
+
+```python
+@login_required
+def recomendar_grupos_paciente(request, pk):
+    """Vista de recomendación IA - ACTUALIZADA"""
+    from apps.procedimientos.models import Paciente, ValoracionProfesional
+    from apps.ml_models.predictor import GrupoRecomendador
+    
+    paciente = get_object_or_404(Paciente, pk=pk)
+    
+    # CAMBIO 1: Obtener TODAS las valoraciones del paciente
+    valoraciones = ValoracionProfesional.objects.filter(
+        paciente=paciente
+    ).select_related('terapia', 'terapeuta')
+    
+    # CAMBIO 2: Verificar que existan
+    if not valoraciones.exists():
+        messages.warning(request,
+            'El paciente no tiene valoraciones registradas. '
+            'Debe completar al menos una valoración por terapeuta.'
+        )
+        return redirect('procedimientos:valoraciones_paciente', pk=pk)
+    
+    # CAMBIO 3: Llamar al recomendador pasando valoraciones
+    recomendador = GrupoRecomendador()
+    resultado = recomendador.recomendar_grupos(
+        paciente=paciente,
+        valoraciones=valoraciones  # Pasar QuerySet completo
+    )
+    
+    if resultado.get('error'):
+        messages.error(request, resultado.get('mensaje'))
+        return redirect('procedimientos:paciente_detail', pk=pk)
+    
+    context = {
+        'paciente': paciente,
+        'valoraciones': valoraciones,  # Para mostrar en template
+        'recomendaciones': resultado['recomendaciones'],
+        'mensaje': resultado['mensaje'],
+        'stats': {
+            'total_evaluados': resultado['total_grupos_evaluados'],
+            'filtrados': resultado['grupos_filtrados'],
+            'valoraciones_count': resultado.get('valoraciones_count', 0),
+        }
+    }
+    
+    return render(request, 'grupos/recomendar_grupos.html', context)
+```
+
+---
+
+# RESUMEN CAMBIOS
+
+| Archivo | Cambio Principal |
+|---------|------------------|
+| **predictor.py** | Aceptar `valoraciones` (QuerySet), buscar `ValoracionProfesional` |
+| **reglas.py** | Actualizar `aplicar_filtros` para múltiples valoraciones |
+| **features.py** | Agregar parámetro `valoraciones_todas` |
+| **views.py** | Pasar QuerySet de valoraciones al recomendador |
+
+---
+
+# APLICAR CORRECCIONES
+
+```bash
+# 1. Actualizar predictor.py
+cp fix_ia_admision/predictor_actualizado.py apps/ml_models/predictor.py
+
+# 2. Actualizar reglas.py
+cp fix_ia_admision/reglas_actualizado.py apps/ml_models/reglas.py
+
+# 3. Actualizar features.py
+cp fix_ia_admision/features_actualizado.py apps/ml_models/features.py
+
+# 4. Actualizar vista
+# Editar apps/grupos/views.py según el código arriba
+
+# 5. Reiniciar
+python manage.py runserver
+```
+
+---
+
+# VERIFICACIÓN
+
+1. Crear valoración → ✓ Guardar
+2. Ir a "Recomendar Grupos" → ✓ Ya NO dice "Sin valoraciones"
+3. Ver recomendaciones → ✓ Muestra grupos compatibles
+4. Verificar scores → ✓ Calculados correctamente
+
+---
+
+**Tiempo aplicación: 10 minutos** ⏱️
+**Impacto: Sistema IA funcional** ✅

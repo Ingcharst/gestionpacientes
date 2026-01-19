@@ -1,5 +1,3 @@
-# CREAR: apps/alertas/models.py
-
 from django.db import models
 from apps.usuarios.models import Usuario
 from apps.procedimientos.models import Paciente
@@ -38,7 +36,7 @@ class AlertaInasistencia(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='alertas_atendidas'
+        related_name='alertas_inasistencia_atendidas'
     )
     fecha_atencion = models.DateTimeField(null=True, blank=True)
     observaciones = models.TextField(blank=True)

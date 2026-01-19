@@ -189,6 +189,7 @@ class Terapia(models.Model):
     duracion_minima_minutos = models.PositiveIntegerField(
         null=True,
         blank=True,
+        default=15,
         validators=[MinValueValidator(15)],
         verbose_name='Duración Mínima (minutos)',
         help_text='Duración mínima permitida'
@@ -197,6 +198,7 @@ class Terapia(models.Model):
     duracion_maxima_minutos = models.PositiveIntegerField(
         null=True,
         blank=True,
+        default=30,
         validators=[MaxValueValidator(480)],
         verbose_name='Duración Máxima (minutos)',
         help_text='Duración máxima permitida'
@@ -211,6 +213,7 @@ class Terapia(models.Model):
     
     # Costos
     costo_sesion = models.DecimalField(
+        default=Decimal('0.00'),
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.00'))],
@@ -219,6 +222,7 @@ class Terapia(models.Model):
     )
     
     costo_minimo = models.DecimalField(
+        default=Decimal('0.00'),
         max_digits=10,
         decimal_places=2,
         null=True,
@@ -229,6 +233,7 @@ class Terapia(models.Model):
     )
     
     costo_paquete_mensual = models.DecimalField(
+        default=Decimal('0.00'),
         max_digits=10,
         decimal_places=2,
         null=True,
@@ -360,12 +365,14 @@ class Terapia(models.Model):
     
     folleto_url = models.URLField(
         blank=True,
+        null=True,
         verbose_name='URL del Folleto',
         help_text='Enlace a folleto informativo'
     )
     
     video_url = models.URLField(
         blank=True,
+        null=True,
         verbose_name='URL del Video',
         help_text='Enlace a video explicativo'
     )

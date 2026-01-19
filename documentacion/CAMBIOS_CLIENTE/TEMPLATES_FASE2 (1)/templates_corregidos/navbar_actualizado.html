@@ -1,0 +1,123 @@
+{# AGREGAR/ACTUALIZAR EN: templates/base/navbar.html o base/base.html #}
+
+<!-- Navbar con nuevas opciones Fase 2 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-heart-pulse-fill me-2"></i>TEA Management
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                
+                <!-- PACIENTES -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-people-fill"></i> Pacientes
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'procedimientos:registrar_paciente' %}">
+                                <i class="bi bi-person-plus"></i> Registrar Nuevo
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'procedimientos:lista_pacientes' %}">
+                                <i class="bi bi-list"></i> Listar Todos
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'procedimientos:pacientes_pendientes_valoracion' %}">
+                                <i class="bi bi-clipboard-pulse"></i> Pendientes Valoración
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'procedimientos:pacientes_pendientes_asignacion' %}">
+                                <i class="bi bi-person-badge"></i> Pendientes Asignación
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- GRUPOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-diagram-3-fill"></i> Grupos
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'grupos:lista_grupos' %}">
+                                <i class="bi bi-list"></i> Listar Grupos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'grupos:crear_grupo' %}">
+                                <i class="bi bi-plus-circle"></i> Crear Grupo
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- ADMISIONES (NUEVO) -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-file-medical-fill"></i> Admisiones
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'procedimientos:dashboard_admisiones' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- ALERTAS (NUEVO) -->
+                <li class="nav-item">
+                    <a class="nav-link position-relative" href="{% url 'alertas:dashboard_alertas' %}">
+                        <i class="bi bi-bell-fill"></i> Alertas
+                        {% if alertas_pendientes > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ alertas_pendientes }}
+                        </span>
+                        {% endif %}
+                    </a>
+                </li>
+                
+            </ul>
+            
+            <!-- Usuario -->
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'usuarios:perfil' %}">
+                                <i class="bi bi-person"></i> Mi Perfil
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

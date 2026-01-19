@@ -1,0 +1,296 @@
+# ✅ ACCESOS PARA TOMAR ASISTENCIA
+
+## ================================================
+## OPCIÓN 1: Desde detalle del grupo
+## ================================================
+
+<!-- Archivo: templates/grupos/detalle_grupo.html -->
+<!-- Agregar en la sección de acciones/botones -->
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Acciones Rápidas</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <!-- ✅ BOTÓN TOMAR ASISTENCIA -->
+                <a href="{% url 'grupos:control_asistencia_grupo' grupo_id=grupo.id %}" 
+                   class="btn btn-success btn-lg w-100 mb-3">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Tomar Asistencia
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{% url 'grupos:grupo_editar' pk=grupo.id %}" 
+                   class="btn btn-outline-primary w-100 mb-3">
+                    <i class="bi bi-pencil me-2"></i>
+                    Editar Grupo
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+## ================================================
+## OPCIÓN 2: Lista "Mis Grupos" (Terapeuta)
+## ================================================
+
+<!-- Archivo: templates/grupos/mis_grupos.html -->
+<!-- Crear este template nuevo -->
+
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-people-fill me-2"></i>Mis Grupos</h3>
+        <span class="badge bg-info fs-6">{{ fecha_hoy|date:"d/m/Y" }}</span>
+    </div>
+    
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        {% for grupo in grupos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ grupo.nombre }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Terapia:</strong> {{ grupo.terapia.nombre }}</p>
+                    <p><strong>Horario:</strong> {{ grupo.hora_inicio }} - {{ grupo.hora_fin }}</p>
+                    <p><strong>Días:</strong> {{ grupo.dias_disponibles|join:", " }}</p>
+                    <p><strong>Pacientes:</strong> {{ grupo.total_pacientes }}/{{ grupo.capacidad_maxima }}</p>
+                    
+                    <hr>
+                    
+                    <!-- ✅ BOTÓN PRINCIPAL -->
+                    <a href="{% url 'grupos:control_asistencia_grupo' grupo_id=grupo.id %}" 
+                       class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Tomar Asistencia
+                    </a>
+                    
+                    <a href="{% url 'grupos:detalle_grupo' pk=grupo.id %}" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="bi bi-eye me-2"></i>
+                        Ver Detalle
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                No tienes grupos asignados.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
+## ================================================
+## OPCIÓN 3: Desde navbar/menú principal
+## ================================================
+
+<!-- Archivo: templates/base/navbar.html (o base.html) -->
+<!-- Agregar en el menú de navegación -->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">VIDAMED</a>
+        
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+                
+                <!-- Menú existente -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'procedimientos:paciente_list' %}">
+                        <i class="bi bi-people"></i> Pacientes
+                    </a>
+                </li>
+                
+                <!-- ✅ NUEVO: Acceso rápido asistencias -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'grupos:mis_grupos' %}">
+                        <i class="bi bi-calendar-check"></i> Mis Grupos
+                    </a>
+                </li>
+                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear"></i> Gestión
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'grupos:grupo_lista' %}">
+                                <i class="bi bi-list"></i> Todos los Grupos
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'grupos:mis_grupos' %}">
+                                <i class="bi bi-calendar-check"></i> Tomar Asistencias
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+## ================================================
+## OPCIÓN 4: Tabla de pacientes en grupo
+## ================================================
+
+<!-- Archivo: templates/grupos/detalle_grupo.html -->
+<!-- En la tabla de pacientes, agregar columna de acciones -->
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Pacientes Asignados</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Admisión</th>
+                    <th>Días</th>
+                    <th>Progreso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asig in asignaciones %}
+                <tr>
+                    <td>
+                        <strong>{{ asig.paciente.nombre_completo }}</strong><br>
+                        <small class="text-muted">{{ asig.paciente.numero_documento }}</small>
+                    </td>
+                    <td>
+                        {% if asig.admision_terapia %}
+                        <span class="badge bg-{{ asig.admision_terapia.estado|yesno:'success,danger' }}">
+                            {{ asig.admision_terapia.numero_admision }}
+                        </span><br>
+                        <small>{{ asig.admision_terapia.cantidad_realizada }}/{{ asig.admision_terapia.cantidad_ordenada }}</small>
+                        {% else %}
+                        <span class="badge bg-warning">Sin admisión</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ asig.dias_asistencia|join:", " }}</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ asig.progreso }}%">
+                                {{ asig.progreso }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <!-- ✅ Acceso individual -->
+                        <a href="{% url 'grupos:historial_asistencia_paciente' paciente_id=asig.paciente.id %}" 
+                           class="btn btn-sm btn-info"
+                           title="Ver historial">
+                            <i class="bi bi-clock-history"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        No hay pacientes asignados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <!-- ✅ Botón para tomar asistencia de todos -->
+        <a href="{% url 'grupos:control_asistencia_grupo' grupo_id=grupo.id %}" 
+           class="btn btn-success">
+            <i class="bi bi-calendar-check me-2"></i>
+            Registrar Asistencia del Día
+        </a>
+    </div>
+</div>
+
+
+## ================================================
+## OPCIÓN 5: Dashboard terapeuta (página inicio)
+## ================================================
+
+<!-- Archivo: templates/dashboard/terapeuta.html -->
+<!-- O templates/home.html si existe -->
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="mb-3">Accesos Rápidos</h4>
+    </div>
+    
+    <!-- ✅ Card acceso rápido asistencias -->
+    <div class="col-md-3">
+        <a href="{% url 'grupos:mis_grupos' %}" class="text-decoration-none">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check display-4"></i>
+                    <h5 class="mt-3">Tomar Asistencia</h5>
+                    <p class="mb-0">Registrar hoy</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-3">
+        <a href="{% url 'procedimientos:paciente_list' %}" class="text-decoration-none">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill display-4"></i>
+                    <h5 class="mt-3">Pacientes</h5>
+                    <p class="mb-0">Ver lista</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <!-- ... más cards ... -->
+</div>
+
+
+## ================================================
+## OPCIÓN 6: Lista de pacientes (acción individual)
+## ================================================
+
+<!-- Archivo: templates/procedimientos/paciente_lista.html -->
+<!-- En la columna de acciones, agregar botón -->
+
+<td>
+    <a href="{% url 'procedimientos:paciente_detail' pk=paciente.id %}" 
+       class="btn btn-sm btn-info">
+        <i class="bi bi-eye"></i>
+    </a>
+    
+    <!-- ✅ Historial asistencias -->
+    <a href="{% url 'grupos:historial_asistencia_paciente' paciente_id=paciente.id %}" 
+       class="btn btn-sm btn-success"
+       title="Historial asistencias">
+        <i class="bi bi-calendar-check"></i>
+    </a>
+</td>

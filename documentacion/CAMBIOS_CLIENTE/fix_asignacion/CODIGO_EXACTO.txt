@@ -1,0 +1,268 @@
+# 📝 CÓDIGO EXACTO: Antes y Después
+
+## ❌ CÓDIGO ACTUAL (CON ERROR)
+
+```python
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    """
+    Asignar paciente a grupo desde recomendaciones
+    """
+    # ... código existente ...
+    
+    # ❌ ESTA LÍNEA CAUSA EL ERROR:
+    return redirect('grupos:asignar_paciente_grupo',
+                    paciente_id=paciente_id,
+                    grupo_id=grupo_id)
+```
+
+---
+
+## ✅ CÓDIGO CORREGIDO (OPCIÓN MÍNIMA)
+
+```python
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    """
+    Asignar paciente a grupo desde recomendaciones
+    """
+    # ... código existente ...
+    
+    # ✅ CAMBIAR POR ESTA LÍNEA:
+    return redirect('grupos:detalle_grupo', pk=grupo_id)
+```
+
+**Cambio:** Solo 1 línea diferente
+
+---
+
+## ✅ CÓDIGO COMPLETO MEJORADO (OPCIÓN COMPLETA)
+
+Si quieres la función completa con todas las validaciones:
+
+```python
+@login_required
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    """
+    Asigna un paciente a un grupo desde la página de recomendaciones
+    """
+    from apps.procedimientos.models import Paciente, AdmisionTerapia
+    from datetime import date
+    
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    fecha_hoy = date.today()
+    
+    try:
+        with transaction.atomic():
+            # Verificar admisión vigente
+            admision = AdmisionTerapia.objects.filter(
+                paciente=paciente,
+                terapia=grupo.terapia,
+                estado='VIGENTE',
+                fecha_inicio__lte=fecha_hoy,
+                fecha_fin__gte=fecha_hoy
+            ).first()
+            
+            if not admision:
+                messages.error(
+                    request,
+                    f'❌ El paciente no tiene admisión vigente para {grupo.terapia.nombre}'
+                )
+                return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+            
+            # Verificar cupo
+            asignaciones_activas = AsignacionGrupo.objects.filter(
+                grupo=grupo,
+                estado='ACTIVA'
+            ).count()
+            
+            if asignaciones_activas >= grupo.capacidad_maxima:
+                messages.warning(
+                    request,
+                    f'⚠️ El grupo está lleno ({asignaciones_activas}/{grupo.capacidad_maxima})'
+                )
+                return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+            
+            # Verificar si ya está asignado
+            if AsignacionGrupo.objects.filter(
+                paciente=paciente,
+                grupo=grupo,
+                estado='ACTIVA'
+            ).exists():
+                messages.info(
+                    request,
+                    f'ℹ️ El paciente ya está asignado a este grupo'
+                )
+                return redirect('grupos:detalle_grupo', pk=grupo_id)
+            
+            # Crear asignación
+            AsignacionGrupo.objects.create(
+                paciente=paciente,
+                grupo=grupo,
+                admision_terapia=admision,
+                dias_asistencia=grupo.dias_disponibles,
+                numero_terapias_semanales=len(grupo.dias_disponibles),
+                estado='ACTIVA',
+                fecha_inicio_asignacion=fecha_hoy
+            )
+            
+            messages.success(
+                request,
+                f'✅ {paciente.nombre_completo} asignado a {grupo.nombre}'
+            )
+            
+            # ✅ REDIRIGIR AL DETALLE DEL GRUPO
+            return redirect('grupos:detalle_grupo', pk=grupo_id)
+            
+    except Exception as e:
+        messages.error(request, f'❌ Error: {str(e)}')
+        return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+```
+
+---
+
+## 🔍 CÓMO ENCONTRAR LA LÍNEA
+
+### Método 1: Buscar por número de línea
+```
+1. Abrir apps/grupos/views.py
+2. Ir a línea 528 (Ctrl+G en VS Code)
+3. Buscar el return redirect
+```
+
+### Método 2: Buscar por texto
+```
+1. Abrir apps/grupos/views.py
+2. Ctrl+F
+3. Buscar: asignar_paciente_grupo
+4. Te lleva directo a la línea problemática
+```
+
+### Método 3: Buscar por función
+```
+1. Abrir apps/grupos/views.py
+2. Ctrl+F
+3. Buscar: def asignar_desde_recomendacion
+4. Bajar hasta el return redirect
+```
+
+---
+
+## 📋 PASOS EXACTOS
+
+### 1. Abrir archivo
+```bash
+apps/grupos/views.py
+```
+
+### 2. Buscar texto (Ctrl+F)
+```
+asignar_paciente_grupo
+```
+
+### 3. Verás esto:
+```python
+return redirect('grupos:asignar_paciente_grupo',  # ← ESTA LÍNEA
+                paciente_id=paciente_id,
+                grupo_id=grupo_id)
+```
+
+### 4. Seleccionar TODO el return (3 líneas)
+```python
+return redirect('grupos:asignar_paciente_grupo',
+                paciente_id=paciente_id,
+                grupo_id=grupo_id)
+```
+
+### 5. BORRAR y escribir esto:
+```python
+return redirect('grupos:detalle_grupo', pk=grupo_id)
+```
+
+### 6. Guardar (Ctrl+S)
+
+---
+
+## ✅ VERIFICACIÓN
+
+Después de cambiar, la función debe terminar así:
+
+```python
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    # ... código ...
+    
+    # ✅ DEBE TENER ESTA LÍNEA AL FINAL:
+    return redirect('grupos:detalle_grupo', pk=grupo_id)
+    
+    # ❌ NO DEBE TENER ESTO:
+    # return redirect('grupos:asignar_paciente_grupo', ...)
+```
+
+---
+
+## 🎯 RESULTADO ESPERADO
+
+### Antes del cambio:
+```
+Click "Asignar a este grupo"
+    ↓
+❌ ERROR 500
+❌ NoReverseMatch
+❌ Página en blanco
+```
+
+### Después del cambio:
+```
+Click "Asignar a este grupo"
+    ↓
+✅ Paciente asignado al grupo
+✅ Redirige a detalle del grupo
+✅ Mensaje: "✅ Asignado exitosamente"
+✅ Paciente aparece en la lista
+```
+
+---
+
+## 💾 BACKUP
+
+Antes de cambiar, guarda una copia:
+
+```python
+# BACKUP de la línea original:
+# return redirect('grupos:asignar_paciente_grupo',
+#                 paciente_id=paciente_id,
+#                 grupo_id=grupo_id)
+
+# NUEVA línea corregida:
+return redirect('grupos:detalle_grupo', pk=grupo_id)
+```
+
+---
+
+## 🆘 SI ALGO SALE MAL
+
+Si después del cambio hay error:
+
+1. **Verificar que exista la URL:**
+```python
+# En apps/grupos/urls.py debe estar:
+path('grupos/<int:pk>/', views.grupo_detalle, name='detalle_grupo'),
+```
+
+2. **Verificar imports:**
+```python
+# Al inicio de apps/grupos/views.py:
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib import messages
+```
+
+3. **Reiniciar servidor:**
+```bash
+Ctrl+C
+python manage.py runserver
+```
+
+---
+
+**Cambio: 1 línea** ✏️  
+**Tiempo: 2 minutos** ⏱️  
+**Error solucionado** ✅

@@ -1,0 +1,257 @@
+# 🎯 IMPLEMENTACIÓN: Corrección del Flujo de Pacientes
+
+## 📋 CHECKLIST DE IMPLEMENTACIÓN
+
+```
+☐ 1. Backup de base de datos
+☐ 2. Modificar models.py (estado default)
+☐ 3. Modificar views.py (admision_paciente)
+☐ 4. Agregar función validar_paciente_para_asignacion
+☐ 5. Modificar asignar_paciente_grupo
+☐ 6. Modificar agregar_grupo_paciente
+☐ 7. Modificar asignar_desde_recomendacion
+☐ 8. Crear migraciones
+☐ 9. Actualizar pacientes existentes
+☐ 10. Probar flujo completo
+```
+
+---
+
+## ⚡ IMPLEMENTACIÓN RÁPIDA (10 minutos)
+
+### PASO 1: Backup (1 min)
+```bash
+python manage.py dumpdata > backup_$(date +%Y%m%d_%H%M%S).json
+```
+
+### PASO 2: Modificar models.py (1 min)
+**Archivo:** `apps/procedimientos/models.py` línea ~292
+
+```python
+# BUSCAR:
+estado = models.CharField(
+    max_length=30,
+    choices=Estado.choices,
+    default=Estado.ACTIVO,  # ❌ CAMBIAR ESTA LÍNEA
+    verbose_name='Estado'
+)
+
+# CAMBIAR POR:
+estado = models.CharField(
+    max_length=30,
+    choices=Estado.choices,
+    default=Estado.ADMITIDO,  # ✅ NUEVO VALOR
+    verbose_name='Estado'
+)
+```
+
+### PASO 3: Modificar views.py admision_paciente (2 min)
+**Archivo:** `apps/procedimientos/views.py` línea ~318
+
+```python
+# BUSCAR:
+paciente = form.save(commit=False)
+paciente.creado_por = request.user
+# ✅ AGREGAR AQUÍ:
+paciente.estado = Paciente.Estado.ADMITIDO
+paciente.save()
+```
+
+### PASO 4: Agregar función de validación (2 min)
+**Archivo:** `apps/grupos/views.py` (al principio, después de imports)
+
+```python
+# Copiar función completa de FIX_3_VALIDACIONES_ASIGNACION.txt
+def validar_paciente_para_asignacion(paciente, grupo):
+    """Valida prerrequisitos para asignación"""
+    # ... código completo en el archivo FIX_3
+```
+
+### PASO 5-7: Modificar funciones de asignación (3 min)
+**Archivo:** `apps/grupos/views.py`
+
+En cada función (`asignar_paciente_grupo`, `agregar_grupo_paciente`, `asignar_desde_recomendacion`):
+
+```python
+# AGREGAR ANTES de crear AsignacionGrupo:
+es_valido, mensaje_error, admision = validar_paciente_para_asignacion(
+    paciente, grupo
+)
+
+if not es_valido:
+    messages.error(request, f'❌ {mensaje_error}')
+    return redirect(...)
+
+# Luego usar 'admision' al crear AsignacionGrupo
+```
+
+### PASO 8: Crear migraciones (1 min)
+```bash
+python manage.py makemigrations procedimientos
+python manage.py migrate
+```
+
+### PASO 9: Actualizar pacientes existentes (1 min)
+```bash
+python manage.py shell
+```
+
+```python
+from apps.procedimientos.models import Paciente
+
+# Actualizar pacientes sin valoración a ADMITIDO
+Paciente.objects.filter(
+    valoracion_inicial__isnull=True,
+    estado='ACTIVO'
+).update(estado='ADMITIDO')
+
+# Verificar
+print(f"Pacientes pendientes valoración: {Paciente.objects.filter(estado='ADMITIDO').count()}")
+exit()
+```
+
+---
+
+## 🧪 PASO 10: PRUEBAS
+
+### Test 1: Registro de paciente
+```
+1. Ir a admisión de paciente
+2. Registrar nuevo paciente
+3. Verificar que estado = ADMITIDO
+4. Verificar que aparece en "Pendientes de Valoración"
+```
+
+### Test 2: Intento de asignación sin valoración
+```
+1. Intentar asignar paciente sin valoración a un grupo
+2. Debe mostrar error: "El paciente no tiene valoración inicial"
+3. No debe permitir la asignación
+```
+
+### Test 3: Valoración y asignación
+```
+1. Crear valoración inicial para paciente
+2. Completar valoración
+3. Estado cambia a PENDIENTE_ASIGNACION
+4. Intentar asignar sin admisión → Error
+5. Crear admisión de terapia
+6. Asignar a grupo → Éxito
+7. Estado cambia a ACTIVO
+8. Paciente visible en grupo
+```
+
+### Test 4: Verificar admisión vinculada
+```
+1. Ir a detalle del grupo
+2. Verificar que pacientes tienen:
+   - Admisión visible
+   - Progress bar con sesiones
+   - Estado VIGENTE
+```
+
+---
+
+## 📊 ESTADOS ESPERADOS
+
+```
+ADMITIDO
+    └─> Valoración Inicial
+        └─> PENDIENTE_ASIGNACION
+            └─> Admisión Terapia
+                └─> Asignación Grupo
+                    └─> ACTIVO
+```
+
+---
+
+## ⚠️ PROBLEMAS COMUNES
+
+### Problema: Migraciones con conflictos
+```bash
+# Solución:
+python manage.py makemigrations --merge
+python manage.py migrate
+```
+
+### Problema: Pacientes no aparecen en grupos
+```
+Causa: Asignaciones sin admision_terapia
+Solución: Eliminar y recrear asignaciones después del fix
+```
+
+### Problema: No permite asignar
+```
+Verificar:
+1. Paciente tiene valoración completada
+2. Admisión existe y está vigente
+3. Fechas de admisión incluyen hoy
+```
+
+---
+
+## 🔄 ROLLBACK (Si algo sale mal)
+
+```bash
+# Restaurar backup
+python manage.py loaddata backup_YYYYMMDD_HHMMSS.json
+
+# Revertir migraciones
+python manage.py migrate procedimientos 00XX  # número anterior
+
+# Revertir cambios en código
+git checkout -- apps/procedimientos/models.py
+git checkout -- apps/procedimientos/views.py
+git checkout -- apps/grupos/views.py
+```
+
+---
+
+## ✅ VERIFICACIÓN FINAL
+
+```python
+# En shell de Django
+from apps.procedimientos.models import Paciente
+from apps.grupos.models import AsignacionGrupo
+
+# 1. Pacientes admitidos sin valoración
+sin_valorar = Paciente.objects.filter(
+    estado='ADMITIDO',
+    valoracion_inicial__isnull=True
+).count()
+print(f"Pacientes pendientes valoración: {sin_valorar}")
+
+# 2. Asignaciones con admisión vinculada
+con_admision = AsignacionGrupo.objects.filter(
+    estado='ACTIVA',
+    admision_terapia__isnull=False
+).count()
+print(f"Asignaciones con admisión: {con_admision}")
+
+# 3. Asignaciones SIN admisión (debe ser 0)
+sin_admision = AsignacionGrupo.objects.filter(
+    estado='ACTIVA',
+    admision_terapia__isnull=True
+).count()
+print(f"Asignaciones sin admisión: {sin_admision} (debe ser 0)")
+```
+
+---
+
+## 🎯 RESULTADO ESPERADO
+
+✅ **Flujo correcto implementado:**
+1. Registro → ADMITIDO → Aparece en pendientes
+2. Valoración → PENDIENTE_ASIGNACION
+3. Admisión terapia → Crea AdmisionTerapia
+4. Asignación → Valida todo → ACTIVO → Visible en grupo
+
+✅ **Validaciones funcionando:**
+- No permite asignar sin valoración
+- No permite asignar sin admisión vigente
+- Admisiones vinculadas correctamente
+
+✅ **Grupos mostrando pacientes:**
+- Solo con admisión vigente
+- Con progress bars correctos
+- Con información completa

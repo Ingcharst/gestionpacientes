@@ -1,0 +1,252 @@
+# ⚡ GUÍA RÁPIDA - Agregar campo 'terapia' (5 minutos)
+
+## ✅ SOLUCIÓN DEFINITIVA
+
+Agregar campo `terapia` al modelo `GrupoTerapeutico` - Sin perder datos.
+
+---
+
+## 🚀 PASO A PASO (5 minutos)
+
+### 1️⃣ Modificar Modelo (1 min)
+
+**Archivo:** `apps/grupos/models.py`
+
+**Buscar:**
+```python
+class GrupoTerapeutico(models.Model):
+```
+
+**Agregar este import arriba del archivo:**
+```python
+from apps.terapias.models import Terapia
+```
+
+**Agregar este campo dentro de la clase:**
+```python
+class GrupoTerapeutico(models.Model):
+    # ... campos existentes ...
+    
+    # ✅ AGREGAR ESTE CAMPO:
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='grupos_terapeuticos',
+        verbose_name='Terapia',
+        null=True,
+        blank=True,
+        help_text='Tipo de terapia del grupo'
+    )
+    
+    # ... resto de campos ...
+```
+
+**Guardar:** `Ctrl+S`
+
+---
+
+### 2️⃣ Crear Migración (30 seg)
+
+**Terminal:**
+```bash
+python manage.py makemigrations grupos
+```
+
+**Salida esperada:**
+```
+Migrations for 'grupos':
+  grupos/migrations/000X_grupoterapeutico_add_terapia.py
+    - Add field terapia to grupoterapeutico
+```
+
+---
+
+### 3️⃣ Aplicar Migración (30 seg)
+
+**Terminal:**
+```bash
+python manage.py migrate grupos
+```
+
+**Salida esperada:**
+```
+Running migrations:
+  Applying grupos.000X_grupoterapeutico_add_terapia... OK
+```
+
+✅ **Campo agregado - Datos preservados**
+
+---
+
+### 4️⃣ Asignar Terapias (2 min)
+
+**Opción A: Script Automático (Recomendado)**
+
+```bash
+# Copiar script a raíz del proyecto
+cp asignar_terapias.py E:\TEA_Center\tea_management\
+
+# Ejecutar
+cd E:\TEA_Center\tea_management
+python asignar_terapias.py
+```
+
+**Opción B: Manual en Admin**
+
+```
+1. Abrir: http://127.0.0.1:8000/admin/grupos/grupoterapeutico/
+2. Editar cada grupo
+3. Seleccionar terapia
+4. Guardar
+```
+
+---
+
+### 5️⃣ Copiar Archivos IA Corregidos (1 min)
+
+**Ya tienes el ZIP correcto:**
+```bash
+# Extraer: FIX_IA_SISTEMA_COMPLETO.zip
+# Copiar a: apps/ml_models/
+
+predictor.py
+reglas.py
+features.py
+scoring.py
+```
+
+---
+
+### 6️⃣ Reiniciar y Probar (30 seg)
+
+```bash
+# Reiniciar servidor
+python manage.py runserver
+
+# Probar recomendación
+http://127.0.0.1:8000/grupos/paciente/17/recomendar-grupos/
+```
+
+✅ **Debe funcionar perfectamente**
+
+---
+
+## 📋 CÓDIGO COMPLETO DEL CAMPO
+
+```python
+# apps/grupos/models.py
+
+from django.db import models
+from apps.terapias.models import Terapia  # ← Agregar import
+
+class GrupoTerapeutico(models.Model):
+    """Grupo Terapéutico"""
+    
+    # Campos existentes
+    nombre = models.CharField(max_length=200, verbose_name='Nombre del Grupo')
+    descripcion = models.TextField(blank=True, verbose_name='Descripción')
+    
+    # ✅ NUEVO CAMPO (Agregar aquí):
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='grupos_terapeuticos',
+        verbose_name='Terapia',
+        null=True,
+        blank=True,
+        help_text='Tipo de terapia que ofrece este grupo'
+    )
+    
+    # Otros campos existentes
+    capacidad_maxima = models.IntegerField(default=10)
+    cupos_disponibles = models.IntegerField(default=10)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    # ... más campos ...
+    
+    class Meta:
+        verbose_name = 'Grupo Terapéutico'
+        verbose_name_plural = 'Grupos Terapéuticos'
+    
+    def __str__(self):
+        return self.nombre
+```
+
+---
+
+## ✅ CHECKLIST
+
+```
+☐ 1. Agregar import Terapia en models.py
+☐ 2. Agregar campo terapia en GrupoTerapeutico
+☐ 3. Guardar archivo
+☐ 4. Ejecutar: python manage.py makemigrations grupos
+☐ 5. Ejecutar: python manage.py migrate grupos
+☐ 6. Asignar terapias (script o manual)
+☐ 7. Copiar archivos IA corregidos
+☐ 8. Reiniciar servidor
+☐ 9. Probar recomendaciones
+☐ ✓ Funciona correctamente
+```
+
+---
+
+## 🆘 SI HAY ERROR
+
+### Error: "No module named 'apps.terapias'"
+
+**Verificar que existe:**
+```bash
+dir apps\terapias\models.py
+```
+
+**Si no existe:**
+```python
+# Usar path completo según tu estructura
+from terapias.models import Terapia
+```
+
+### Error: "Terapia is not defined"
+
+**Verificar import está al inicio del archivo:**
+```python
+# Debe estar con los otros imports
+from apps.terapias.models import Terapia
+```
+
+### Grupos quedan sin terapia
+
+**Asignar manualmente:**
+```
+http://127.0.0.1:8000/admin/grupos/grupoterapeutico/
+```
+
+---
+
+## 🎯 RESULTADO FINAL
+
+```
+✅ Campo terapia agregado
+✅ Datos existentes intactos
+✅ Terapias asignadas
+✅ IA funciona correctamente
+✅ Filtra grupos por terapia valorada
+✅ Recomendaciones óptimas
+✅ Sistema completo funcional
+```
+
+---
+
+## ⏱️ TIEMPO REAL
+
+- Agregar campo: 1 min
+- Migraciones: 1 min
+- Asignar terapias: 2 min
+- Copiar archivos IA: 1 min
+- **Total: 5 minutos**
+
+---
+
+**Esta es la solución DEFINITIVA y CORRECTA** ✅  
+**Sin parches temporales** ✅  
+**Estructura de BD profesional** ✅

@@ -1,0 +1,22 @@
+Hola nuevamente, mi cliente quiere hacer cambios en nuestra aplicación y necesitamos realizar algunos cambios:
+
+Ya tenemos creados los grupos terapéutico, consultorios, usuarios, entre otros. A los usuarios debemos permitirle que carguen una imagen de su firma, para que pueda pegarse en los informes individuales correspondientes. 
+
+1. Los pacientes nuevos, se registran en el sistema (sin admisión ni historia clínica).
+
+2. El paciente debe pasar una valoración por cada uno de los profesionales (terapeutas) de la IPS con el fin de establecer su estado de salud general y realizar las observaciones. Por lo tanto la valoración debe quedar abierta para que cada terapeuta pueda emitir su concepto.
+
+3. El paciente valorado, va a recibir diferentes terapias ordenadas por la EPS. Cada una de las terapias, debe tener una admisión diferente, el cual es provisto por la EPS, no por el sistema. 
+Se debe tener en cuenta el número de terapias ordenadas las cuales deben realizarse en cuatro semanas, sin contar sábados ni domingos. Un total de cinco terapias por semana, sin embargo, si el número de terapias ordenadas supera las 20, entonces, se debe incluir al paciente en otros grupos disponibles para completar el total de las terapias en las 4 semanas.
+
+4. El número máximo de pacientes por grupo podría cambiar en cualquier momento por parte del administrador, si el grupo tiene cupo completo y se le cambia el cupo máximo a una cantidad inferior, debe informar de inmediato y mostrar los pacientes para que uno o más sean reasignados a otros grupos, según el criterio del usuario.
+
+5. El terapeuta, debe poder registrar la asistencia de cada paciente de su grupo, en cada sesión. Para ello debemos permitirle una interfaz con la lista de pacientes de su grupo con número de admisión vigente (el núero de admisión solo está vigente durante las cuatro semanas), en ella solo debe chequear la asistencia de cada uno.
+
+6. Si un paciente no asiste a sus sesiones terapéuticas durante tres días consecutivos, entonces debe enviar una alerta del paciente, además de un mensaje de texto al acudiente del paciente informando al respecto y solicitando se comunique urgente con la IPS a un número establecido.
+
+7. En los informes de evolución de cada paciente, el texto vendrá predeterminado (El cliente lo suministrará al igual que el formato para el informe), cada informe debe llevar la imagen de la firma del terapeuta (que debemos tener almacenada previamente).
+
+8. El modelo de IA debe, a partir de las valoraciones y observaciones de cada terapeuta, seleccionar los grupos terapeúticos en los que podría estar agregado el paciente teniendo en cuenta edades máximas y mínimas de cada grupo, que el grupo tenga aún cupos disponibles y que reciba las terapias ordenadas y mostralos al admisionista para aque determine a cual grupo lo asigna.
+
+Estos cambios, requieren también cambios en los modelos, vistas, urls e interfaces. Consideras que es mejor aprovechar lo que tenemos o iniciar desde cero el proyecto? 

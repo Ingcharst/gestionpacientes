@@ -42,6 +42,11 @@ def categoria_create(request):
             categoria = form.save()
             messages.success(request, f'Categoría {categoria.nombre} creada exitosamente.')
             return redirect('categoria_list')
+        else:
+            # Mostrar errores de validación
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = CategoriaTerapiaForm()
     

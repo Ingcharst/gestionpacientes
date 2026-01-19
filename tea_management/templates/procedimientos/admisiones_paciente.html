@@ -1,0 +1,38 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Admisiones - {{ paciente.nombre_completo }}</h3>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'procedimientos:crear_admision' paciente_id=paciente.id %}" class="btn btn-primary">
+                <i class="bi bi-plus"></i> Nueva Admisión
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        {% for adm in admisiones %}
+        <div class="col-md-6 mb-3">
+            <div class="card border-start border-{{ adm.estado|yesno:'success,danger,warning' }} border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h5>{{ adm.terapia.nombre }}</h5>
+                        <span class="badge bg-{{ adm.estado|yesno:'success,danger,warning' }}">{{ adm.get_estado_display }}</span>
+                    </div>
+                    <p><strong>N° Admisión:</strong> {{ adm.numero_admision }}</p>
+                    <p><strong>Vigencia:</strong> {{ adm.fecha_inicio|date:"d/m/Y" }} - {{ adm.fecha_fin|date:"d/m/Y" }}</p>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" style="width: {{ adm.progreso_porcentaje }}%">
+                            {{ adm.cantidad_realizada }}/{{ adm.cantidad_ordenada }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><div class="alert alert-info">Sin admisiones</div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

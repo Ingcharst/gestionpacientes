@@ -1,0 +1,163 @@
+# ⚡ SOLUCIÓN RÁPIDA - 30 SEGUNDOS
+
+## 🔴 ERROR ENCONTRADO
+
+**Archivo:** `apps/procedimientos/forms.py`  
+**Líneas:** 39-53  
+**Problema:** Sintaxis rota + widgets faltantes
+
+---
+
+## ✅ CORRECCIÓN EXPRESS (30 seg)
+
+### 1️⃣ ABRIR (5 seg)
+```
+apps/procedimientos/forms.py
+```
+
+### 2️⃣ BUSCAR (5 seg)
+```python
+class PacienteForm(forms.ModelForm):
+```
+
+### 3️⃣ ENCONTRAR LA LÍNEA 39 (5 seg)
+```python
+        widgets = {
+```
+
+### 4️⃣ BORRAR (5 seg)
+**DESDE línea 39 HASTA línea 53:**
+
+```python
+        widgets = {
+            'codigo_enfermedad': forms.HiddenInput(),
+            'diagnostico_principal': forms.TextInput(...
+            ...
+            'motivo_inactividad': forms.Textarea(...),
+        }
+```
+
+### 5️⃣ PEGAR (10 seg)
+
+Copiar de **PacienteForm_CORREGIDO.py** líneas 28-162 y pegar en su lugar.
+
+---
+
+## 📋 CÓDIGO MÍNIMO NECESARIO
+
+Si prefieres editar manualmente, estos son los campos críticos que faltan/están rotos:
+
+```python
+widgets = {
+    # ... campos existentes correctos ...
+    
+    # ✅ AGREGAR/CORREGIR estos:
+    'eps': forms.TextInput(attrs={
+        'class': 'form-control'
+    }),
+    'alergias': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+    'medicamentos': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+    'fecha_ingreso': forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }),
+    'fecha_alta': forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }),
+    'observaciones': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 3
+    }),
+    'necesidades_especiales': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 3
+    }),
+    'motivo_inactividad': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+}
+```
+
+---
+
+## 🎯 ERROR EXACTO
+
+**Línea 41-44 (problema principal):**
+```python
+# ❌ ESTO ESTÁ ROTO:
+'diagnostico_principal': forms.TextInput(attrs={
+    'class': 'form-control',
+    'placeholder': 'Solo si no está en catálogo (ej: Z99.9)'
+}),         'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+#   ^^^^^^^^^^^^ FALTA SALTO DE LÍNEA - ROMPE TODO
+```
+
+**Línea 49 (duplicado):**
+```python
+# ❌ DUPLICADO:
+'diagnostico_principal': forms.Textarea(...)  # Ya definido arriba
+```
+
+---
+
+## ✅ VERIFICAR
+
+```bash
+python manage.py runserver
+```
+
+Ir a: `http://127.0.0.1:8000/procedimientos/pacientes/registrar/`
+
+**Ahora deben aparecer:**
+- ☑ Textarea en Alergias
+- ☑ Textarea en Medicamentos
+- ☑ Input en EPS
+- ☑ Date input en Fecha Ingreso
+- ☑ Date input en Fecha Alta
+- ☑ Textarea en Motivo Inactividad
+- ☑ Textarea en Observaciones
+- ☑ Textarea en Necesidades Especiales
+
+---
+
+## 🔧 SI PERSISTE EL PROBLEMA
+
+1. **Reiniciar servidor Django:**
+```bash
+Ctrl+C
+python manage.py runserver
+```
+
+2. **Limpiar caché navegador:**
+```
+Ctrl+Shift+R (Windows/Linux)
+Cmd+Shift+R (Mac)
+```
+
+3. **Ver errores:**
+```
+F12 → Console (navegador)
+Terminal (servidor Django)
+```
+
+---
+
+## ⏱️ TIEMPO: 30 SEGUNDOS
+
+- Abrir: 5 seg
+- Buscar: 5 seg
+- Encontrar: 5 seg
+- Borrar: 5 seg
+- Pegar: 10 seg
+
+---
+
+**¡Listo!** ✅

@@ -1,0 +1,240 @@
+# CORRECCIÓN COMPLETA: MENÚS Y ENLACES
+
+## 🔧 PROBLEMA
+
+1. ❌ NoReverseMatch: URL sin terapia_id
+2. ❌ No hay menús para acceder a nuevas funcionalidades
+3. ❌ Enlaces faltantes en detalle del paciente
+
+## ✅ SOLUCIÓN COMPLETA
+
+### 1. CORREGIR TEMPLATE PENDIENTES VALORACIÓN
+
+**Reemplazar:** `apps/procedimientos/templates/procedimientos/pacientes_pendientes_valoracion.html`
+
+**Con:** `templates_corregidos/pacientes_pendientes_valoracion.html`
+
+**Cambio clave:**
+```django
+<!-- ANTES (ERROR): -->
+<a href="{% url 'procedimientos:crear_valoracion' paciente.pk %}">
+
+<!-- DESPUÉS (CORRECTO): -->
+<a href="{% url 'procedimientos:valoraciones_paciente' pk=paciente.pk %}">
+```
+
+---
+
+### 2. ACTUALIZAR NAVBAR CON MENÚS
+
+**Ubicación:** `templates/base/base.html` o `templates/base/navbar.html`
+
+**Reemplazar** la sección `<nav>` con el contenido de:
+`templates_corregidos/navbar_actualizado.html`
+
+**Menús nuevos agregados:**
+- 📋 Pacientes → Registrar, Pendientes Valoración, Pendientes Asignación
+- 🏥 Admisiones → Dashboard
+- 🔔 Alertas → Con contador en tiempo real
+
+---
+
+### 3. AGREGAR BOTONES EN DETALLE PACIENTE
+
+**Ubicación:** `apps/procedimientos/templates/procedimientos/paciente_detail.html`
+
+**Agregar** después de la info del paciente el contenido de:
+`templates_corregidos/paciente_detail_botones.html`
+
+**Botones agregados:**
+- Valoraciones (contador)
+- Admisiones (vigentes)
+- Asistencias (historial)
+- Recomendar Grupos IA
+
+---
+
+### 4. AGREGAR CONTEXT PROCESSOR (Contador Alertas)
+
+**Paso A:** Crear archivo
+```bash
+# CREAR: apps/alertas/context_processors.py
+# Copiar contenido de: templates_corregidos/context_processors.py
+```
+
+**Paso B:** Registrar en settings
+```python
+# config/settings.py
+
+TEMPLATES = [
+    {
+        'OPTIONS': {
+            'context_processors': [
+                # ... existentes ...
+                'apps.alertas.context_processors.alertas_pendientes',  # AGREGAR
+            ],
+        },
+    },
+]
+```
+
+---
+
+### 5. COMPLETAR URLs FALTANTES
+
+#### A. Procedimientos:
+
+**Archivo:** `apps/procedimientos/urls.py`
+
+**Agregar URLs de:** `templates_corregidos/urls_procedimientos_completas.py`
+
+URLs nuevas:
+- `pacientes/registrar/`
+- `pacientes/pendientes-valoracion/`
+- `pacientes/pendientes-asignacion/`
+- `pacientes/<pk>/valoraciones/`
+- `pacientes/<paciente_id>/valoracion/<terapia_id>/crear/`
+- `pacientes/<pk>/admisiones/`
+- `pacientes/<paciente_id>/admisiones/crear/`
+- `admisiones/dashboard/`
+
+#### B. Grupos:
+
+**Archivo:** `apps/grupos/urls.py`
+
+**Agregar URLs de:** `templates_corregidos/urls_grupos_alertas.py`
+
+#### C. Alertas:
+
+**Crear:** `apps/alertas/urls.py`
+
+**Copiar de:** `templates_corregidos/urls_grupos_alertas.py`
+
+**Registrar en:** `config/urls.py`
+```python
+path('alertas/', include('apps.alertas.urls')),
+```
+
+---
+
+### 6. AGREGAR VISTAS FALTANTES
+
+Si no existen estas vistas, agregar a `apps/procedimientos/views.py`:
+
+```python
+@login_required
+def pacientes_pendientes_valoracion(request):
+    # Ver código en: urls_procedimientos_completas.py
+
+@login_required
+def pacientes_pendientes_asignacion(request):
+    # Ver código en: urls_procedimientos_completas.py
+```
+
+---
+
+## 📋 CHECKLIST INSTALACIÓN
+
+```bash
+# 1. Templates
+☐ Reemplazar pacientes_pendientes_valoracion.html
+☐ Actualizar navbar en base.html
+☐ Agregar botones en paciente_detail.html
+
+# 2. Context Processor
+☐ Crear apps/alertas/context_processors.py
+☐ Agregar a TEMPLATES en settings.py
+
+# 3. URLs
+☐ Actualizar apps/procedimientos/urls.py
+☐ Actualizar apps/grupos/urls.py
+☐ Crear apps/alertas/urls.py
+☐ Registrar en config/urls.py
+
+# 4. Vistas
+☐ Agregar vistas pendientes a views.py
+
+# 5. Verificar
+☐ python manage.py check
+☐ python manage.py runserver
+```
+
+---
+
+## 🧪 PROBAR
+
+### 1. Navbar (menús visibles)
+```
+✓ Pacientes → Registrar Nuevo
+✓ Pacientes → Pendientes Valoración
+✓ Pacientes → Pendientes Asignación
+✓ Admisiones → Dashboard
+✓ Alertas (con contador)
+```
+
+### 2. Detalle Paciente
+```
+http://localhost:8000/procedimientos/pacientes/<id>/
+✓ Botón "Valoraciones"
+✓ Botón "Admisiones"
+✓ Botón "Asistencias"
+✓ Botón "Recomendar Grupos IA"
+```
+
+### 3. Flujo Completo
+```
+1. Registrar Paciente → /procedimientos/pacientes/registrar/
+2. Ver Pendientes Valoración → Clic "Valorar"
+3. Lista de Terapias → Clic en terapia → Crear valoración
+4. Crear Admisión → Detalle paciente → "Admisiones"
+5. Ver Dashboard Alertas → /alertas/
+```
+
+---
+
+## ❌ ERRORES COMUNES
+
+### Error: NoReverseMatch
+**Causa:** URL mal configurada
+**Solución:** Verificar namespace: `procedimientos:nombre_url`
+
+### Error: Context processor
+**Causa:** No está registrado en settings
+**Solución:** Agregar a TEMPLATES['OPTIONS']['context_processors']
+
+### Error: Template not found
+**Causa:** Nombre incorrecto o ubicación errónea
+**Solución:** Verificar ruta exacta
+
+---
+
+## 📦 ARCHIVOS ENTREGADOS
+
+1. ✅ pacientes_pendientes_valoracion.html (corregido)
+2. ✅ navbar_actualizado.html (con menús)
+3. ✅ paciente_detail_botones.html (botones adicionales)
+4. ✅ context_processors.py (contador alertas)
+5. ✅ urls_procedimientos_completas.py (todas las URLs)
+6. ✅ urls_grupos_alertas.py (URLs grupos y alertas)
+
+---
+
+## 🎯 RESULTADO ESPERADO
+
+### ✅ Navbar funcional con:
+- Menú Pacientes (4 opciones)
+- Menú Grupos (2 opciones)
+- Menú Admisiones (1 opción)
+- Alertas con contador
+
+### ✅ Detalle Paciente con:
+- 4 botones acceso rápido
+- Contadores en tiempo real
+- Enlace a IA
+
+### ✅ Flujo completo:
+Registro → Valoración → Admisión → Asignación → Alertas
+
+---
+
+**Todo corregido y listo para usar** ✅

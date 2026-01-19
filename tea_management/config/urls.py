@@ -54,6 +54,7 @@ urlpatterns = [
     path('procedimientos/', include('apps.procedimientos.urls')),
     path('grupos/', include('apps.grupos.urls')),
     path('reportes/', include('apps.reportes.urls')),
+    path('alertas/', include('apps.alertas.urls')),
 ]
 
 # Configuración de Admin

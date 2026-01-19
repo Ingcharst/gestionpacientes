@@ -1,12 +1,9 @@
-"""
-Configuración del admin de Django para procedimientos.
-"""
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count
 from apps.procedimientos.models import (
-    Paciente, Procedimiento, SesionTerapeutica,
-    ObjetivoTerapeutico, EvolucionPaciente
+    Paciente, Procedimiento, SesionTerapeutica, ObjetivoTerapeutico, EvolucionPaciente, 
+    CodigoCIE10, ValoracionProfesional, AdmisionTerapia, AsistenciaSesion
 )
 
 @admin.register(Paciente)
@@ -589,7 +586,6 @@ class ObjetivoTerapeuticoAdmin(admin.ModelAdmin):
 
 @admin.register(EvolucionPaciente)
 class EvolucionPacienteAdmin(admin.ModelAdmin):
-    """Admin para Evoluciones de Pacientes"""
     
     list_display = [
         'fecha_sesion',
@@ -705,3 +701,34 @@ class EvolucionPacienteAdmin(admin.ModelAdmin):
         if obj and obj.firmado:
             return False
         return super().has_delete_permission(request, obj)
+
+
+@admin.register(CodigoCIE10)
+class CodigoCIE10Admin(admin.ModelAdmin):
+    list_display = ['codigo', 'nombre', 'categoria']
+    list_filter = ['categoria']
+    search_fields = ['codigo', 'nombre', 'descripcion']
+
+@admin.register(ValoracionProfesional)
+class ValoracionProfesionalAdmin(admin.ModelAdmin):
+    list_display = ['paciente', 'terapeuta', 'terapia', 'fecha_valoracion', 'estado']
+    list_filter = ['estado', 'terapia', 'fecha_valoracion']
+    search_fields = ['paciente__nombre', 'terapeuta__username']
+    readonly_fields = ['fecha_valoracion']
+
+@admin.register(AdmisionTerapia)
+class AdmisionTerapiaAdmin(admin.ModelAdmin):
+    list_display = ['numero_admision', 'paciente', 'terapia', 'fecha_inicio', 
+                    'cantidad_ordenada', 'cantidad_realizada', 'estado']
+    list_filter = ['estado', 'terapia', 'fecha_inicio']
+    search_fields = ['numero_admision', 'paciente__nombre']
+    readonly_fields = ['fecha_creacion', 'progreso_porcentaje']
+
+@admin.register(AsistenciaSesion)
+class AsistenciaSesionAdmin(admin.ModelAdmin):
+    list_display = ['fecha', 'paciente', 'grupo', 'asistio', 'justificada']
+    list_filter = ['asistio', 'justificada', 'fecha', 'grupo']
+    search_fields = ['paciente__nombre']
+    readonly_fields = ['fecha_registro']
+
+

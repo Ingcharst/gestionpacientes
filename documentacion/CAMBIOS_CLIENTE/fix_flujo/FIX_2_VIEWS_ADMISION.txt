@@ -1,0 +1,118 @@
+# ✅ CORRECCIÓN 2: Establecer estado al admitir paciente
+
+## Archivo: apps/procedimientos/views.py
+
+## Función: admision_paciente (línea ~304)
+
+### ❌ CÓDIGO ACTUAL:
+```python
+@login_required
+def admision_paciente(request):
+    """Vista para admisión de nuevos pacientes."""
+    if request.method == 'POST':
+        form = AdmisionPacienteForm(request.POST, request.FILES)
+        form.request = request
+        
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    paciente = form.save(commit=False)
+                    
+                    # Establecer creado_por
+                    paciente.creado_por = request.user
+                    
+                    # ❌ FALTA: No establece estado explícitamente
+                    
+                    # Guardar paciente
+                    paciente.save()
+                    form.save_m2m()
+                    
+                    messages.success(...)
+                    return redirect('procedimientos:paciente_detail', pk=paciente.pk)
+                    
+            except Exception as e:
+                messages.error(request, f'Error: {str(e)}')
+    # ...resto del código
+```
+
+---
+
+### ✅ CÓDIGO CORREGIDO:
+```python
+@login_required
+def admision_paciente(request):
+    """Vista para admisión de nuevos pacientes."""
+    if request.method == 'POST':
+        form = AdmisionPacienteForm(request.POST, request.FILES)
+        form.request = request
+        
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    paciente = form.save(commit=False)
+                    
+                    # Establecer creado_por
+                    paciente.creado_por = request.user
+                    
+                    # ✅ AGREGAR: Establecer estado inicial como ADMITIDO
+                    paciente.estado = Paciente.Estado.ADMITIDO
+                    
+                    # Guardar paciente
+                    paciente.save()
+                    form.save_m2m()
+                    
+                    messages.success(
+                        request,
+                        f'Paciente {paciente.nombre_completo} admitido exitosamente. '
+                        f'Estado: {paciente.get_estado_display()}. '  # ✅ Mostrar estado
+                        f'El paciente está pendiente de valoración inicial.'  # ✅ Informar
+                    )
+                    
+                    return redirect('procedimientos:paciente_detail', pk=paciente.pk)
+                    
+            except Exception as e:
+                messages.error(request, f'Error: {str(e)}')
+    else:
+        form = AdmisionPacienteForm()
+    
+    context = {
+        'form': form,
+        'titulo': 'Admisión de Nuevo Paciente',
+        'mostrar_firma': True,
+    }
+    return render(request, 'procedimientos/admision_paciente.html', context)
+```
+
+---
+
+## CAMBIOS ESPECÍFICOS
+
+**Línea a agregar después de `paciente.creado_por = request.user`:**
+```python
+# ✅ AGREGAR ESTA LÍNEA:
+paciente.estado = Paciente.Estado.ADMITIDO
+```
+
+**Mensaje de éxito mejorado:**
+```python
+messages.success(
+    request,
+    f'Paciente {paciente.nombre_completo} admitido exitosamente. '
+    f'Estado: {paciente.get_estado_display()}. '
+    f'El paciente está pendiente de valoración inicial.'
+)
+```
+
+---
+
+## RESULTADO
+
+**Antes:**
+```
+Registro → Estado ACTIVO → No aparece en pendientes
+```
+
+**Después:**
+```
+Registro → Estado ADMITIDO → Aparece en pendientes valoración ✅
+```

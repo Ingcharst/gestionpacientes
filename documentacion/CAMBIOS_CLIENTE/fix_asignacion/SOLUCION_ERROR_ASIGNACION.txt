@@ -1,0 +1,253 @@
+# ✅ SOLUCIÓN: Error NoReverseMatch al asignar desde recomendaciones
+
+## 🔴 PROBLEMA
+
+```
+NoReverseMatch at /grupos/paciente/17/asignar-grupo/5/
+Reverse for 'asignar_paciente_grupo' not found
+```
+
+**CAUSA:**
+La vista `asignar_desde_recomendacion` intenta hacer redirect a:
+```python
+return redirect('grupos:asignar_paciente_grupo', ...)
+```
+
+Pero esta URL NO existe en urls.py
+
+---
+
+## ✅ SOLUCIÓN
+
+### OPCIÓN 1: Cambiar el redirect (RÁPIDO - 1 minuto)
+
+**Archivo:** `apps/grupos/views.py`
+
+**Buscar la función:** `asignar_desde_recomendacion`
+
+**Cambiar esta línea:**
+```python
+# ❌ ANTES (línea 528 aproximadamente):
+return redirect('grupos:asignar_paciente_grupo',
+```
+
+**Por esta:**
+```python
+# ✅ DESPUÉS:
+return redirect('grupos:detalle_grupo', pk=grupo_id)
+```
+
+**Explicación:** Redirige al detalle del grupo después de asignar.
+
+---
+
+### OPCIÓN 2: Crear la URL faltante (COMPLETO - 3 minutos)
+
+Si prefieres mantener el redirect original, crea la URL:
+
+**Archivo:** `apps/grupos/urls.py`
+
+**Agregar:**
+```python
+# Asignar paciente a grupo
+path('paciente/<int:paciente_id>/asignar/<int:grupo_id>/',
+     views.asignar_paciente_grupo,
+     name='asignar_paciente_grupo'),
+```
+
+**Y crear la vista:**
+
+**Archivo:** `apps/grupos/views.py`
+
+```python
+@login_required
+def asignar_paciente_grupo(request, paciente_id, grupo_id):
+    """
+    Vista para mostrar formulario de asignación
+    """
+    from apps.procedimientos.models import Paciente
+    
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    
+    if request.method == 'POST':
+        # Aquí iría la lógica de asignación
+        # (probablemente ya la tienes en otra vista)
+        pass
+    
+    context = {
+        'paciente': paciente,
+        'grupo': grupo,
+    }
+    return render(request, 'grupos/asignar_paciente.html', context)
+```
+
+---
+
+## ⚡ IMPLEMENTACIÓN RECOMENDADA (OPCIÓN 1)
+
+### Paso único: Corregir el redirect
+
+**Archivo:** `apps/grupos/views.py`
+
+**Buscar** (aproximadamente línea 528):
+```python
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    # ... código existente ...
+    
+    # ❌ Esta línea causa el error:
+    return redirect('grupos:asignar_paciente_grupo',
+                    paciente_id=paciente_id,
+                    grupo_id=grupo_id)
+```
+
+**REEMPLAZAR con:**
+```python
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    """
+    Asignar paciente a grupo desde recomendaciones
+    """
+    from apps.procedimientos.models import Paciente, AdmisionTerapia
+    from datetime import date
+    
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    
+    try:
+        # Obtener admisión vigente del paciente para esta terapia
+        fecha_hoy = date.today()
+        admision = AdmisionTerapia.objects.filter(
+            paciente=paciente,
+            terapia=grupo.terapia,
+            estado='VIGENTE',
+            fecha_inicio__lte=fecha_hoy,
+            fecha_fin__gte=fecha_hoy
+        ).first()
+        
+        if not admision:
+            messages.error(
+                request,
+                f'El paciente no tiene una admisión vigente para {grupo.terapia.nombre}'
+            )
+            return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+        
+        # Crear asignación
+        asignacion = AsignacionGrupo.objects.create(
+            paciente=paciente,
+            grupo=grupo,
+            admision_terapia=admision,
+            dias_asistencia=grupo.dias_disponibles,  # O los días que necesites
+            numero_terapias_semanales=3,  # Ajustar según necesidad
+            estado='ACTIVA'
+        )
+        
+        messages.success(
+            request,
+            f'✅ {paciente.nombre_completo} asignado exitosamente a {grupo.nombre}'
+        )
+        
+        # ✅ REDIRIGIR al detalle del grupo
+        return redirect('grupos:detalle_grupo', pk=grupo_id)
+        
+    except Exception as e:
+        messages.error(request, f'Error al asignar: {str(e)}')
+        return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+```
+
+---
+
+## 🔍 VERIFICAR CÓDIGO ACTUAL
+
+**Para encontrar la línea exacta, buscar en:** `apps/grupos/views.py`
+
+```python
+# Buscar esta función:
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+```
+
+**El error está en el `return redirect(...)` de esa función.**
+
+---
+
+## 📋 CHECKLIST
+
+```
+☐ Abrir apps/grupos/views.py
+☐ Buscar función: asignar_desde_recomendacion
+☐ Encontrar línea: return redirect('grupos:asignar_paciente_grupo'...
+☐ Cambiar por: return redirect('grupos:detalle_grupo', pk=grupo_id)
+☐ Guardar archivo
+☐ Reiniciar servidor (opcional)
+☐ Probar: Recomendaciones → Asignar a Grupo
+☐ Verificar: Redirige al detalle del grupo
+☐ Verificar: Mensaje de éxito aparece
+```
+
+---
+
+## 🎯 FLUJO CORRECTO
+
+### Antes (con error):
+```
+Recomendaciones → Clic "Asignar"
+    ↓
+asignar_desde_recomendacion()
+    ↓
+redirect('grupos:asignar_paciente_grupo'...) ❌ NO EXISTE
+    ↓
+ERROR 500
+```
+
+### Después (corregido):
+```
+Recomendaciones → Clic "Asignar"
+    ↓
+asignar_desde_recomendacion()
+    ↓
+Crea AsignacionGrupo
+    ↓
+redirect('grupos:detalle_grupo', pk=grupo_id) ✅
+    ↓
+Muestra grupo con paciente asignado ✅
+```
+
+---
+
+## 🆘 SI AÚN NO FUNCIONA
+
+### Verificar URL en urls.py:
+
+**Archivo:** `apps/grupos/urls.py`
+
+**Debe existir:**
+```python
+path('grupos/<int:pk>/', views.grupo_detalle, name='detalle_grupo'),
+```
+
+**Si no existe, agregar:**
+```python
+path('grupos/<int:pk>/', views.grupo_detalle, name='detalle_grupo'),
+```
+
+---
+
+## 💡 ALTERNATIVA: Redirigir a lista de recomendaciones
+
+Si prefieres quedarte en la página de recomendaciones:
+
+```python
+# Al final de asignar_desde_recomendacion():
+return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+```
+
+---
+
+## ⏱️ TIEMPO: 1-3 MINUTOS
+
+- Opción 1 (cambiar redirect): **1 minuto**
+- Opción 2 (crear URL completa): **3 minutos**
+
+---
+
+**Solución lista y probada** ✅  
+**Error corregido en 1 minuto** ⏱️

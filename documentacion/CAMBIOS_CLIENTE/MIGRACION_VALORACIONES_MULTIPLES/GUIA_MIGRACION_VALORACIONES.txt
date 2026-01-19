@@ -1,0 +1,263 @@
+# 🔄 MIGRACIÓN: De ValoracionInicial a ValoracionProfesional
+
+## 📊 CAMBIO EN LA ESTRUCTURA
+
+### ANTES (Sistema viejo):
+```python
+# Un paciente → Una valoración inicial
+ValoracionInicial (OneToOne)
+- paciente.valoracion_inicial
+- paciente.valoracion_inicial.completada
+```
+
+### AHORA (Sistema nuevo):
+```python
+# Un paciente → Múltiples valoraciones profesionales
+ValoracionProfesional (ForeignKey)
+- paciente.valoraciones_profesionales.all()
+- valoracion.estado = 'COMPLETADA'
+- Una por cada terapeuta/terapia
+```
+
+---
+
+## ✅ CAMBIOS NECESARIOS (4 archivos)
+
+### 1. VIEWS.PY - Vista pendientes_asignacion (5 min)
+
+**Archivo:** `apps/procedimientos/views.py`
+**Función:** `pacientes_pendientes_asignacion` (línea ~574)
+
+**REEMPLAZAR con:** Código de `vista_valoraciones_multiples.py`
+
+**Cambios clave:**
+```python
+# ❌ ANTES:
+if hasattr(paciente, 'valoracion_inicial'):
+    valoracion = paciente.valoracion_inicial
+
+# ✅ AHORA:
+valoraciones = paciente.valoraciones_profesionales.filter(
+    estado='COMPLETADA'
+)
+```
+
+---
+
+### 2. VIEWS.PY (grupos) - Validación asignaciones (3 min)
+
+**Archivo:** `apps/grupos/views.py`
+**Función:** `validar_paciente_para_asignacion`
+
+**REEMPLAZAR con:** Código de `validacion_actualizada.py`
+
+**Cambios clave:**
+```python
+# ❌ ANTES:
+if not hasattr(paciente, 'valoracion_inicial'):
+    return False, 'Sin valoración', None
+
+# ✅ AHORA:
+valoracion = ValoracionProfesional.objects.filter(
+    paciente=paciente,
+    terapia=grupo.terapia,
+    estado='COMPLETADA'
+).first()
+
+if not valoracion:
+    return False, f'Sin valoración para {grupo.terapia.nombre}', None
+```
+
+---
+
+### 3. TEMPLATE - pacientes_pendientes_asignacion.html (5 min)
+
+**Archivo:** `templates/procedimientos/pacientes_pendientes_asignacion.html`
+
+**ACTUALIZAR secciones con:** Código de `template_actualizado.html`
+
+**Cambios clave:**
+```django
+{# ❌ ANTES: #}
+{{ item.valoracion.fecha_valoracion }}
+{{ item.valoracion.profesional.get_full_name }}
+
+{# ✅ AHORA: #}
+{% for val in item.valoraciones %}
+    {{ val.fecha_valoracion }}
+    {{ val.terapeuta.get_full_name }}
+    {{ val.terapia.nombre }}
+{% endfor %}
+```
+
+---
+
+### 4. MODELS.PY - Método save en ValoracionProfesional (3 min)
+
+**Archivo:** `apps/procedimientos/models.py`
+**Clase:** `ValoracionProfesional` (línea ~2121)
+
+**AGREGAR al método save():** Código en `validacion_actualizada.py` (final)
+
+**Qué hace:**
+- Detecta cuando se marca como COMPLETADA
+- Si es la primera valoración completada del paciente
+- Cambia estado del paciente a PENDIENTE_ASIGNACION
+
+---
+
+## 🔍 DIAGNÓSTICO DEL PROBLEMA ACTUAL
+
+### Ejecutar script de diagnóstico:
+
+```bash
+python manage.py shell < diagnostico_valoraciones_multiples.py
+```
+
+**Qué verifica:**
+- Estado del paciente ID=17
+- Valoraciones profesionales (cantidad, estado)
+- Admisiones de terapia (vigentes, vencidas)
+- Asignaciones a grupos (activas, finalizadas)
+
+**Soluciones automáticas:**
+- Detecta qué falta (valoraciones, admisiones, estado)
+- Ofrece corregir estado si es necesario
+- Muestra resumen completo del sistema
+
+---
+
+## 📋 FLUJO CORRECTO ACTUALIZADO
+
+```
+1. REGISTRO
+   → Estado: ADMITIDO
+   
+2. VALORACIONES PROFESIONALES
+   → Cada terapeuta crea ValoracionProfesional
+   → Estado valoración: COMPLETADA
+   → Al completar primera → Paciente: PENDIENTE_ASIGNACION
+   
+3. ADMISIONES DE TERAPIA
+   → Se crean AdmisionTerapia por cada terapia
+   → Estado: VIGENTE
+   → Vincula número EPS, fechas, cantidades
+   
+4. ASIGNACIÓN A GRUPOS
+   → Requiere para ESA terapia:
+     * ValoracionProfesional (COMPLETADA)
+     * AdmisionTerapia (VIGENTE)
+   → Crea AsignacionGrupo
+   → Vincula admision_terapia
+   → Estado paciente: ACTIVO
+   
+5. REGISTRO DE ASISTENCIAS
+   → Incrementa cantidad_realizada
+   → Al completar → Finaliza asignación automáticamente
+   → Libera cupo del grupo
+```
+
+---
+
+## 🎯 IMPLEMENTACIÓN PASO A PASO
+
+### PASO 1: Diagnóstico (1 min)
+```bash
+python manage.py shell < diagnostico_valoraciones_multiples.py
+```
+
+### PASO 2: Actualizar views.py procedimientos (5 min)
+- Abrir `apps/procedimientos/views.py`
+- Buscar función `pacientes_pendientes_asignacion` (línea ~574)
+- Reemplazar con código de `vista_valoraciones_multiples.py`
+
+### PASO 3: Actualizar views.py grupos (3 min)
+- Abrir `apps/grupos/views.py`
+- Buscar función `validar_paciente_para_asignacion`
+- Reemplazar con código de `validacion_actualizada.py`
+
+### PASO 4: Actualizar template (5 min)
+- Abrir `templates/procedimientos/pacientes_pendientes_asignacion.html`
+- Actualizar secciones con código de `template_actualizado.html`
+
+### PASO 5: Actualizar modelo (3 min)
+- Abrir `apps/procedimientos/models.py`
+- Buscar clase `ValoracionProfesional` método `save()`
+- Agregar código para cambio de estado
+
+### PASO 6: Reiniciar y verificar (1 min)
+```bash
+python manage.py runserver
+```
+
+Visitar: `/procedimientos/pacientes/pendientes-asignacion/`
+
+---
+
+## 🧪 VERIFICACIÓN
+
+### Caso 1: Paciente sin valoraciones
+```
+Estado: PENDIENTE_ASIGNACION
+Valoraciones: 0
+Resultado: NO aparece (correcto)
+Acción: Crear valoraciones profesionales
+```
+
+### Caso 2: Paciente con valoraciones sin admisiones
+```
+Estado: PENDIENTE_ASIGNACION
+Valoraciones: 2 (completadas)
+Admisiones: 0
+Resultado: Aparece con advertencia
+Acción: Crear admisiones de terapia
+```
+
+### Caso 3: Paciente completo
+```
+Estado: PENDIENTE_ASIGNACION
+Valoraciones: 2 (completadas)
+Admisiones: 2 (vigentes)
+Resultado: Aparece, botón asignar habilitado
+Acción: Puede asignar a grupos
+```
+
+---
+
+## 📦 ARCHIVOS ENTREGADOS
+
+1. **vista_valoraciones_multiples.py**
+   → Vista actualizada completa
+
+2. **validacion_actualizada.py**
+   → Validación para asignaciones + método save()
+
+3. **template_actualizado.html**
+   → Secciones del template actualizadas
+
+4. **diagnostico_valoraciones_multiples.py**
+   → Script diagnóstico ejecutable
+
+5. **GUIA_MIGRACION_VALORACIONES.txt**
+   → Esta guía completa
+
+---
+
+## ⏱️ TIEMPO TOTAL: 18 minutos
+
+- Diagnóstico: 1 min
+- Vista procedimientos: 5 min
+- Vista grupos: 3 min
+- Template: 5 min
+- Modelo: 3 min
+- Verificación: 1 min
+
+---
+
+## 🎯 RESULTADO ESPERADO
+
+✅ Vista muestra pacientes con valoraciones profesionales completadas
+✅ Separa por terapias valoradas
+✅ Indica cuáles tienen/faltan admisiones
+✅ Solo permite asignar si tiene valoración + admisión de esa terapia
+✅ Flujo completo funciona correctamente

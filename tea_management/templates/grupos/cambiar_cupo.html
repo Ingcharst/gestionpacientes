@@ -1,0 +1,22 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Cambiar Cupo - {{ grupo.nombre }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Capacidad actual:</strong> {{ grupo.capacidad_maxima }}<br>
+                <strong>Pacientes activos:</strong> {{ pacientes_activos }}
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+                <a href="{% url 'grupos:detalle_grupo' pk=grupo.id %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

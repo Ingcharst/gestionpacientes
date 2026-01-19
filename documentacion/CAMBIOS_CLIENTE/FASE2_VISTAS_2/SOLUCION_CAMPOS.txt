@@ -1,0 +1,80 @@
+# SOLUCIÓN RÁPIDA: ERROR CAMPOS PACIENTE
+
+## ERROR
+```
+Unknown field(s) (acudiente_nombre, acudiente_telefono, nombre, 
+documento, acudiente_parentesco) specified for Paciente
+```
+
+## CAUSA
+Formulario usa campos que tu modelo no tiene.
+
+## SOLUCIÓN APLICADA (TEMPORAL)
+
+### En forms_fase2.py:
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = '__all__'  # TODOS los campos
+        exclude = ['numero_historia_clinica']  # Deprecados
+```
+
+**Esto funcionará temporalmente con CUALQUIER estructura de modelo.**
+
+## SIGUIENTE PASO (AJUSTAR A TUS CAMPOS)
+
+### 1. Identificar campos reales:
+```bash
+python identificar_campos.py
+```
+
+O manualmente:
+```bash
+python manage.py shell
+>>> from apps.procedimientos.models import Paciente
+>>> print([f.name for f in Paciente._meta.get_fields()])
+```
+
+### 2. Ajustar formulario con campos específicos:
+
+**Ejemplo con campos típicos:**
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            'primer_nombre',      # Ajustar según tu modelo
+            'primer_apellido',
+            'tipo_identificacion',
+            'numero_identificacion',
+            'fecha_nacimiento',
+            'sexo',
+            'codigo_enfermedad',  # Nuevo (FK a CodigoCIE10)
+            # ... tus campos ...
+        ]
+```
+
+### 3. Probar:
+```bash
+python manage.py runserver
+# Ir a: http://localhost:8000/procedimientos/pacientes/registrar/
+```
+
+## ARCHIVOS ACTUALIZADOS
+
+✅ forms_fase2.py - Formulario flexible (temporal)
+✅ FIX_CAMPOS_PACIENTE.txt - Guía completa
+✅ identificar_campos.py - Script identificación
+✅ FASE2_VISTAS.zip - Todo actualizado
+
+## SI PERSISTE ERROR
+
+1. Ejecutar `identificar_campos.py`
+2. Copiar output
+3. Enviármelo para ajuste exacto
+
+## NOTA IMPORTANTE
+
+La solución temporal (`fields = '__all__'`) funciona AHORA.
+Después puedes ajustar con campos específicos para mejor control.

@@ -19,7 +19,7 @@ urlpatterns = [
     
     # Asignaciones
     path('asignar/', views.asignar_paciente_grupo, name='asignar_paciente'),
-    path('asignar/<int:paciente_pk>/<int:grupo_id>/', views.asignar_paciente_grupo, name='asignar_paciente_especifico'),
+    path('asignar/<int:paciente_id>/<int:grupo_id>/', views.asignar_paciente_grupo, name='asignar_paciente_especifico'),
     path('asignacion/<int:asignacion_pk>/liberar/', views.liberar_paciente, name='liberar_paciente'),
 
     # Gestión de múltiples grupos por paciente
@@ -42,4 +42,17 @@ urlpatterns = [
     
     # Debug (solo para staff)
     path('debug/paciente/<int:paciente_id>/grupo/<int:grupo_id>/', views.debug_recomendacion, name='debug_recomendacion'),
+
+    # NUEVAS URLs asistencia
+    path('grupos/<int:grupo_id>/asistencia/', views.control_asistencia_grupo, name='control_asistencia_grupo'),
+    path('pacientes/<int:paciente_id>/historial-asistencia/', views.historial_asistencia_paciente, name='historial_asistencia_paciente'),
+    
+    # Gestión de cupos
+    path('grupos/<int:grupo_id>/cambiar-cupo/', views.cambiar_cupo_grupo, name='cambiar_cupo_grupo'),
+    path('alertas/<int:alerta_id>/reasignar/', views.reasignar_pacientes, name='reasignar_pacientes'),
+    
+    # Mis Grupos (terapeuta)
+    path('mis-grupos/', views.mis_grupos, name='mis_grupos'),    
+    # Detalle del grupo con listado
+    path('grupos/<int:pk>/', views.grupo_detalle, name='detalle_grupo'), 
 ]

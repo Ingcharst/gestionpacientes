@@ -1,16 +1,26 @@
-"""
-Formularios Django para procedimientos.
-"""
 from django import forms
 from apps.procedimientos.models import (
     Paciente, Procedimiento, SesionTerapeutica,
-    ObjetivoTerapeutico, ValoracionInicial, EvolucionPaciente
+    ObjetivoTerapeutico, ValoracionInicial, EvolucionPaciente, 
+    Paciente, ValoracionProfesional, AdmisionTerapia, CodigoCIE10
 )
-
+from apps.terapias.models import Terapia
+from django.utils import timezone
+from datetime import timedelta
 
 class PacienteForm(forms.ModelForm):
     """Formulario para crear/editar pacientes."""
-    
+
+    diagnostico_cie10_search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Buscar código CIE-10 (ej: F84.0 o Autismo)',
+            'autocomplete': 'off'
+        }),
+        label='Buscar Diagnóstico CIE-10'
+    )
+
     class Meta:
         model = Paciente
         fields = [
@@ -19,16 +29,19 @@ class PacienteForm(forms.ModelForm):
             'telefono', 'email', 'direccion', 'ciudad',
             'nombre_responsable', 'parentesco_responsable',
             'telefono_responsable', 'email_responsable',
-            'diagnostico_principal', 'alergias', 'medicamentos', 'eps',
-            'numero_historia_clinica','numero_admision',
+            'codigo_enfermedad','diagnostico_principal', 'alergias', 'medicamentos', 'eps', 
             'fecha_ingreso', 'fecha_alta',
             'observaciones', 'necesidades_especiales',
             'motivo_inactividad'
         ]
-        exclude = ['creado_por', 'fecha_creacion', 'fecha_actualizacion', 'estado_asignacion']
+        exclude = ['creado_por', 'fecha_creacion', 'fecha_actualizacion', 'estado_asignacion','numero_historia_clinica','numero_admision']
 
         widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'codigo_enfermedad': forms.HiddenInput(),  # Campo oculto, se llena con JS
+            'diagnostico_principal': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Solo si no está en catálogo (ej: Z99.9)'
+            }),         'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'fecha_ingreso': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'fecha_alta': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'observaciones': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
@@ -632,6 +645,377 @@ class ProblemaDetectadoForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
         label='Observaciones Adicionales'
     )
+
+
+class PacienteRegistroForm(forms.ModelForm):
+    """
+    Formulario de registro de paciente completo
+    Incluye TODOS los campos del template
+    """
+    
+    # ✅ Campo extra para búsqueda CIE-10
+    diagnostico_cie10_search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Buscar código CIE-10 (ej: F84.0 o Autismo)',
+            'autocomplete': 'off'
+        }),
+        label='Buscar Diagnóstico CIE-10'
+    )
+    
+    class Meta:
+        model = Paciente
+        fields = [
+            # Información Personal
+            'tipo_documento',
+            'numero_documento',
+            'nombres',
+            'apellidos',
+            'fecha_nacimiento',
+            'genero',
+            'foto',
+            # Información de Contacto
+            'telefono',
+            'email',
+            'direccion',
+            'ciudad',  # ✅ AGREGADO
+            # Acudiente/Responsable
+            'nombre_responsable',
+            'telefono_responsable',
+            'parentesco_responsable',
+            'email_responsable',
+            # Información Médica
+            'codigo_enfermedad',
+            'diagnostico_principal',  # ✅ AGREGADO
+            'alergias',  # ✅ AGREGADO
+            'medicamentos',  # ✅ AGREGADO
+            'eps',  # ✅ AGREGADO
+            # Fechas
+            'fecha_ingreso',  # ✅ AGREGADO
+            'fecha_alta',  # ✅ AGREGADO
+            'motivo_inactividad',  # ✅ AGREGADO
+            # Observaciones
+            'observaciones',  # ✅ AGREGADO
+            'necesidades_especiales',  # ✅ AGREGADO
+        ]
+        
+        widgets = {
+            # Información Personal
+            'tipo_documento': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'numero_documento': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Número de documento'
+            }),
+            'nombres': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nombres del paciente'
+            }),
+            'apellidos': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Apellidos del paciente'
+            }),
+            'fecha_nacimiento': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'genero': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'foto': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
+            
+            # Información de Contacto
+            'telefono': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Teléfono de contacto'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'correo@ejemplo.com'
+            }),
+            'direccion': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Dirección de residencia'
+            }),
+            'ciudad': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ciudad'
+            }),
+            
+            # Acudiente/Responsable
+            'nombre_responsable': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nombre completo del acudiente'
+            }),
+            'telefono_responsable': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Teléfono del acudiente'
+            }),
+            'parentesco_responsable': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Padre, Madre, Tutor, etc.'
+            }),
+            'email_responsable': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Email del acudiente'
+            }),
+            
+            # ✅ Información Médica
+            'codigo_enfermedad': forms.HiddenInput(),  # Campo oculto para ID CIE-10
+            'diagnostico_principal': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Solo si no está en el catálogo CIE-10'
+            }),
+            'alergias': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Alergias conocidas'
+            }),
+            'medicamentos': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Medicamentos actuales'
+            }),
+            'eps': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'EPS del paciente'
+            }),
+            
+            # ✅ Fechas
+            'fecha_ingreso': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'fecha_alta': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'motivo_inactividad': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Solo si está inactivo'
+            }),
+            
+            # ✅ Observaciones
+            'observaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Observaciones generales'
+            }),
+            'necesidades_especiales': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Necesidades especiales o consideraciones'
+            }),
+        }
+        
+        labels = {
+            'tipo_documento': 'Tipo de Documento',
+            'numero_documento': 'Número de Documento',
+            'nombres': 'Nombres',
+            'apellidos': 'Apellidos',
+            'fecha_nacimiento': 'Fecha de Nacimiento',
+            'genero': 'Género',
+            'foto': 'Fotografía',
+            'telefono': 'Teléfono',
+            'email': 'Correo Electrónico',
+            'direccion': 'Dirección',
+            'ciudad': 'Ciudad',
+            'nombre_responsable': 'Nombre del Acudiente',
+            'telefono_responsable': 'Teléfono del Acudiente',
+            'parentesco_responsable': 'Parentesco',
+            'email_responsable': 'Email del Acudiente',
+            'codigo_enfermedad': 'Código CIE-10',
+            'diagnostico_principal': 'Diagnóstico Principal',
+            'alergias': 'Alergias',
+            'medicamentos': 'Medicamentos Actuales',
+            'eps': 'EPS',
+            'fecha_ingreso': 'Fecha de Ingreso',
+            'fecha_alta': 'Fecha de Alta',
+            'motivo_inactividad': 'Motivo de Inactividad',
+            'observaciones': 'Observaciones Generales',
+            'necesidades_especiales': 'Necesidades Especiales',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # ✅ Configurar queryset para código CIE-10
+        self.fields['codigo_enfermedad'].queryset = CodigoCIE10.objects.filter(
+            activo=True
+        ).order_by('codigo')
+        
+        # ✅ Campos opcionales
+        self.fields['codigo_enfermedad'].required = False
+        self.fields['diagnostico_principal'].required = False
+        self.fields['alergias'].required = False
+        self.fields['medicamentos'].required = False
+        self.fields['eps'].required = False
+        self.fields['fecha_alta'].required = False
+        self.fields['motivo_inactividad'].required = False
+        self.fields['observaciones'].required = False
+        self.fields['necesidades_especiales'].required = False
+        self.fields['email'].required = False
+        self.fields['email_responsable'].required = False
+        self.fields['foto'].required = False
+        self.fields['ciudad'].required = False
+        
+        # ✅ Valor inicial fecha ingreso
+        if not self.instance.pk:
+            self.fields['fecha_ingreso'].initial = timezone.now().date()
+    
+    def clean_numero_documento(self):
+        """Validar que el documento no exista"""
+        numero = self.cleaned_data.get('numero_documento')
+        if numero:
+            if self.instance.pk:
+                existe = Paciente.objects.filter(
+                    numero_documento=numero
+                ).exclude(pk=self.instance.pk).exists()
+            else:
+                existe = Paciente.objects.filter(
+                    numero_documento=numero
+                ).exists()
+            
+            if existe:
+                raise forms.ValidationError(
+                    'Ya existe un paciente con este número de documento.'
+                )
+        return numero
+
+
+class ValoracionProfesionalForm(forms.ModelForm):
+    """
+    Formulario de valoración profesional
+    ACTUALIZADO: Incluye código CIE-10
+    """
+    
+    class Meta:
+        model = ValoracionProfesional
+        fields = [
+            'terapia',
+            'codigo_cie10',  # ✅ Campo CIE-10
+            'estado_salud_general',
+            'observaciones',
+            'recomendaciones',
+            'objetivos_terapeuticos',
+        ]
+        
+        widgets = {
+            'terapia': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            # ✅ WIDGET PARA CIE-10
+            'codigo_cie10': forms.Select(attrs={
+                'class': 'form-control select2',
+                'data-placeholder': 'Seleccione código CIE-10'
+            }),
+            'estado_salud_general': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describa el estado de salud general del paciente...'
+            }),
+            'observaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Observaciones relevantes de la valoración...'
+            }),
+            'recomendaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Recomendaciones terapéuticas...'
+            }),
+            'objetivos_terapeuticos': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Objetivos específicos para esta terapia...'
+            }),
+        }
+        
+        labels = {
+            'terapia': 'Tipo de Terapia',
+            'codigo_cie10': 'Código CIE-10 (Diagnóstico)',
+            'estado_salud_general': 'Estado de Salud General',
+            'observaciones': 'Observaciones',
+            'recomendaciones': 'Recomendaciones',
+            'objetivos_terapeuticos': 'Objetivos Terapéuticos',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # ✅ Configurar queryset para código CIE-10
+        self.fields['codigo_cie10'].queryset = CodigoCIE10.objects.filter(
+            activo=True
+        ).order_by('codigo')
+        
+        # ✅ Código CIE-10 opcional (puede no tener diagnóstico definitivo)
+        self.fields['codigo_cie10'].required = False
+        
+        # Objetivos opcionales
+        self.fields['objetivos_terapeuticos'].required = False
+
+
+
+
+class AdmisionTerapiaForm(forms.ModelForm):
+    """Admisión por terapia de EPS"""
+    class Meta:
+        model = AdmisionTerapia
+        fields = [
+            'terapia', 'numero_admision', 'cantidad_ordenada',
+            'fecha_inicio'
+        ]
+        widgets = {
+            'terapia': forms.Select(attrs={'class': 'form-control'}),
+            'numero_admision': forms.TextInput(attrs={'class': 'form-control'}),
+            'cantidad_ordenada': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Fecha inicio por defecto: hoy
+        if not self.instance.pk:
+            self.fields['fecha_inicio'].initial = timezone.now().date()
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicio = cleaned_data.get('fecha_inicio')
+        
+        if fecha_inicio:
+            # Calcular fecha_fin (4 semanas = 28 días)
+            cleaned_data['fecha_fin'] = fecha_inicio + timedelta(days=28)
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Calcular fecha_fin automáticamente
+        instance.fecha_fin = instance.fecha_inicio + timedelta(days=28)
+        if commit:
+            instance.save()
+        return instance
+
+
+class CambioCupoGrupoForm(forms.Form):
+    """Cambio de cupo máximo de grupo"""
+    capacidad_maxima = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    observaciones = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2})
+    )
+
 
 
 

@@ -1,0 +1,282 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ grupo.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'grupos:grupo_list' %}">Grupos</a></li>
+            <li class="breadcrumb-item active">{{ grupo.nombre }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-primary mb-2">
+                <i class="bi bi-people-fill me-2"></i>{{ grupo.nombre }}
+            </h2>
+            <div class="d-flex gap-2 align-items-center">
+                {% if grupo.activo %}
+                <span class="badge bg-success">Activo</span>
+                {% else %}
+                <span class="badge bg-secondary">Inactivo</span>
+                {% endif %}
+                
+                {% if grupo.esta_lleno %}
+                <span class="badge bg-danger">Lleno</span>
+                {% elif grupo.tiene_cupo %}
+                <span class="badge bg-info">{{ grupo.cupos_disponibles }} cupos disponibles</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a href="{% url 'grupos:grupo_edit' grupo.pk %}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-2"></i>Editar
+                </a>
+                <a href="{% url 'grupos:asignar_paciente' %}" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-2"></i>Asignar Paciente
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between mb-4">
+        <h3>{{ grupo.nombre }}</h3>
+        
+        <!-- ✅ BOTÓN TOMAR ASISTENCIA -->
+        <a href="{% url 'grupos:control_asistencia_grupo' grupo_id=grupo.id %}" 
+        class="btn btn-success btn-lg">
+            <i class="bi bi-calendar-check me-2"></i>
+            Tomar Asistencia
+        </a>
+    </div>
+    <div class="row">
+        <!-- Columna Izquierda: Información del Grupo -->
+        <div class="col-md-4">
+            <!-- Información Básica -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información del Grupo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Horario -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-clock me-1"></i>Horario
+                        </small>
+                        <p class="mb-0 fw-semibold h5">
+                            {{ grupo.hora_inicio|time:"H:i" }} - {{ grupo.hora_fin|time:"H:i" }}
+                        </p>
+                    </div>
+
+                    <!-- Días Disponibles -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-calendar-week me-1"></i>Días Disponibles
+                        </small>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% for dia_codigo, dia_nombre in grupo.DIAS_SEMANA %}
+                                {% if dia_codigo in grupo.dias_disponibles %}
+                                <span class="badge bg-primary px-3 py-2">{{ dia_nombre }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Capacidad -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-people me-1"></i>Capacidad
+                        </small>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold">{{ grupo.pacientes_actuales }}/{{ grupo.capacidad_maxima }}</span>
+                            <span class="text-muted">{{ grupo.porcentaje_ocupacion }}%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar 
+                                {% if grupo.porcentaje_ocupacion >= 90 %}bg-danger
+                                {% elif grupo.porcentaje_ocupacion >= 70 %}bg-warning
+                                {% else %}bg-success{% endif %}" 
+                                style="width: {{ grupo.porcentaje_ocupacion }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    {% if grupo.descripcion %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-card-text me-1"></i>Descripción
+                        </small>
+                        <p class="mb-0">{{ grupo.descripcion }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Notas -->
+                    {% if grupo.notas %}
+                    <div>
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-sticky me-1"></i>Notas
+                        </small>
+                        <p class="mb-0 small">{{ grupo.notas }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar-plus me-1"></i>
+                        Creado: {{ grupo.fecha_creacion|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Calendario Semanal Visual -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-calendar3 me-2"></i>Calendario Semanal
+                    </h6>
+                </div>
+                <div class="card-body p-2">
+                    {% for dia_codigo, dia_nombre in grupo.DIAS_SEMANA %}
+                    <div class="d-flex align-items-center p-2 mb-1 rounded 
+                        {% if dia_codigo in grupo.dias_disponibles %}bg-primary bg-opacity-10{% else %}bg-light{% endif %}">
+                        <div class="flex-grow-1">
+                            <span class="{% if dia_codigo in grupo.dias_disponibles %}fw-semibold text-primary{% else %}text-muted{% endif %}">
+                                {{ dia_nombre }}
+                            </span>
+                        </div>
+                        <div>
+                            {% if dia_codigo in grupo.dias_disponibles %}
+                            <span class="badge bg-primary">Disponible</span>
+                            {% else %}
+                            <span class="badge bg-light text-muted">No disponible</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Pacientes Asignados -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-lines-fill me-2"></i>
+                            Pacientes Asignados ({{ asignaciones.count }})
+                        </h5>
+                        <a href="{% url 'grupos:asignar_paciente' %}?grupo={{ grupo.pk }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-person-plus me-1"></i>Asignar Paciente
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if asignaciones %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Paciente</th>
+                                    <th>Días de Asistencia</th>
+                                    <th>Terapias/Semana</th>
+                                    <th>Inicio</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asignacion in asignaciones %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if asignacion.paciente.foto %}
+                                            <img src="{{ asignacion.paciente.foto.url }}" 
+                                                 alt="{{ asignacion.paciente.nombres }}"
+                                                 class="rounded-circle me-2"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-primary bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person text-primary"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-semibold">
+                                                    {{ asignacion.paciente.nombres }} {{ asignacion.paciente.apellidos }}
+                                                </div>
+                                                <small class="text-muted">
+                                                    HC: {{ asignacion.paciente.numero_historia_clinica }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            {% for dia in asignacion.dias_asistencia %}
+                                            <span class="badge bg-primary">{{ dia }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ asignacion.numero_terapias_semanales }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ asignacion.fecha_inicio_asignacion|date:"d/m/Y" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if asignacion.estado == 'ACTIVA' %}
+                                        <span class="badge bg-success">Activa</span>
+                                        {% elif asignacion.estado == 'SUSPENDIDA' %}
+                                        <span class="badge bg-warning">Suspendida</span>
+                                        {% elif asignacion.estado == 'FINALIZADA' %}
+                                        <span class="badge bg-secondary">Finalizada</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Cancelada</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary" title="Ver detalles">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if asignacion.estado == 'ACTIVA' %}
+                                            <a href="{% url 'grupos:liberar_paciente' asignacion.pk %}" 
+                                               class="btn btn-outline-danger"
+                                               title="Liberar cupo">
+                                                <i class="bi bi-x-circle"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay pacientes asignados</h5>
+                        <p class="text-muted mb-3">Este grupo aún no tiene pacientes</p>
+                        <a href="{% url 'grupos:asignar_paciente' %}?grupo={{ grupo.pk }}" 
+                           class="btn btn-primary">
+                            <i class="bi bi-person-plus me-2"></i>Asignar Primer Paciente
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

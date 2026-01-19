@@ -1,0 +1,34 @@
+# CÓDIGO PARA COPIAR Y PEGAR
+
+## 1. IMPORT (Al inicio del archivo models.py)
+
+from apps.terapias.models import Terapia
+
+
+## 2. CAMPO (Dentro de la clase GrupoTerapeutico)
+
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='grupos_terapeuticos',
+        verbose_name='Terapia',
+        null=True,
+        blank=True,
+        help_text='Tipo de terapia que ofrece este grupo'
+    )
+
+
+## 3. COMANDOS (En terminal, uno por uno)
+
+python manage.py makemigrations grupos
+
+python manage.py migrate grupos
+
+python asignar_terapias.py
+
+python manage.py runserver
+
+
+## ✅ LISTO
+
+Eso es todo lo que necesitas agregar.

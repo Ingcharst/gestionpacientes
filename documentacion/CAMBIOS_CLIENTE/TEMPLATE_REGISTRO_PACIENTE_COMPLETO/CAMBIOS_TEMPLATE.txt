@@ -1,0 +1,240 @@
+# 📋 CAMBIOS REALIZADOS EN EL TEMPLATE
+
+## ✅ CAMPOS AGREGADOS AL TEMPLATE
+
+### 1. **Buscador CIE-10** (líneas 237-271)
+```html
+<!-- Campo de búsqueda -->
+{{ form.diagnostico_cie10_search }}
+
+<!-- Div de resultados de búsqueda -->
+<div id="cie10Results">...</div>
+
+<!-- Div de código seleccionado -->
+<div id="cie10Selected">...</div>
+```
+
+**Funcionalidad:**
+- Permite buscar códigos CIE-10 en tiempo real
+- Muestra resultados mientras se escribe
+- Al seleccionar, guarda el ID en campo oculto
+
+---
+
+### 2. **Campo Oculto codigo_enfermedad** (línea 274)
+```html
+{{ form.codigo_enfermedad }}
+```
+
+**Funcionalidad:**
+- Guarda el ID del código CIE-10 seleccionado
+- Se llena automáticamente al seleccionar de la búsqueda
+
+---
+
+### 3. **Sección Fechas de Atención** (líneas 308-348)
+```html
+<!-- Fecha de Ingreso -->
+{{ form.fecha_ingreso }}
+
+<!-- Fecha de Alta -->
+{{ form.fecha_alta }}
+
+<!-- Motivo de Inactividad -->
+{{ form.motivo_inactividad }}
+```
+
+**Funcionalidad:**
+- Control de fechas de ingreso/alta del paciente
+- Campo para motivo de inactividad si aplica
+
+---
+
+### 4. **Select2 CSS/JS** (líneas 8-10, 486)
+```html
+<!-- CSS -->
+<link href=".../select2.min.css" rel="stylesheet" />
+
+<!-- JS -->
+<script src=".../select2.min.js"></script>
+```
+
+---
+
+### 5. **JavaScript Búsqueda CIE-10** (líneas 493-548)
+```javascript
+// Búsqueda en tiempo real
+searchInput.addEventListener('input', function() {
+    fetch(`/procedimientos/api/buscar-cie10/?q=${query}`)
+    ...
+});
+
+// Selección de código
+function selectCie10(codigo) {
+    hiddenInput.value = codigo.id;
+    ...
+}
+```
+
+---
+
+## 🔧 REQUERIMIENTOS EN BACKEND
+
+Para que el template funcione completamente, necesitas agregar en las vistas:
+
+### 1. **API de búsqueda CIE-10**
+
+**Archivo:** `apps/procedimientos/views.py`
+
+```python
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import CodigoCIE10
+
+def api_buscar_cie10(request):
+    """API para búsqueda de códigos CIE-10"""
+    query = request.GET.get('q', '').strip()
+    
+    if len(query) < 2:
+        return JsonResponse({'resultados': []})
+    
+    # Buscar por código o descripción
+    codigos = CodigoCIE10.objects.filter(
+        Q(codigo__icontains=query) | 
+        Q(descripcion__icontains=query),
+        activo=True
+    ).order_by('codigo')[:20]
+    
+    resultados = [{
+        'id': c.id,
+        'codigo': c.codigo,
+        'descripcion': c.descripcion
+    } for c in codigos]
+    
+    return JsonResponse({'resultados': resultados})
+```
+
+---
+
+### 2. **URL para la API**
+
+**Archivo:** `apps/procedimientos/urls.py`
+
+```python
+urlpatterns = [
+    # ... otras URLs ...
+    
+    # API búsqueda CIE-10
+    path('api/buscar-cie10/', views.api_buscar_cie10, name='api_buscar_cie10'),
+]
+```
+
+---
+
+### 3. **Vista de registro de paciente**
+
+**Archivo:** `apps/procedimientos/views.py`
+
+```python
+from .forms import PacienteForm
+
+def registrar_paciente(request):
+    if request.method == 'POST':
+        form = PacienteForm(request.POST, request.FILES)
+        if form.is_valid():
+            paciente = form.save(commit=False)
+            paciente.creado_por = request.user
+            paciente.save()
+            
+            messages.success(request, 'Paciente registrado exitosamente')
+            return redirect('procedimientos:paciente_list')
+    else:
+        form = PacienteForm()
+    
+    return render(request, 'procedimientos/registrar_paciente.html', {
+        'form': form,
+        'titulo': 'Registrar Nuevo Paciente',
+        'mostrar_firma': True  # Si usas firma digital
+    })
+```
+
+---
+
+## 📦 RESUMEN DE CAMBIOS
+
+| Sección | Cambio | Líneas |
+|---------|--------|--------|
+| **CSS Extra** | Select2 + estilos CIE-10 | 8-30 |
+| **Info Médica** | Buscador CIE-10 completo | 237-327 |
+| **Fechas** | Ingreso, Alta, Motivo | 308-348 |
+| **JavaScript** | Búsqueda CIE-10 + Firma | 493-591 |
+
+---
+
+## ✅ VERIFICACIÓN
+
+### Checklist de implementación:
+
+```
+☐ Template actualizado con todos los campos
+☐ API api_buscar_cie10 creada en views.py
+☐ URL registrada para API
+☐ Vista registrar_paciente actualizada
+☐ Select2 CSS/JS cargándose correctamente
+☐ Códigos CIE-10 existen en la base de datos
+```
+
+---
+
+## 🎯 RESULTADO ESPERADO
+
+Al completar todo:
+
+1. ✅ Campo de búsqueda CIE-10 funcional
+2. ✅ Autocompletado en tiempo real
+3. ✅ Selección y guardado de código
+4. ✅ Todos los campos del formulario visibles
+5. ✅ Fechas de ingreso/alta funcionales
+6. ✅ Validación correcta
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+### Problema: Búsqueda no funciona
+
+**Verificar:**
+1. URL de API correcta en JavaScript (línea 527)
+2. API existe y retorna JSON
+3. Console del navegador (F12) para errores
+
+**Solución:**
+```javascript
+// Verificar URL en línea 527
+fetch(`/procedimientos/api/buscar-cie10/?q=${query}`)
+```
+
+### Problema: No aparecen códigos
+
+**Verificar:**
+1. Existen códigos CIE-10 en BD
+2. Campo `activo=True` en códigos
+3. Query mínimo de 2 caracteres
+
+**Cargar códigos:**
+```bash
+python manage.py cargar_codigos_cie10
+```
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+1. **diagnostico_cie10_search** es un campo extra del formulario, NO del modelo
+2. **codigo_enfermedad** es el campo oculto que guarda el ID
+3. La API debe retornar JSON con estructura específica
+4. Select2 requiere jQuery
+
+---
+
+**Tiempo de implementación: 10 minutos** ⏱️

@@ -1,0 +1,118 @@
+# 🎯 RESUMEN EJECUTIVO - Fix Flujo de Pacientes
+
+## 🔴 PROBLEMAS
+
+1. **Pacientes no aparecen en "Pendientes de Valoración"**
+   - Causa: Estado inicial es ACTIVO en vez de ADMITIDO
+   
+2. **Permite asignar a grupos sin valoración**
+   - Causa: Falta validación en vistas de asignación
+   
+3. **Grupos vacíos aunque hay pacientes asignados**
+   - Causa: Asignaciones sin admision_terapia vinculada
+
+---
+
+## ✅ SOLUCIONES (3 cambios)
+
+### 1. Cambiar estado inicial (1 línea)
+**Archivo:** `apps/procedimientos/models.py` línea ~292
+```python
+# DE:
+default=Estado.ACTIVO,
+# A:
+default=Estado.ADMITIDO,
+```
+
+### 2. Establecer estado al admitir (1 línea)
+**Archivo:** `apps/procedimientos/views.py` línea ~321
+```python
+# AGREGAR después de paciente.creado_por:
+paciente.estado = Paciente.Estado.ADMITIDO
+```
+
+### 3. Validar antes de asignar (función + 3 llamadas)
+**Archivo:** `apps/grupos/views.py`
+
+**Agregar función:**
+```python
+def validar_paciente_para_asignacion(paciente, grupo):
+    # Validar: valoración, admisión vigente, duplicados
+    # Ver código completo en FIX_3_VALIDACIONES_ASIGNACION.txt
+```
+
+**Usar en 3 funciones:**
+- `asignar_paciente_grupo`
+- `agregar_grupo_paciente`
+- `asignar_desde_recomendacion`
+
+```python
+# AGREGAR antes de crear AsignacionGrupo:
+es_valido, mensaje_error, admision = validar_paciente_para_asignacion(
+    paciente, grupo
+)
+if not es_valido:
+    messages.error(request, mensaje_error)
+    return redirect(...)
+```
+
+---
+
+## 📋 IMPLEMENTACIÓN (5 pasos)
+
+```bash
+# 1. Backup
+python manage.py dumpdata > backup.json
+
+# 2. Aplicar cambios en código (3 archivos)
+#    - models.py: 1 línea
+#    - views.py (procedimientos): 1 línea
+#    - views.py (grupos): función + 3 llamadas
+
+# 3. Migrar
+python manage.py makemigrations
+python manage.py migrate
+
+# 4. Actualizar pacientes existentes
+python manage.py shell < actualizar_pacientes.py
+
+# 5. Probar flujo
+```
+
+---
+
+## 🎯 RESULTADO
+
+### Antes:
+```
+Registro → ACTIVO → No aparece pendientes ❌
+Asignación → Sin validar → Admisión no vinculada ❌
+Grupos → Vacíos ❌
+```
+
+### Después:
+```
+Registro → ADMITIDO → Aparece pendientes ✅
+Valoración → Valida → Admisión vinculada ✅
+Grupos → Muestran pacientes ✅
+```
+
+---
+
+## 🔗 ARCHIVOS DETALLADOS
+
+- **FIX_1_MODELS_ESTADO_INICIAL.txt** → Cambio en models.py
+- **FIX_2_VIEWS_ADMISION.txt** → Cambio en admision_paciente
+- **FIX_3_VALIDACIONES_ASIGNACION.txt** → Validaciones completas
+- **GUIA_IMPLEMENTACION.txt** → Paso a paso detallado
+- **actualizar_pacientes.py** → Script para pacientes existentes
+- **DIAGNOSTICO_FLUJO_COMPLETO.txt** → Análisis completo
+
+---
+
+## ⏱️ TIEMPO
+
+- Lectura: 5 minutos
+- Implementación: 10 minutos
+- Pruebas: 5 minutos
+- **Total: 20 minutos**

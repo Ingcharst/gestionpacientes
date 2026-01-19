@@ -1,0 +1,75 @@
+# ✅ CÓDIGO PARA AGREGAR A urls.py
+
+## Opción 1: Función simple
+
+from . import views
+
+urlpatterns = [
+    # ... URLs existentes ...
+    
+    # ✅ AGREGAR ESTA LÍNEA:
+    path('api/buscar-cie10/', views.api_buscar_cie10, name='api_buscar_cie10'),
+]
+
+
+# ============================================
+# Opción 2: Vista basada en clase
+# ============================================
+
+from . import views
+
+urlpatterns = [
+    # ... URLs existentes ...
+    
+    # ✅ AGREGAR ESTA LÍNEA:
+    path('api/buscar-cie10/', views.BuscarCIE10View.as_view(), name='api_buscar_cie10'),
+]
+
+
+# ============================================
+# EJEMPLO COMPLETO DE URLs
+# ============================================
+
+from django.urls import path
+from . import views
+
+app_name = 'procedimientos'
+
+urlpatterns = [
+    # Pacientes
+    path('pacientes/', views.paciente_list, name='paciente_list'),
+    path('pacientes/crear/', views.registrar_paciente, name='paciente_crear'),
+    path('pacientes/<int:pk>/', views.paciente_detalle, name='paciente_detalle'),
+    path('pacientes/<int:pk>/editar/', views.paciente_editar, name='paciente_editar'),
+    
+    # ✅ API CIE-10
+    path('api/buscar-cie10/', views.api_buscar_cie10, name='api_buscar_cie10'),
+    
+    # Otras URLs...
+]
+
+
+# ============================================
+# NOTAS IMPORTANTES
+# ============================================
+
+# 1. La URL debe coincidir con la del template JavaScript (línea 527):
+#    fetch(`/procedimientos/api/buscar-cie10/?q=${query}`)
+
+# 2. Si tu app_name es diferente, ajusta en el template:
+#    fetch(`/<tu_app>/api/buscar-cie10/?q=${query}`)
+
+# 3. Para probar la API directamente:
+#    http://127.0.0.1:8000/procedimientos/api/buscar-cie10/?q=F84
+
+# 4. Debe retornar JSON con esta estructura:
+#    {
+#        "resultados": [
+#            {
+#                "id": 1,
+#                "codigo": "F84.0",
+#                "descripcion": "Autismo infantil"
+#            },
+#            ...
+#        ]
+#    }

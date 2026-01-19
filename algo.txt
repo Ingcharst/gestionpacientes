@@ -1,0 +1,451 @@
+C0ntra$enaRed-mi
+cd turnosips/venv/scripts
+Instalar python 
+crear el venv
+crear proyecto turnossalud
+crear app turnos
+copiar los archivos
+instalar django
+instalar postgresql
+instalar requerimentes.txt
+crea las migraciones
+migrar a la base de datos
+crear superusuario
+
+#python -m daphne -b 127.0.0.1 -p 8000 turnossalud.asgi:application
+
+
+Incio Daphne
+python -m daphne -b 0.0.0.0 -p 8000 turnossalud.asgi:application
+
+
+Inicio ngrok
+ngrok http http://localhost:8000 --host-header=rewrite
+
+dirección de conexión
+https://sebrina-presuitable-nonpejoratively.ngrok-free.dev
+
+
+Cómo habilitar impresión directa (cuando tu cliente tenga la impresora)
+
+Instala dependencias:
+pip install -r requirements.txt
+
+
+Entra al admin y crea una Impresora:
+Tipo: NETWORK
+Host: IP de la POS
+Puerto: 9100 (típico)
+
+Marca por defecto (o asígnala al/los servicios que imprimirá)
+
+En tu .env:
+PRINT_BACKEND=server_escpos
+
+Reinicia el server. Listo: tras Generar turno, se envía directo a la impresora y regresa a la pantalla, 
+mostrando “Turno XXX enviado a impresión”.
+
+Si hay algún fallo (IP errónea, impresora apagada), el sistema te muestra un mensaje y cae en modo vista previa como 
+respaldo.
+
+Producción: usa Redis. Ejemplo .env: REDIS_URL=redis://127.0.0.1:6379/0
+
+Si la impresora de tu cliente va conectada por USB/Bluetooth al dispositivo (no por red), 
+te preparo una variante con QZ Tray para imprimir silenciosamente desde el navegador del kiosco/tablet. 
+¿Impresión por red te sirve o necesitas esa opción también?
+
+pip install python-escpos==3.1
+
+Configura el .env
+POS_PRINTER_HOST=192.168.1.50   # IP de la POS (fija)
+POS_PRINTER_PORT=9100           # la mayoría usa 9100
+POS_PRINTER_TIMEOUT=5
+
+
+Crea turnos/printing.py
+# turnos/printing.py
+import os
+from escpos.printer import Network
+from django.utils import timezone
+
+HOST = os.getenv("POS_PRINTER_HOST")
+PORT = int(os.getenv("POS_PRINTER_PORT", "9100"))
+TIMEOUT = int(os.getenv("POS_PRINTER_TIMEOUT", "5"))
+
+def print_ticket(turno):
+    """Imprime un ticket térmico de 80mm para el turno dado."""
+    if not HOST:
+        return  # sin impresora configurada, no bloquear
+    p = Network(HOST, port=PORT, timeout=TIMEOUT)
+    try:
+        p.set(align='center', text_type='B', width=2, height=2)
+        p.text("ESENCIAL SALUD IPS\n")
+        p.set(align='center', text_type='B', width=1, height=1)
+        p.text("Atención humanizada en salud\n\n")
+
+        p.set(align='left', text_type='A', width=1, height=1)
+        p.text(f"Servicio: {turno.servicio.nombre}\n")
+        p.text("Turno\n")
+        p.set(align='center', text_type='B', width=2, height=2)
+        p.text(f"{turno.codigo}\n\n")
+
+        p.set(align='left', text_type='A', width=1, height=1)
+        p.text(f"Prioridad: {turno.prioridad.nombre}\n")
+        p.text(f"Generado: {timezone.localtime(turno.creado_en).strftime('%Y-%m-%d %H:%M')}\n")
+        p.text("\n")
+        p.cut()
+    finally:
+        try: p.close()
+        except Exception: pass
+
+def print_test():
+    # rápida prueba de conexión desde manage.py shell
+    from types import SimpleNamespace
+    dummy = SimpleNamespace(
+        servicio=SimpleNamespace(nombre="Prueba"),
+        prioridad=SimpleNamespace(nombre="General"),
+        codigo="TST-001",
+        creado_en=timezone.now(),
+    )
+    print_ticket(dummy)
+
+
+Llama a la impresión al generar el turno (sin bloquear la web)
+En turnos/views.py, dentro de tu vista generar_turno inmediatamente después de turno.save(...):
+from threading import Thread
+from .printing import print_ticket
+
+# ... tras guardar el turno:
+Thread(target=print_ticket, args=(turno,), daemon=True).start()
+
+
+POR USB
+
+Opción B: Impresora USB/Bluetooth conectada al equipo del asesor/kiosco
+(Windows/Linux/macOS – navegador). Requiere QZ Tray para imprimir silenciosamente sin diálogo.
+1) Instala QZ Tray en los equipos que imprimen
+Descarga e instala QZ Tray (cliente).
+
+
+Abre QZ Tray y deja que arranque con el sistema.
+
+
+(Si usas certificados firmados, configúralos. Para pruebas, QZ permite modo sin firma con confirmación del usuario la primera vez.)
+2) Agrega el script a tu ticket
+En templates/turnos/ticket.html (donde hoy muestras el ticket), añade:
+<!-- 1) incluye qz-tray.js (guárdalo en static o CDN si ya lo tienes) -->
+<script src="{% static 'qz/qz-tray.js' %}"></script>
+
+<script>
+(async function(){
+  try {
+    // 2) Conecta a QZ
+    if (!qz.websocket.isActive()) { await qz.websocket.connect(); }
+
+    // 3) Usa la impresora por defecto (o fija una por nombre)
+    const printer = await qz.printers.getDefault(); // o: await qz.printers.find("Nombre de la POS");
+
+    // 4) Prepara configuración; 80mm de ancho típico POS
+    const cfg = qz.configs.create(printer, {
+      scaleContent: true, rasterize: true,
+      size: { width: 80, units: 'mm' },
+      // opcional: copies: 2, colorType: 'blackwhite'
+    });
+
+    // 5) Toma el HTML del ticket ya renderizado
+    const html = document.getElementById('ticketContent').outerHTML;
+
+    // 6) Imprime sin diálogo
+    await qz.print(cfg, [{ type: 'html', format: 'html', data: html }]);
+
+    // 7) Redirige de vuelta a "Generar" automáticamente
+    window.location.href = "{% url 'turnos:generar' %}";
+  } catch (e) {
+    console.error("Impresión directa falló, abriendo diálogo estándar", e);
+    // Fallback: diálogo de impresión normal del navegador
+    window.print();
+  }
+})();
+</script>
+
+Asegúrate de que tu ticket tenga un contenedor claro:
+<div id="ticketContent">
+  <!-- aquí tu tarjeta/ticket actual (logo, servicio, código, prioridad, fecha) -->
+</div>
+
+Con esto, al llegar a la página del ticket se imprime solo (QZ) y regresa al formulario. Si QZ no está disponible, aparece el diálogo estándar.
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+#Imprmir por USB
+
+1) Instalar el agente en el PC de la impresora (Windows)
+
+En ese PC:
+
+python -m venv posagent
+posagent\Scripts\activate
+pip install fastapi uvicorn[standard] python-escpos pillow pywin32
+
+Crea C:\pos-agent\agent.py 
+con este contenido (imprime vía python-escpos; si tu modelo no soporta libusb, usa el fallback Windows de más abajo):
+
+# C:\pos-agent\agent.py
+import os
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from datetime import datetime
+
+# ===== Config =====
+# Si usas ESC/POS directo por USB (recomendado):
+USE_USB = True
+POS_VENDOR_ID = int(os.getenv("POS_VENDOR_ID", "0x04b8"), 16)   # <— cambia a tu modelo (Epson ejemplo)
+POS_PRODUCT_ID = int(os.getenv("POS_PRODUCT_ID", "0x0e15"), 16) # <— cambia a tu modelo
+USB_INTERFACE = int(os.getenv("POS_USB_INTERFACE", "0"))        # 0 por defecto
+
+# Si prefieres imprimir por nombre de impresora en Windows:
+PRINTER_NAME = os.getenv("POS_PRINTER_NAME", "")  # ej. "EPSON TM-T20 Receipt"
+
+# ==================
+app = FastAPI(title="POS Print Agent", version="1.0")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+class Ticket(BaseModel):
+    institucion: str = "ESENCIAL SALUD IPS"
+    lema: str = "Atención humanizada en salud"
+    servicio: str
+    codigo: str
+    prioridad: str
+    fecha_hora: str  # "YYYY-MM-DD HH:MM"
+    pie: str | None = None  # opcional
+
+def _print_escpos_usb(t: Ticket):
+    from escpos.printer import Usb
+    p = Usb(POS_VENDOR_ID, POS_PRODUCT_ID, interface=USB_INTERFACE, timeout=0)
+    p.hw("INIT")
+    p.set(align="center", width=1, height=1)
+    p.textln(t.institucion)
+    p.textln(t.lema)
+    p.textln("")
+    p.set(width=2, height=2)
+    p.textln(t.codigo)
+    p.set(width=1, height=1)
+    p.textln(t.servicio)
+    p.textln(f"Prioridad: {t.prioridad}")
+    p.textln(t.fecha_hora)
+    p.textln("-"*32)
+    if t.pie:
+        p.textln(t.pie)
+    p.cut()
+
+def _print_windows_raw(t: Ticket):
+    # Fallback por nombre de impresora (Windows RAW)
+    import win32print, win32ui
+    from win32con import DMOUT_BUFFER, DM_IN_BUFFER
+
+    if not PRINTER_NAME:
+        raise RuntimeError("Define POS_PRINTER_NAME o usa USB.")
+
+    hPrinter = win32print.OpenPrinter(PRINTER_NAME)
+    try:
+        hJob = win32print.StartDocPrinter(hPrinter, 1, ("Turno", None, "RAW"))
+        win32print.StartPagePrinter(hPrinter)
+        def esc(s): return s.encode("cp437", errors="ignore")
+        # ESC @ (init)
+        data = b"\x1b@\n"
+        data += esc(f"{t.institucion}\n{t.lema}\n\n")
+        data += b"\x1b!\x11"  # doble alto/ancho
+        data += esc(f"{t.codigo}\n")
+        data += b"\x1b!\x00"  # tamaño normal
+        data += esc(f"{t.servicio}\nPrioridad: {t.prioridad}\n{t.fecha_hora}\n")
+        data += esc("-"*32 + "\n")
+        if t.pie: data += esc(t.pie + "\n")
+        data += b"\x1dV\x00"  # corte total
+        win32print.WritePrinter(hPrinter, data)
+        win32print.EndPagePrinter(hPrinter)
+        win32print.EndDocPrinter(hPrinter)
+    finally:
+        win32print.ClosePrinter(hPrinter)
+
+@app.post("/print")
+def print_ticket(t: Ticket):
+    try:
+        if USE_USB:
+            _print_escpos_usb(t)
+        else:
+            _print_windows_raw(t)
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/health")
+def health():
+    return {"ok": True, "ts": datetime.now().isoformat()}
+
+
+Arráncalo:
+
+uvicorn agent:app --host 0.0.0.0 --port 18888
+
+
+Firewall: permite el puerto 18888 en el PC de la impresora.
+USB (Windows): si python-escpos no detecta la impresora, instala driver libusb con Zadig para ese dispositivo, 
+o usa el fallback Windows poniendo USE_USB = False y la variable POS_PRINTER_NAME.
+
+
+
+2) Configurar Django para disparar la impresión
+settings.py
+
+Define el endpoint del agente (IP del PC donde está la impresora):
+
+PRINT_AGENT_URL = "http://192.168.1.50:18888"  # ← cambia por tu IP/LAN
+
+turnos/utils/printing.py (nuevo)
+# turnos/utils/printing.py
+import requests
+from django.conf import settings
+from django.utils import timezone
+
+def imprimir_ticket(turno):
+    url = (getattr(settings, "PRINT_AGENT_URL", "") or "").rstrip("/") + "/print"
+    if not url.startswith("http"):
+        return False, "PRINT_AGENT_URL no configurado"
+
+    payload = {
+        "institucion": "ESENCIAL SALUD IPS",
+        "lema": "Atención humanizada en salud",
+        "servicio": turno.servicio.nombre,
+        "codigo": turno.codigo,
+        "prioridad": turno.prioridad.nombre,
+        "fecha_hora": timezone.localtime(turno.creado_en).strftime("%Y-%m-%d %H:%M"),
+        "pie": "Gracias por su visita",
+    }
+    try:
+        r = requests.post(url, json=payload, timeout=3)
+        r.raise_for_status()
+        return True, ""
+    except Exception as e:
+        return False, str(e)
+
+En tu vista de generar turno
+
+Justo después de crear el objeto Turno, manda a imprimir sin mostrar vista previa. 
+Puedes quedarte en la misma pantalla y mostrar un toast “Imprimiendo…”.
+
+# turnos/views.py (dentro de generar_turno, luego de turno = Turno.crear_con_codigo(...))
+from django.contrib import messages
+from .utils.printing import imprimir_ticket
+
+ok, err = imprimir_ticket(turno)
+if not ok:
+    messages.warning(request, f"No se pudo imprimir automáticamente: {err}")
+
+# Redirige a “Nuevo” o a una página de confirmación sin ticket
+return redirect("turnos:generar")  # mantiene el flujo sin vista previa
+
+
+Si tu flujo es kiosco táctil, esto imprimirá en la POS del PC impresora sin abrir diálogos.
+Si necesitas que se imprima en la impresora local del kiosco, instala el agente en ese kiosco y usa 
+PRINT_AGENT_URL = "http://localhost:18888" o guarda por kiosco un AGENT_URL configurable.
+
+
+
+Alternativas
+
+QZ Tray (open-source): instala QZ Tray en los equipos cliente y llama desde JS (qz.print) para impresión silenciosa. 
+Requiere cert/firmas, pero permite seleccionar impresora local sin servidor intermedio.
+
+Impresora de red (Ethernet/WiFi): si tu POS tiene puerto de red, puedes mandar ESC/POS por TCP desde Django o desde el 
+agente (más simple) y evitar USB.
+
+IPP/CUPS (Linux): habilitas cola de impresión compartida y llamas IPP, pero para impresión silenciosa desde navegador 
+igualmente necesitas agente o QZ Tray.
+
+Comprobación rápida
+
+En el PC de la impresora: http://localhost:18888/health → { "ok": true, ... }.
+
+En el servidor Django: curl http://192.168.1.50:18888/health.
+
+Genera un turno: debe imprimirse de inmediato.
+Si no, mira el log del agente y el mensaje messages.warning en Django.
+
+Notas de formato (80 mm)
+
+Para texto grande usa p.set(width=2, height=2) antes del código del turno.
+
+Evita imágenes pesadas; logo en blanco/negro funciona mejor.
+
+Finaliza con p.cut() para corte automático.
+
+Con esto, cada vez que se genera un turno, se manda directo a la POS sin vista previa y funciona desde cualquier 
+dispositivo de la red.
+
+
+
+
+#########################################################
+
+Trabajo en red
+
+servidor local accesible en la LAN
+1) Fija la IP del PC y abre el puerto
+
+En el PC del cliente fija una IP estática (ej. 192.168.1.50).
+
+Cortafuegos de Windows → permitir entrada al puerto 8000 (y 18888 si usas el print agent).
+
+Verifica que todos los equipos estén en la misma subred y que el Wi-Fi no tenga “AP isolation”.
+
+2) Configura Django para LAN
+
+En tu .env (o settings.py) añade:
+
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost,192.168.1.50
+# Si usas CSRF en otras páginas/dominos, agrega:
+# CSRF_TRUSTED_ORIGINS=http://192.168.1.50
+
+
+Cambia 192.168.1.50 por la IP fija del PC.
+
+Si usas el agente de impresión de la POS en este mismo PC:
+
+PRINT_AGENT_URL=http://192.168.1.50:18888
+
+3) Arranca el servidor accesible para toda la LAN
+# Activa el venv y entra a la carpeta del proyecto
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py runserver 0.0.0.0:8000
+
+4) Conéctate desde otros equipos
+
+En cualquier PC, tablet o celular de la red (misma Wi-Fi):
+
+http://192.168.1.50:8000/
+
+
+Operador: http://192.168.1.50:8000/turnos/llamar/
+
+Pantalla TV: http://192.168.1.50:8000/turnos/pantalla/
+
+Generar turno (kiosco): http://192.168.1.50:8000/turnos/generar/
+
+Admin: http://192.168.1.50:8000/turnos/admin-panel/
+
+runserver funciona para pruebas; no es para producción. Para la voz TTS en la TV, abre la pantalla en el navegador 
+del TV y pulsa “Activar voz” si el navegador lo pide.
+
+5) (Opcional) Nombre fácil en vez de IP
+
+En el router, crea una reserva DHCP (hostname turnos) y, si tu router lo permite, 
+una entrada DNS local: turnos.local → 192.168.1.50.
+
+Así todos usan: http://turnos.local:8000/.
+

@@ -1,0 +1,405 @@
+# 🎯 IMPLEMENTACIÓN COMPLETA: Código CIE-10 en Paciente y Valoración
+
+## 📋 RESUMEN
+
+Agregar campo de código CIE-10 en:
+1. ✅ Formulario registro de paciente (campo ya existe en modelo)
+2. ✅ Modelo ValoracionProfesional (nuevo campo)
+3. ✅ Formulario de valoración profesional
+4. ✅ Templates con Select2 para búsqueda
+
+---
+
+## 🚀 IMPLEMENTACIÓN (10 minutos)
+
+### PASO 1: Actualizar Modelo ValoracionProfesional (2 min)
+
+**Archivo:** `apps/procedimientos/models.py`
+
+**Buscar la clase `ValoracionProfesional` y agregar:**
+
+```python
+class ValoracionProfesional(models.Model):
+    """Valoración individual por terapeuta"""
+    paciente = models.ForeignKey(...)
+    terapeuta = models.ForeignKey(...)
+    terapia = models.ForeignKey(...)
+    
+    # ✅ AGREGAR ESTE CAMPO:
+    codigo_cie10 = models.ForeignKey(
+        'CodigoCIE10',
+        on_delete=models.PROTECT,
+        related_name='valoraciones_profesionales',
+        verbose_name='Código CIE-10',
+        null=True,
+        blank=True,
+        help_text='Diagnóstico según clasificación CIE-10'
+    )
+    
+    fecha_valoracion = models.DateTimeField(auto_now_add=True)
+    # ... resto de campos ...
+```
+
+---
+
+### PASO 2: Crear y Aplicar Migración (1 min)
+
+```bash
+# Crear migración
+python manage.py makemigrations procedimientos
+
+# Aplicar migración
+python manage.py migrate procedimientos
+```
+
+**Salida esperada:**
+```
+Migrations for 'procedimientos':
+  procedimientos/migrations/XXXX_add_codigo_cie10_to_valoracionprofesional.py
+    - Add field codigo_cie10 to valoracionprofesional
+
+Running migrations:
+  Applying procedimientos.XXXX_add_codigo_cie10... OK
+```
+
+---
+
+### PASO 3: Actualizar Formularios (2 min)
+
+**Archivo:** `apps/procedimientos/forms.py`
+
+**Opción A: Copiar archivo completo**
+```bash
+cp forms_con_cie10.py E:\TEA_Center\tea_management\apps\procedimientos\forms.py
+```
+
+**Opción B: Editar manualmente**
+
+1. En `PacienteRegistroForm`, agregar a `fields`:
+```python
+fields = [
+    # ... campos existentes ...
+    'codigo_enfermedad',  # ✅ Agregar
+]
+```
+
+2. Agregar widget:
+```python
+widgets = {
+    # ... widgets existentes ...
+    'codigo_enfermedad': forms.Select(attrs={
+        'class': 'form-control select2',
+        'data-placeholder': 'Seleccione código CIE-10'
+    }),
+}
+```
+
+3. En `ValoracionProfesionalForm`, agregar a `fields`:
+```python
+fields = [
+    'terapia',
+    'codigo_cie10',  # ✅ Agregar
+    'estado_salud_general',
+    # ... resto de campos ...
+]
+```
+
+4. Agregar widget:
+```python
+widgets = {
+    # ... widgets existentes ...
+    'codigo_cie10': forms.Select(attrs={
+        'class': 'form-control select2',
+        'data-placeholder': 'Seleccione código CIE-10'
+    }),
+}
+```
+
+---
+
+### PASO 4: Actualizar Templates (3 min)
+
+#### 4.1 Template Registro Paciente
+
+**Archivo:** `apps/procedimientos/templates/procedimientos/paciente_form.html`
+
+```bash
+cp paciente_form.html E:\TEA_Center\tea_management\apps\procedimientos\templates\procedimientos\
+```
+
+**O agregar manualmente la sección:**
+
+```html
+<!-- Agregar después de la sección "Información de Contacto" -->
+<div class="form-section">
+    <h5><i class="bi bi-heart-pulse me-2"></i>Información Médica</h5>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <label for="{{ form.codigo_enfermedad.id_for_label }}" class="form-label">
+                {{ form.codigo_enfermedad.label }}
+                <small class="text-muted">(Opcional)</small>
+            </label>
+            {{ form.codigo_enfermedad }}
+            <small class="form-text text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Busque por código o nombre de la condición
+            </small>
+        </div>
+    </div>
+</div>
+```
+
+#### 4.2 Template Valoración Profesional
+
+**Archivo:** `apps/procedimientos/templates/procedimientos/crear_valoracion.html`
+
+```bash
+cp crear_valoracion.html E:\TEA_Center\tea_management\apps\procedimientos\templates\procedimientos\
+```
+
+**O agregar manualmente después del formulario:**
+
+```html
+<!-- Agregar después de la terapia -->
+<div class="row mb-4">
+    <div class="col-md-12 mb-3">
+        <label for="{{ form.codigo_cie10.id_for_label }}" class="form-label">
+            <i class="bi bi-bookmark-check me-1"></i>
+            {{ form.codigo_cie10.label }}
+            <small class="text-muted">(Opcional)</small>
+        </label>
+        {{ form.codigo_cie10 }}
+        <small class="form-text text-muted">
+            Busque por código o nombre de la condición
+        </small>
+    </div>
+</div>
+```
+
+---
+
+### PASO 5: Agregar Select2 CDN (1 min)
+
+**Si no lo tienes en base.html, agregar en ambos templates:**
+
+```html
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_codigo_enfermedad, #id_codigo_cie10').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar código CIE-10...',
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
+{% endblock %}
+```
+
+---
+
+### PASO 6: Verificar Códigos CIE-10 en BD (1 min)
+
+```bash
+python manage.py shell
+```
+
+```python
+from apps.procedimientos.models import CodigoCIE10
+
+# Verificar que existan códigos
+codigos = CodigoCIE10.objects.filter(activo=True)
+print(f"Códigos CIE-10 disponibles: {codigos.count()}")
+
+# Ver algunos ejemplos
+for c in codigos[:5]:
+    print(f"{c.codigo} - {c.nombre}")
+```
+
+**Si no hay códigos:**
+```bash
+# Cargar códigos desde comando
+python manage.py cargar_codigos_cie10
+```
+
+---
+
+### PASO 7: Reiniciar y Probar (1 min)
+
+```bash
+python manage.py runserver
+```
+
+**Probar:**
+
+1. **Registro de paciente:**
+```
+http://127.0.0.1:8000/procedimientos/pacientes/crear/
+```
+- ✓ Ver campo "Código CIE-10"
+- ✓ Búsqueda con Select2 funciona
+- ✓ Guardar paciente con código
+
+2. **Valoración profesional:**
+```
+http://127.0.0.1:8000/procedimientos/pacientes/<id>/valoraciones/
+```
+- ✓ Crear valoración
+- ✓ Ver campo "Código CIE-10"
+- ✓ Seleccionar código
+- ✓ Guardar valoración
+
+---
+
+## ✅ VERIFICACIÓN COMPLETA
+
+### Checklist Paciente:
+
+```
+☐ Formulario muestra campo CIE-10
+☐ Select2 permite buscar por código o nombre
+☐ Puede dejar vacío (opcional)
+☐ Al guardar, se registra en BD
+☐ Al editar, muestra código seleccionado
+```
+
+### Checklist Valoración:
+
+```
+☐ Formulario muestra campo CIE-10
+☐ Select2 funciona correctamente
+☐ Es opcional (puede no asignar)
+☐ Al guardar, se registra correctamente
+☐ Cada terapeuta puede asignar su propio código
+```
+
+---
+
+## 📊 ESTRUCTURA FINAL
+
+### Modelo Paciente (Ya existe):
+```python
+codigo_enfermedad = ForeignKey(CodigoCIE10, ...)
+```
+
+### Modelo ValoracionProfesional (Nuevo):
+```python
+codigo_cie10 = ForeignKey(CodigoCIE10, ...)
+```
+
+### Formularios:
+- `PacienteRegistroForm` → campo `codigo_enfermedad`
+- `ValoracionProfesionalForm` → campo `codigo_cie10`
+
+### Templates:
+- `paciente_form.html` → sección "Información Médica"
+- `crear_valoracion.html` → sección "Diagnóstico"
+
+---
+
+## 🎯 CASOS DE USO
+
+### Caso 1: Registro con diagnóstico conocido
+```
+1. Registrar paciente
+2. Seleccionar código CIE-10 (ej: F84.0 - Autismo infantil)
+3. Guardar
+4. Campo se guarda en Paciente.codigo_enfermedad
+```
+
+### Caso 2: Valoración con diagnóstico específico
+```
+1. Terapeuta evalúa paciente
+2. En valoración selecciona código CIE-10
+3. Puede ser diferente al del registro inicial
+4. Cada terapeuta asigna según su evaluación
+5. Campo se guarda en ValoracionProfesional.codigo_cie10
+```
+
+### Caso 3: Sin diagnóstico
+```
+1. Registrar paciente sin código (campo opcional)
+2. Crear valoraciones sin código (campo opcional)
+3. Asignar posteriormente cuando se confirme diagnóstico
+```
+
+---
+
+## 🔧 SOLUCIÓN A PROBLEMAS
+
+### Problema: Select2 no funciona
+
+**Verificar:**
+1. jQuery cargado antes de Select2
+2. CDN de Select2 correcto
+3. ID del campo correcto: `#id_codigo_enfermedad` o `#id_codigo_cie10`
+
+**Solución:**
+```html
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+```
+
+### Problema: No aparecen códigos CIE-10
+
+**Verificar en admin:**
+```
+http://127.0.0.1:8000/admin/procedimientos/codigocie10/
+```
+
+**Cargar códigos:**
+```bash
+python manage.py cargar_codigos_cie10
+```
+
+### Problema: Error en migración
+
+**Revertir y corregir:**
+```bash
+python manage.py migrate procedimientos XXXX_nombre_migracion_anterior
+# Corregir modelo
+python manage.py makemigrations procedimientos
+python manage.py migrate procedimientos
+```
+
+---
+
+## 📝 ARCHIVOS INCLUIDOS
+
+1. **modelo_valoracion_con_cie10.py** - Modelo actualizado
+2. **forms_con_cie10.py** - Formularios completos
+3. **paciente_form.html** - Template registro paciente
+4. **crear_valoracion.html** - Template valoración
+5. **GUIA_IMPLEMENTACION.txt** - Esta guía
+
+---
+
+## ⏱️ TIEMPO TOTAL: 10 MINUTOS
+
+1. Actualizar modelo: 2 min
+2. Migración: 1 min
+3. Actualizar formularios: 2 min
+4. Actualizar templates: 3 min
+5. Verificar códigos: 1 min
+6. Probar: 1 min
+
+---
+
+## ✅ RESULTADO FINAL
+
+✅ Paciente con campo código CIE-10 funcional
+✅ Valoración con campo código CIE-10 funcional
+✅ Select2 para búsqueda avanzada
+✅ Ambos campos opcionales
+✅ Información médica completa
+✅ Cada terapeuta puede asignar diagnóstico
+
+---
+
+**¡Sistema completo y funcional!** 🎉

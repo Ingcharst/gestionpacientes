@@ -1,0 +1,308 @@
+# 🎯 CÓDIGO CIE-10: APLICACIÓN VISUAL (5 minutos)
+
+## 📋 CAMBIOS NECESARIOS
+
+```
+✅ 1. Modelo ValoracionProfesional → Agregar campo codigo_cie10
+✅ 2. Migración BD
+✅ 3. Forms → Agregar campos en formularios
+✅ 4. Templates → Agregar campos con Select2
+```
+
+---
+
+## 🚀 PASO 1: MODELO (1 min)
+
+**Archivo:** `apps/procedimientos/models.py`
+
+**Buscar:** `class ValoracionProfesional`
+
+**Agregar después de `terapia =`:**
+
+```python
+    codigo_cie10 = models.ForeignKey(
+        'CodigoCIE10',
+        on_delete=models.PROTECT,
+        related_name='valoraciones_profesionales',
+        verbose_name='Código CIE-10',
+        null=True,
+        blank=True,
+        help_text='Diagnóstico según CIE-10'
+    )
+```
+
+**Guardar** → `Ctrl+S`
+
+---
+
+## 🚀 PASO 2: MIGRACIÓN (30 seg)
+
+**Terminal:**
+
+```bash
+python manage.py makemigrations procedimientos
+python manage.py migrate procedimientos
+```
+
+**Debe decir:** ✅ `OK`
+
+---
+
+## 🚀 PASO 3: FORMULARIOS (1 min)
+
+**Archivo:** `apps/procedimientos/forms.py`
+
+### A. PacienteRegistroForm
+
+**Buscar:** `fields = [`
+
+**Agregar en la lista:**
+```python
+'codigo_enfermedad',  # ← Agregar esta línea
+```
+
+**Buscar:** `widgets = {`
+
+**Agregar:**
+```python
+'codigo_enfermedad': forms.Select(attrs={
+    'class': 'form-control select2',
+}),
+```
+
+**Buscar:** `labels = {`
+
+**Agregar:**
+```python
+'codigo_enfermedad': 'Código CIE-10',
+```
+
+---
+
+### B. ValoracionProfesionalForm
+
+**Buscar:** `fields = [`
+
+**Agregar después de `'terapia',`:**
+```python
+'codigo_cie10',  # ← Agregar esta línea
+```
+
+**Buscar:** `widgets = {`
+
+**Agregar:**
+```python
+'codigo_cie10': forms.Select(attrs={
+    'class': 'form-control select2',
+}),
+```
+
+**Buscar:** `labels = {`
+
+**Agregar:**
+```python
+'codigo_cie10': 'Código CIE-10',
+```
+
+**Guardar** → `Ctrl+S`
+
+---
+
+## 🚀 PASO 4: TEMPLATES (2 min)
+
+### A. Template Paciente
+
+**Archivo:** `apps/procedimientos/templates/procedimientos/paciente_form.html`
+
+**Buscar:** Sección "Información de Contacto"
+
+**Agregar DESPUÉS de esa sección:**
+
+```html
+<!-- Información Médica -->
+<div class="form-section">
+    <h5><i class="bi bi-heart-pulse me-2"></i>Información Médica</h5>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <label>Código CIE-10 <small>(Opcional)</small></label>
+            {{ form.codigo_enfermedad }}
+            <small class="form-text text-muted">
+                Busque por código o nombre de la condición
+            </small>
+        </div>
+    </div>
+</div>
+```
+
+**Agregar al final del archivo (antes de `{% endblock %}`):**
+
+```html
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_codigo_enfermedad').select2({
+        placeholder: 'Buscar CIE-10...',
+        allowClear: true
+    });
+});
+</script>
+{% endblock %}
+```
+
+---
+
+### B. Template Valoración
+
+**Archivo:** `apps/procedimientos/templates/procedimientos/crear_valoracion.html`
+
+**Buscar:** Donde está el formulario
+
+**Agregar después del campo terapia:**
+
+```html
+<!-- Diagnóstico -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <label>Código CIE-10 <small>(Opcional)</small></label>
+        {{ form.codigo_cie10 }}
+        <small class="form-text text-muted">
+            Busque por código o nombre
+        </small>
+    </div>
+</div>
+```
+
+**Agregar al final:**
+
+```html
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_codigo_cie10').select2({
+        placeholder: 'Buscar CIE-10...',
+        allowClear: true
+    });
+});
+</script>
+{% endblock %}
+```
+
+**Guardar ambos** → `Ctrl+S`
+
+---
+
+## ✅ VERIFICAR
+
+```bash
+# Reiniciar
+python manage.py runserver
+```
+
+### 1. Probar Registro Paciente:
+
+```
+http://127.0.0.1:8000/procedimientos/pacientes/crear/
+```
+
+**Verificar:**
+- ✓ Campo "Código CIE-10" visible
+- ✓ Select2 permite buscar
+- ✓ Puede guardar paciente
+
+---
+
+### 2. Probar Valoración:
+
+```
+http://127.0.0.1:8000/procedimientos/pacientes/<id>/valoraciones/
+```
+
+**Verificar:**
+- ✓ Campo "Código CIE-10" visible
+- ✓ Select2 funciona
+- ✓ Puede guardar valoración
+
+---
+
+## 📊 RESULTADO VISUAL
+
+```
+FORMULARIO PACIENTE:
+┌─────────────────────────────────┐
+│ Nombres: ____________           │
+│ Apellidos: __________           │
+│ ...                             │
+│                                 │
+│ ╔═══════════════════════════╗   │
+│ ║ 🏥 Información Médica     ║   │
+│ ╚═══════════════════════════╝   │
+│                                 │
+│ Código CIE-10: [Buscar... ▼]   │
+│                                 │
+│ [Guardar]                       │
+└─────────────────────────────────┘
+
+FORMULARIO VALORACIÓN:
+┌─────────────────────────────────┐
+│ Terapia: Lenguaje              │
+│                                 │
+│ Código CIE-10: [Buscar... ▼]   │
+│                                 │
+│ Estado Salud: _______________  │
+│ Observaciones: ______________  │
+│                                 │
+│ [Guardar Valoración]            │
+└─────────────────────────────────┘
+```
+
+---
+
+## 📋 CHECKLIST
+
+```
+☐ models.py - Agregar campo codigo_cie10
+☐ makemigrations
+☐ migrate
+☐ forms.py - Actualizar PacienteRegistroForm
+☐ forms.py - Actualizar ValoracionProfesionalForm
+☐ paciente_form.html - Agregar sección médica
+☐ paciente_form.html - Agregar Select2
+☐ crear_valoracion.html - Agregar campo CIE-10
+☐ crear_valoracion.html - Agregar Select2
+☐ Reiniciar servidor
+☐ Probar registro paciente
+☐ Probar crear valoración
+```
+
+---
+
+## ⏱️ TIEMPO
+
+✅ Modelo: 1 min  
+✅ Migración: 30 seg  
+✅ Formularios: 1 min  
+✅ Templates: 2 min  
+✅ **TOTAL: 5 minutos**
+
+---
+
+## 💡 TIPS
+
+1. **Select2 no funciona:**
+   - Verificar que jQuery esté cargado primero
+   - Ver console del navegador (F12)
+
+2. **No aparecen códigos:**
+   - Verificar: `/admin/procedimientos/codigocie10/`
+   - Si no hay: `python manage.py cargar_codigos_cie10`
+
+3. **Error en migración:**
+   - Ver el error
+   - Corregir modelo
+   - Intentar de nuevo
+
+---
+
+✅ **¡Sistema completo!**

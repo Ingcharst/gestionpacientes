@@ -1,0 +1,60 @@
+# CAMBIOS: SIN CELERY
+
+## PROBLEMA RESUELTO
+❌ Error de importación: `from celery import shared_task`
+
+## SOLUCIÓN APLICADA
+
+### 1. alertas_utils.py
+✅ Eliminada sección de Celery tasks
+✅ Solo contiene clase `GestorAlertas`
+
+### 2. Nuevo: comando_verificar_inasistencias.py
+✅ Comando Django: `python manage.py verificar_inasistencias`
+✅ Ejecuta verificación manual o automática (cron/Task Scheduler)
+
+### 3. Nuevo: AUTOMATIZACION_SIN_CELERY.txt
+✅ Guía completa Windows Task Scheduler
+✅ Guía cron Linux
+✅ Script BAT de ejemplo
+✅ Verificación manual desde dashboard
+
+## USO
+
+### Manual:
+```bash
+python manage.py verificar_inasistencias
+```
+
+### Automático Windows:
+1. Crear `verificar_alertas.bat`
+2. Programador de Tareas → Diario 20:00
+3. Ejecutar BAT
+
+### Automático Linux:
+```bash
+crontab -e
+0 20 * * * cd /ruta && python manage.py verificar_inasistencias
+```
+
+### Desde navegador:
+```python
+# Vista forzar_verificacion en alertas/views.py
+# URL: /alertas/verificar/
+```
+
+## ARCHIVOS ACTUALIZADOS
+✅ alertas_utils.py (sin Celery)
+✅ comando_verificar_inasistencias.py (nuevo)
+✅ AUTOMATIZACION_SIN_CELERY.txt (nuevo)
+✅ INSTALL_FASE2.txt (actualizado)
+✅ FASE2_VISTAS.zip (completo)
+
+## NO REQUIERE
+❌ Celery
+❌ Redis/RabbitMQ
+❌ celery.py
+❌ beat_schedule
+
+## SIGUIENTE PASO
+Instalar Fase 2 normalmente. Sistema funcionará sin Celery.

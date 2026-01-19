@@ -1,0 +1,81 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h3><i class="bi bi-clipboard-pulse me-2"></i>Valoraciones - {{ paciente.nombre_completo }}</h3>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'procedimientos:paciente_detail' pk=paciente.id %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Terapias disponibles -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Agregar Valoración</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for terapia in terapias %}
+                    <a href="{% url 'procedimientos:crear_valoracion' paciente_id=paciente.id terapia_id=terapia.id %}" 
+                       class="list-group-item list-group-item-action {% if terapia.id in terapias_valoradas %}disabled{% endif %}">
+                        <i class="bi bi-{{ terapia.id in terapias_valoradas|yesno:'check-circle-fill,plus-circle' }} me-2"></i>
+                        {{ terapia.nombre }}
+                        {% if terapia.id in terapias_valoradas %}
+                        <span class="badge bg-success float-end">Completada</span>
+                        {% endif %}
+                    </a>
+                    {% empty %}
+                    <div class="list-group-item text-muted">No hay terapias disponibles</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Valoraciones realizadas -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Valoraciones Realizadas ({{ valoraciones.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for val in valoraciones %}
+                    <div class="card mb-3 border-start border-primary border-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">{{ val.terapia.nombre }}</h6>
+                                <span class="badge bg-{{ val.estado|yesno:'success,warning,secondary' }}">{{ val.get_estado_display }}</span>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-person-badge me-1"></i>{{ val.terapeuta.get_full_name }}
+                                <span class="mx-2">|</span>
+                                <i class="bi bi-calendar me-1"></i>{{ val.fecha_valoracion|date:"d/m/Y H:i" }}
+                            </p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Estado Salud:</strong>
+                                    <p class="small">{{ val.estado_salud_general|truncatewords:15 }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Observaciones:</strong>
+                                    <p class="small">{{ val.observaciones|truncatewords:15 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>No hay valoraciones registradas
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

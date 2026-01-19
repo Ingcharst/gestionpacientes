@@ -1,0 +1,297 @@
+# TEMPLATES RESTANTES FASE 2
+# Copiar cada sección al archivo correspondiente
+
+# ============================================
+# crear_valoracion.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Valoración: {{ paciente.nombre_completo }} - {{ terapia.nombre }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="{% url 'procedimientos:valoraciones_paciente' pk=paciente.id %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# admisiones_paciente.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Admisiones - {{ paciente.nombre_completo }}</h3>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'procedimientos:crear_admision' paciente_id=paciente.id %}" class="btn btn-primary">
+                <i class="bi bi-plus"></i> Nueva Admisión
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        {% for adm in admisiones %}
+        <div class="col-md-6 mb-3">
+            <div class="card border-start border-{{ adm.estado|yesno:'success,danger,warning' }} border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h5>{{ adm.terapia.nombre }}</h5>
+                        <span class="badge bg-{{ adm.estado|yesno:'success,danger,warning' }}">{{ adm.get_estado_display }}</span>
+                    </div>
+                    <p><strong>N° Admisión:</strong> {{ adm.numero_admision }}</p>
+                    <p><strong>Vigencia:</strong> {{ adm.fecha_inicio|date:"d/m/Y" }} - {{ adm.fecha_fin|date:"d/m/Y" }}</p>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" style="width: {{ adm.progreso_porcentaje }}%">
+                            {{ adm.cantidad_realizada }}/{{ adm.cantidad_ordenada }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><div class="alert alert-info">Sin admisiones</div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# crear_admision.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Nueva Admisión - {{ paciente.nombre_completo }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Crear</button>
+                <a href="{% url 'procedimientos:admisiones_paciente' pk=paciente.id %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# dashboard_admisiones.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h3 class="mb-4">Dashboard de Admisiones</h3>
+    
+    <div class="card mb-3">
+        <div class="card-header bg-warning text-dark"><h5>Por Vencer (7 días)</h5></div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Paciente</th><th>Terapia</th><th>Vence</th><th>Progreso</th></tr></thead>
+                <tbody>
+                {% for adm in por_vencer %}
+                <tr>
+                    <td>{{ adm.paciente.nombre_completo }}</td>
+                    <td>{{ adm.terapia.nombre }}</td>
+                    <td>{{ adm.fecha_fin|date:"d/m/Y" }}</td>
+                    <td>{{ adm.cantidad_realizada }}/{{ adm.cantidad_ordenada }}</td>
+                </tr>
+                {% empty %}<tr><td colspan="4" class="text-center">Sin registros</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# historial_asistencia.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h3>Historial Asistencia - {{ paciente.nombre_completo }}</h3>
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3"><h4>{{ stats.total }}</h4><small>Total</small></div>
+                <div class="col-md-3"><h4 class="text-success">{{ stats.asistencias }}</h4><small>Asistencias</small></div>
+                <div class="col-md-3"><h4 class="text-danger">{{ stats.inasistencias }}</h4><small>Faltas</small></div>
+                <div class="col-md-3"><h4>{{ stats.porcentaje }}%</h4><small>Cumplimiento</small></div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <table class="table">
+            <thead><tr><th>Fecha</th><th>Grupo</th><th>Estado</th><th>Obs</th></tr></thead>
+            <tbody>
+            {% for a in asistencias %}
+            <tr>
+                <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                <td>{{ a.grupo.nombre }}</td>
+                <td>
+                    {% if a.asistio %}
+                    <span class="badge bg-success">Asistió</span>
+                    {% else %}
+                    <span class="badge bg-danger">Falta{% if a.justificada %} (Just.){% endif %}</span>
+                    {% endif %}
+                </td>
+                <td>{{ a.observaciones|truncatewords:5 }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# cambiar_cupo.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Cambiar Cupo - {{ grupo.nombre }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Capacidad actual:</strong> {{ grupo.capacidad_maxima }}<br>
+                <strong>Pacientes activos:</strong> {{ pacientes_activos }}
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+                <a href="{% url 'grupos:detalle_grupo' pk=grupo.id %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# reasignar_pacientes.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="alert alert-warning">
+        <h4>Alerta: Sobrecupo en {{ alerta.grupo.nombre }}</h4>
+        <p>Debe reasignar {{ alerta.pacientes_excedentes }} paciente(s)</p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        {% for asig in pacientes_afectados %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <strong>{{ asig.paciente.nombre_completo }}</strong>
+                <select name="grupo_{{ asig.id }}" class="form-select mt-2">
+                    <option value="">Seleccionar grupo...</option>
+                    {% for g in grupos_disponibles %}
+                    <option value="{{ g.id }}">{{ g.nombre }} ({{ g.cupos_disponibles }} cupos)</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">Reasignar</button>
+    </form>
+</div>
+{% endblock %}
+
+# ============================================
+# atender_alerta.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Atender Alerta - {{ alerta.paciente.nombre_completo }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Días:</strong> {{ alerta.dias_consecutivos }}</p>
+            <p><strong>Teléfono:</strong> {{ alerta.telefono_destino }}</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label>Observaciones:</label>
+                    <textarea name="observaciones" class="form-control" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Marcar Atendida</button>
+                <a href="{% url 'alertas:dashboard_alertas' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# configuracion.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header"><h4>Configuración de Alertas</h4></div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label>Días para alerta:</label>
+                    <input type="number" name="dias_alerta" value="{{ config.dias_inasistencia_alerta }}" class="form-control" min="1">
+                </div>
+                <div class="mb-3">
+                    <label>Teléfono IPS:</label>
+                    <input type="text" name="telefono_ips" value="{{ config.telefono_ips }}" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label>Mensaje SMS:</label>
+                    <textarea name="mensaje_template" class="form-control" rows="3">{{ config.mensaje_sms_template }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+# ============================================
+# forzar_verificacion.html
+# ============================================
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header"><h4>Verificar Inasistencias</h4></div>
+        <div class="card-body">
+            <p>Ejecutar verificación manual de inasistencias</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Verificar Ahora</button>
+                <a href="{% url 'alertas:dashboard_alertas' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

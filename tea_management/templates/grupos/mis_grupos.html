@@ -1,0 +1,249 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h3>
+                <i class="bi bi-calendar-check me-2 text-success"></i>
+                Mis Grupos - Registro de Asistencias
+            </h3>
+            <p class="text-muted mb-0">
+                <i class="bi bi-calendar-event me-2"></i>
+                {{ fecha_hoy|date:"l, d de F de Y" }}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-2">
+                    <h6 class="mb-0">Total Grupos</h6>
+                    <h3 class="mb-0">{{ grupos|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- ✅ LISTA DE GRUPOS -->
+    <div class="row">
+        {% for grupo in grupos %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card h-100 border-primary border-2">
+                
+                <!-- Encabezado del card -->
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ grupo.nombre }}</h5>
+                        <span class="badge bg-light text-primary">
+                            {{ grupo.total_pacientes_vigentes }}
+                        </span>
+                    </div>
+                    <small>{{ grupo.terapia.nombre }}</small>
+                </div>
+                
+                <!-- Cuerpo del card -->
+                <div class="card-body">
+                    
+                    <!-- Información del grupo -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Horario</small>
+                            <strong>{{ grupo.hora_inicio|time:"H:i" }} - {{ grupo.hora_fin|time:"H:i" }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Días</small>
+                            {% for dia in grupo.dias_disponibles %}
+                            <span class="badge bg-info me-1">{{ dia }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Consultorio</small>
+                            <strong>{{ grupo.consultorio.nombre|default:"-" }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Capacidad</small>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar {% if grupo.porcentaje_ocupacion >= 90 %}bg-danger{% elif grupo.porcentaje_ocupacion >= 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                                    style="width: {{ grupo.porcentaje_ocupacion }}%">
+                                    {{ grupo.total_pacientes_vigentes }}/{{ grupo.capacidad_maxima }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estado de asistencia del día -->
+                    {% if grupo.asistencia_registrada_hoy %}
+                    <div class="alert alert-success mb-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Asistencia registrada</strong><br>
+                        <small>{{ grupo.total_asistencias_hoy }} de {{ grupo.total_pacientes_vigentes }} pacientes</small>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Pendiente de registro</strong><br>
+                        <small>No se ha tomado asistencia hoy</small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Pacientes con admisión vigente -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-people me-1"></i>
+                            Pacientes con admisión vigente:
+                        </small>
+                        {% if grupo.total_pacientes_vigentes > 0 %}
+                        <div class="list-group list-group-flush" style="max-height: 150px; overflow-y: auto;">
+                            {% for asig in grupo.pacientes_sample %}
+                            <div class="list-group-item px-0 py-1">
+                                <small>
+                                    <i class="bi bi-person-check text-success me-1"></i>
+                                    {{ asig.paciente.nombres|truncatewords:2 }} {{ asig.paciente.apellidos|truncatewords:1 }}
+                                </small>
+                            </div>
+                            {% endfor %}
+                            {% if grupo.total_pacientes_vigentes > 3 %}
+                            <div class="list-group-item px-0 py-1">
+                                <small class="text-muted">
+                                    ... y {{ grupo.total_pacientes_vigentes|add:"-3" }} más
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <small class="text-muted">Sin pacientes con admisión vigente</small>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+                
+                <!-- Pie del card con botones -->
+                <div class="card-footer bg-light">
+                    <div class="d-grid gap-2">
+                        
+                        <!-- ✅ BOTÓN PRINCIPAL: TOMAR ASISTENCIA -->
+                        {% if grupo.total_pacientes_vigentes > 0 %}
+                        <a href="{% url 'grupos:control_asistencia_grupo' grupo_id=grupo.id %}" 
+                            class="btn {% if grupo.asistencia_registrada_hoy %}btn-outline-success{% else %}btn-success{% endif %} btn-lg">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            {% if grupo.asistencia_registrada_hoy %}
+                            Ver Asistencia del Día
+                            {% else %}
+                            Tomar Asistencia
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="bi bi-x-circle me-2"></i>
+                            Sin pacientes vigentes
+                        </button>
+                        {% endif %}
+                        
+                        <!-- Botón secundario: Ver detalle -->
+                        <a href="{% url 'grupos:detalle_grupo' pk=grupo.id %}" 
+                            class="btn btn-outline-primary">
+                            <i class="bi bi-eye me-2"></i>
+                            Ver Detalle del Grupo
+                        </a>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        {% empty %}
+        
+        <!-- Sin grupos asignados -->
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h4 class="mt-3 text-muted">No tienes grupos asignados</h4>
+                    <p class="text-muted">
+                        Contacta al administrador para que te asigne como terapeuta responsable de un grupo.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        {% endfor %}
+    </div>
+    
+    <!-- Botón volver -->
+    <div class="mt-4">
+        <a href="{% url 'grupos:grupo_lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Ver Todos los Grupos
+        </a>
+    </div>
+    
+</div>
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.list-group-flush .list-group-item {
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.list-group-flush .list-group-item:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// Actualizar hora cada segundo
+function actualizarHora() {
+    const ahora = new Date();
+    const hora = ahora.toLocaleTimeString('es-CO');
+    // Opcional: mostrar hora en algún lugar
+}
+
+setInterval(actualizarHora, 1000);
+
+// Resaltar grupos sin asistencia
+document.addEventListener('DOMContentLoaded', function() {
+    const alertas = document.querySelectorAll('.alert-warning');
+    alertas.forEach(alerta => {
+        // Efecto de parpadeo suave cada 3 segundos
+        setInterval(() => {
+            alerta.style.opacity = '0.7';
+            setTimeout(() => {
+                alerta.style.opacity = '1';
+            }, 500);
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}

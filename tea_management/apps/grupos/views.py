@@ -1,14 +1,19 @@
 """
 Vistas para gestión de grupos terapéuticos.
 """
+from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from .models import GrupoTerapeutico, AsignacionGrupo, PacientePendiente
-from apps.procedimientos.models import Paciente, ValoracionInicial
+from django.db.models import Q, Count
+from django.db import transaction
 from django.utils import timezone
+
+from apps.evolucion import models
+from .models import GrupoTerapeutico, AsignacionGrupo, PacientePendiente
+from apps.procedimientos.models import Paciente, ValoracionInicial, AsistenciaSesion, AdmisionTerapia, ValoracionProfesional
 from apps.ml_models.predictor import GrupoRecomendador
+from apps.grupos.models import GrupoTerapeutico, AsignacionGrupo
 
 from .forms import (
     GrupoTerapeuticoForm,
@@ -24,6 +29,69 @@ from .utils import (
     obtener_estadisticas_grupos,
     obtener_pacientes_sin_grupo
 )
+
+
+# =============================================================================
+# FUNCIÓN AUXILIAR: Verificar si paciente puede asignarse
+# =============================================================================
+
+def puede_asignar_paciente_a_grupo(paciente, grupo):
+    """
+    Verifica si un paciente puede asignarse a un grupo.
+    
+    ✅ CORREGIDO: Compara por terapia_id
+    
+    Requisitos:
+    1. Tiene valoración completada para la terapia del grupo
+    2. Tiene admisión vigente para la terapia del grupo
+    
+    Returns:
+        tuple: (puede: bool, mensaje: str, admision: AdmisionTerapia|None)
+    """
+    
+    # 1. Verificar valoración para la terapia (comparar por ID)
+    valoracion = ValoracionProfesional.objects.filter(
+        paciente=paciente,
+        terapia_id=grupo.terapia_id,  # ✅ Comparar por ID
+        estado='COMPLETADA'
+    ).first()
+
+    if not valoracion:
+        return (
+            False,
+            f'El paciente no tiene valoración completada para {grupo.terapia.nombre}',
+            None
+        )
+    
+    # 2. Verificar admisión vigente (comparar por ID)
+    admision = AdmisionTerapia.objects.filter(
+        paciente=paciente,
+        terapia_id=grupo.terapia_id,  # ✅ Comparar por ID
+        estado='VIGENTE',
+        fecha_inicio__lte=date.today() + timedelta(days=7),
+        fecha_fin__gte=date.today()
+    ).first()
+    
+    if not admision:
+        return (
+            False,
+            f'El paciente no tiene admisión vigente para {grupo.terapia.nombre}',
+            None
+        )
+    
+    # 3. Verificar que no esté ya asignado
+    if AsignacionGrupo.objects.filter(
+        paciente=paciente,
+        grupo=grupo,
+        estado='ACTIVA'
+    ).exists():
+        return (
+            False,
+            f'El paciente ya está asignado a {grupo.nombre}',
+            None
+        )
+    
+    return True, '', admision
 
 
 @login_required
@@ -48,15 +116,56 @@ def grupo_lista(request):
 
 @login_required
 def grupo_detalle(request, pk):
-    """Detalle de un grupo terapéutico"""
+    """
+    Vista detallada del grupo con listado de pacientes
+    Separa pacientes con admisión vigente de los que no la tienen
+    """
     grupo = get_object_or_404(GrupoTerapeutico, pk=pk)
-    asignaciones = grupo.asignaciones.filter(estado='ACTIVA').order_by('paciente__apellidos')
+    fecha_hoy = date.today()
+    
+    # Obtener todas las asignaciones activas del grupo
+    asignaciones = AsignacionGrupo.objects.filter(
+        grupo=grupo,
+        estado='ACTIVA'
+    ).select_related(
+        'paciente',
+        'admision_terapia',
+        'admision_terapia__terapia'
+    ).order_by('paciente__apellidos', 'paciente__nombres')
+    
+    # ✅ SEPARAR: Pacientes con admisión vigente vs sin admisión
+    pacientes_con_admision = []
+    pacientes_sin_admision = []
+    
+    for asig in asignaciones:
+        if asig.admision_terapia:
+            # Verificar que la admisión esté vigente
+            admision = asig.admision_terapia
+            
+            if (admision.estado == 'VIGENTE' and
+                admision.fecha_fin >= fecha_hoy): # <= admision.fecha_fin):
+                # ✅ Admisión VIGENTE
+                pacientes_con_admision.append(asig)
+            else:
+                # ❌ Admisión vencida o inactiva
+                pacientes_sin_admision.append(asig)
+        else:
+            # ❌ Sin admisión
+            pacientes_sin_admision.append(asig)
+    
+    # Contar pacientes activos totales
+    pacientes_activos = len(pacientes_con_admision)
     
     context = {
         'grupo': grupo,
-        'asignaciones': asignaciones,
+        'pacientes_con_admision': pacientes_con_admision,
+        'pacientes_sin_admision': pacientes_sin_admision,
+        'pacientes_activos': pacientes_activos,
+        'fecha_hoy': fecha_hoy,
     }
+    
     return render(request, 'grupos/grupo_detail.html', context)
+
 
 
 @login_required
@@ -98,8 +207,9 @@ def grupo_editar(request, pk):
 
 
 @login_required
-def asignar_paciente_grupo(request, paciente_pk=None, grupo_id=None):
-    """Asignar paciente a un grupo"""
+def asignar_paciente_grupo(request, paciente_id=None, grupo_id=None):
+    """Asignar paciente a un grupo - CON VINCULACIÓN DE ADMISIÓN"""
+    
     if request.method == 'POST':
         form = AsignacionGrupoForm(request.POST)
         if form.is_valid():
@@ -108,28 +218,87 @@ def asignar_paciente_grupo(request, paciente_pk=None, grupo_id=None):
             dias = form.cleaned_data['dias_asistencia']
             num_terapias = form.cleaned_data['numero_terapias_semanales']
             notas = form.cleaned_data.get('notas', '')
-            
-            asignacion, exito, mensaje = asignar_paciente_a_grupo(
-                paciente=paciente,
-                grupo=grupo,
-                dias_asistencia=dias,
-                numero_terapias=num_terapias,
-                notas=notas
+
+            # ✅ VALIDAR PRERREQUISITOS
+            es_valido, mensaje_error, admision = puede_asignar_paciente_a_grupo(
+                paciente, grupo
             )
             
-            if exito:
-                if paciente.estado in ['ADMITIDO', 'PENDIENTE_VALORACION', 'PENDIENTE_ASIGNACION']:
-                    paciente.estado = Paciente.Estado.ACTIVO
-                    paciente.save(update_fields=['estado'])
+            if not es_valido:
+                messages.error(request, f'❌ {mensaje_error}')
+                return render(request, 'grupos/asignacion_form.html', {'form': form})
 
-                messages.success(request, mensaje)
-                return redirect('grupos:grupo_detail', pk=grupo.pk)
-            else:
-                messages.error(request, mensaje)
+            try:
+                with transaction.atomic():
+                    # ✅ BUSCAR ADMISIÓN VIGENTE
+                    admision = AdmisionTerapia.objects.filter(
+                        paciente=paciente,
+                        terapia=grupo.terapia,
+                        estado='VIGENTE',
+                        fecha_inicio__lte=date.today() + timedelta(days=7),
+                        fecha_fin__gte=date.today()
+                    ).first()
+                    
+                    if not admision:
+                        messages.error(
+                            request,
+                            f'El paciente no tiene admisión vigente para {grupo.terapia.nombre}'
+                        )
+                        return render(request, 'grupos/asignacion_form.html', {'form': form})
+                    
+                    # Verificar cupo
+                    asignaciones_activas = AsignacionGrupo.objects.filter(
+                        grupo=grupo,
+                        estado='ACTIVA'
+                    ).count()
+                    
+                    if asignaciones_activas >= grupo.capacidad_maxima:
+                        messages.error(
+                            request,
+                            f'El grupo está lleno ({asignaciones_activas}/{grupo.capacidad_maxima})'
+                        )
+                        return render(request, 'grupos/asignacion_form.html', {'form': form})
+                    
+                    # Verificar duplicado
+                    if AsignacionGrupo.objects.filter(
+                        paciente=paciente,
+                        grupo=grupo,
+                        estado='ACTIVA'
+                    ).exists():
+                        messages.warning(request, 'El paciente ya está asignado a este grupo')
+                        return redirect('grupos:grupo_detail', pk=grupo.pk)
+                    
+                    # ✅ CREAR ASIGNACIÓN CON ADMISIÓN VINCULADA
+                    asignacion = AsignacionGrupo.objects.create(
+                        paciente=paciente,
+                        grupo=grupo,
+                        admision_terapia=admision,  # ✅ VINCULA LA ADMISIÓN
+                        dias_asistencia=dias,
+                        numero_terapias_semanales=num_terapias,
+                        numero_terapias_asignadas=admision.cantidad_ordenada,
+                        estado='ACTIVA',
+                        fecha_inicio_asignacion=date.today(),
+                        notas=notas
+                    )
+                    
+                    # Actualizar estado del paciente
+                    if paciente.estado in ['ADMITIDO', 'PENDIENTE_VALORACION', 'PENDIENTE_ASIGNACION']:
+                        paciente.estado = Paciente.Estado.ACTIVO
+                        paciente.save(update_fields=['estado'])
+                    
+                    messages.success(
+                        request,
+                        f'✅ {paciente.nombre_completo} asignado a {grupo.nombre}'
+                    )
+                    return redirect('grupos:grupo_detail', pk=grupo.pk)
+                    
+            except Exception as e:
+                messages.error(request, f'Error al asignar: {str(e)}')
+                
     else:
         initial = {}
-        if paciente_pk:
-            initial['paciente'] = paciente_pk
+        if paciente_id:
+            initial['paciente'] = paciente_id
         if grupo_id:
             initial['grupo'] = grupo_id
         form = AsignacionGrupoForm(initial=initial)
@@ -195,7 +364,6 @@ def liberar_paciente(request, asignacion_pk):
     return render(request, 'grupos/liberar_confirm.html', context)
 
 
-# apps/grupos/views.py
 
 @login_required
 def asignar_paciente_grupos(request, paciente_id):
@@ -278,43 +446,90 @@ def paciente_grupos(request, paciente_id):
 
 @login_required
 def agregar_grupo_paciente(request, paciente_id):
-    """Agregar un grupo adicional al paciente."""
+    """Agregar un grupo adicional al paciente - CON VINCULACIÓN DE ADMISIÓN"""
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
     if request.method == 'POST':
         grupo_id = request.POST.get('grupo')
         grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
-        
-        # Verificar que no esté ya asignado
-        if AsignacionGrupo.objects.filter(
-            paciente=paciente, 
-            grupo=grupo, 
-            estado='ACTIVA'
-        ).exists():
-            messages.warning(request, 'El paciente ya está asignado a este grupo')
-            return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
-        
-        # Crear asignación usando la función de utilidad
-        dias = request.POST.getlist('dias_asistencia')
-        num_terapias = int(request.POST.get('numero_terapias_asignadas', 10))
-        
-        asignacion, exito, mensaje = asignar_paciente_a_grupo(
-            paciente=paciente,
-            grupo=grupo,
-            dias_asistencia=dias,
-            numero_terapias=num_terapias,
-            notas=''
+
+        # ✅ VALIDAR PRERREQUISITOS
+        es_valido, mensaje_error, admision = puede_asignar_paciente_a_grupo(
+            paciente, grupo
         )
         
-        if exito:
-            # Asegurar que esté ACTIVO
-            if paciente.estado != 'ACTIVO':
-                paciente.estado = Paciente.Estado.ACTIVO
-                paciente.save(update_fields=['estado'])
-            
-            messages.success(request, f'Grupo {grupo.nombre} agregado exitosamente')
-        else:
-            messages.error(request, mensaje)
+        if not es_valido:
+            messages.error(request, f'❌ {mensaje_error}')
+            return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+
+        try:
+            with transaction.atomic():
+                # ✅ BUSCAR ADMISIÓN VIGENTE
+                admision = AdmisionTerapia.objects.filter(
+                    paciente=paciente,
+                    terapia=grupo.terapia,
+                    estado='VIGENTE',
+                    fecha_inicio__lte=date.today() + timedelta(days=7),
+                    fecha_fin__gte=date.today()
+                ).first()
+                
+                if not admision:
+                    messages.error(
+                        request,
+                        f'El paciente no tiene admisión vigente para {grupo.terapia.nombre}'
+                    )
+                    return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+                
+                # Verificar duplicado
+                if AsignacionGrupo.objects.filter(
+                    paciente=paciente,
+                    grupo=grupo,
+                    estado='ACTIVA'
+                ).exists():
+                    messages.warning(request, 'El paciente ya está asignado a este grupo')
+                    return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+                
+                # Verificar cupo
+                asignaciones_activas = AsignacionGrupo.objects.filter(
+                    grupo=grupo,
+                    estado='ACTIVA'
+                ).count()
+                
+                if asignaciones_activas >= grupo.capacidad_maxima:
+                    messages.error(
+                        request,
+                        f'El grupo está lleno ({asignaciones_activas}/{grupo.capacidad_maxima})'
+                    )
+                    return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+                
+                # Obtener datos del formulario
+                dias = request.POST.getlist('dias_asistencia')
+                num_terapias = int(request.POST.get('numero_terapias_semanales', len(dias)))
+                
+                # ✅ CREAR ASIGNACIÓN CON ADMISIÓN VINCULADA
+                asignacion = AsignacionGrupo.objects.create(
+                    paciente=paciente,
+                    grupo=grupo,
+                    admision_terapia=admision,  # ✅ VINCULA LA ADMISIÓN
+                    dias_asistencia=dias,
+                    numero_terapias_semanales=num_terapias,
+                    numero_terapias_asignadas=admision.cantidad_ordenada,
+                    estado='ACTIVA',
+                    fecha_inicio_asignacion=date.today()
+                )
+                
+                # Asegurar que esté ACTIVO
+                if paciente.estado != 'ACTIVO':
+                    paciente.estado = 'ACTIVO'
+                    paciente.save(update_fields=['estado'])
+                
+                messages.success(
+                    request,
+                    f'✅ Grupo {grupo.nombre} agregado exitosamente'
+                )
+                
+        except Exception as e:
+            messages.error(request, f'Error al agregar grupo: {str(e)}')
         
         return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
     
@@ -403,40 +618,52 @@ def recomendar_grupos_paciente(request, paciente_id):
     # Obtener paciente
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     
-    # Obtener última valoración
-    valoracion = ValoracionInicial.objects.filter(
+    valoraciones = ValoracionProfesional.objects.filter(
         paciente=paciente
-    ).order_by('-fecha_valoracion').first()
+    ).select_related('terapia', 'terapeuta')
     
     # Si no hay valoración, redirigir con warning
-    if not valoracion:
+    if not valoraciones.exists():
         messages.warning(
             request, 
             f'El paciente {paciente.nombre_completo} no tiene valoración inicial. '
             'Por favor complete la valoración antes de solicitar recomendaciones.'
         )
-        return redirect('procedimientos:paciente_detail', pk=paciente_id)
-    
+        # CORRECCIÓN: Usar 'pk' en lugar de 'paciente_id'
+        # return redirect('procedimientos:paciente_detail', pk=paciente_id)
+        return redirect('procedimientos:valoraciones_paciente', pk=paciente_id)
     # Crear recomendador
     recomendador = GrupoRecomendador()
-    
+    try:
     # Obtener recomendaciones
-    resultado = recomendador.recomendar_grupos(
-        paciente=paciente,
-        valoracion=valoracion,
-        top_n=5
-    )
-    
-    
+        resultado = recomendador.recomendar_grupos(
+            paciente=paciente,
+            valoraciones=valoraciones,
+            # top_n=5
+        )
+    except Exception as e:
+        messages.error(
+            request,
+            f'Error al generar recomendaciones: {str(e)}'
+        )
+        return redirect('procedimientos:paciente_detail', pk=paciente_id)
+
+    if resultado.get('error'):
+        messages.error(request, resultado.get('mensaje', 'Error desconocido'))
+        return redirect('procedimientos:paciente_detail', pk=paciente_id)
+
     # Preparar contexto
     context = {
         'paciente': paciente,
-        'valoracion': valoracion,
-        'recomendaciones': resultado['recomendaciones'],
-        'mensaje': resultado['mensaje'],
-        'total_evaluados': resultado.get('total_grupos_evaluados', 0),
-        'total_compatibles': resultado.get('grupos_filtrados', 0),
-        'mostrar_debug': request.user.is_staff,  # Solo para admins
+        'valoraciones': valoraciones,
+        'recomendaciones': resultado.get('recomendaciones', []),
+        'mensaje': resultado.get('mensaje', ''),
+        'stats': {
+            'total_evaluados': resultado.get('total_grupos_evaluados', 0),
+            'grupos_filtrados': resultado.get('grupos_filtrados', 0),
+            'valoraciones_count': valoraciones.count(),
+            'terapias_valoradas': resultado.get('terapias_valoradas', []),
+        }
     }
     
     return render(request, 'grupos/recomendaciones.html', context)
@@ -466,7 +693,7 @@ def debug_recomendacion(request, paciente_id, grupo_id):
     paciente = get_object_or_404(Paciente, pk=paciente_id)
     grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
     
-    valoracion = ValoracionInicial.objects.filter(
+    valoracion = ValoracionProfesional.objects.filter(
         paciente=paciente
     ).order_by('-fecha_valoracion').first()
     
@@ -479,40 +706,123 @@ def debug_recomendacion(request, paciente_id, grupo_id):
 
 @login_required
 def asignar_desde_recomendacion(request, paciente_id, grupo_id):
-    """
-    Asigna un paciente a un grupo desde las recomendaciones
-    
-    Args:
-        request: HttpRequest
-        paciente_id: ID del paciente
-        grupo_id: ID del grupo
-        
-    Returns:
-        Redirect a la vista de confirmación de asignación
-    """
-    # Verificar que el grupo tenga cupos
+    """Asignar paciente desde recomendaciones - CORREGIDO verificación de cupo"""
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
     grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    fecha_hoy = date.today()
+
+    # ✅ VALIDAR PRERREQUISITOS
+    es_valido, mensaje_error, admision = puede_asignar_paciente_a_grupo(
+        paciente, grupo
+    )
     
-    if grupo.cupos_disponibles <= 0:
-        messages.warning(
-            request,
-            f'El grupo {grupo.nombre} no tiene cupos disponibles actualmente. '
-            'Puede agregarlo a la lista de espera.'
-        )
-        # Redirigir a lista de espera si existe
-        if hasattr(grupo, 'lista_espera'):
-            return redirect(
-                            'grupos:agregar_lista_espera', 
-                            paciente_id=paciente_id, 
-                            grupo_id=grupo_id
-                        )
-    
-    # Redirigir a la vista de asignación normal
-    return redirect(
-                    'grupos:asignar_paciente_especifico', 
-                    paciente_pk=paciente_id, 
-                    grupo_id=grupo_id
+    if not es_valido:
+        messages.error(request, f'❌ {mensaje_error}')
+        return redirect('grupos:recomendar_grupos_paciente', paciente_id=paciente_id)
+
+    try:
+        with transaction.atomic():
+            # ✅ PASO 1: Verificar admisión vigente
+            admision = AdmisionTerapia.objects.filter(
+                paciente=paciente,
+                terapia=grupo.terapia,
+                estado='VIGENTE',
+                fecha_inicio__lte=fecha_hoy + timedelta(days=7),
+                fecha_fin__gte=fecha_hoy
+            ).first()
+            
+            if not admision:
+                messages.error(
+                    request,
+                    f'❌ {paciente.nombre_completo} no tiene admisión vigente para {grupo.terapia.nombre}'
                 )
+                return redirect('grupos:recomendar_grupos_paciente', paciente_id=paciente_id)
+            
+            # ✅ PASO 2: Verificar cupo DEL GRUPO (NO del paciente)
+            asignaciones_activas = AsignacionGrupo.objects.filter(
+                grupo=grupo,  # ✅ CORRECCIÓN: Contar del GRUPO, no del paciente
+                estado='ACTIVA'
+            ).count()
+            
+            if asignaciones_activas >= grupo.capacidad_maxima:
+                messages.warning(
+                    request,
+                    f'⚠️ El grupo {grupo.nombre} está lleno ({asignaciones_activas}/{grupo.capacidad_maxima})'
+                )
+                return redirect('grupos:recomendar_grupos_paciente', paciente_id=paciente_id)
+            
+            # ✅ PASO 3: Verificar duplicado
+            if AsignacionGrupo.objects.filter(
+                paciente=paciente,
+                grupo=grupo,
+                estado='ACTIVA'
+            ).exists():
+                messages.info(
+                    request,
+                    f'ℹ️ {paciente.nombre_completo} ya está asignado a {grupo.nombre}'
+                )
+                return redirect('grupos:grupo_detail', pk=grupo_id)
+            
+            # ✅ PASO 4: Crear asignación CON ADMISIÓN VINCULADA
+            asignacion = AsignacionGrupo.objects.create(
+                paciente=paciente,
+                grupo=grupo,
+                admision_terapia=admision,  # ✅ VINCULA LA ADMISIÓN
+                dias_asistencia=grupo.dias_disponibles,
+                numero_terapias_semanales=len(grupo.dias_disponibles),
+                numero_terapias_asignadas=admision.cantidad_ordenada,
+                estado='ACTIVA',
+                fecha_inicio_asignacion=fecha_hoy
+            )
+            
+            # Actualizar estado del paciente
+            if paciente.estado != 'ACTIVO':
+                paciente.estado = 'ACTIVO'
+                paciente.save(update_fields=['estado'])
+            
+            messages.success(
+                request,
+                f'✅ {paciente.nombre_completo} asignado a {grupo.nombre}'
+            )
+            
+            return redirect('grupos:grupo_detail', pk=grupo_id)
+            
+    except Exception as e:
+        messages.error(request, f'❌ Error: {str(e)}')
+        return redirect('grupos:recomendar_grupos_paciente', paciente_id=paciente_id)
+
+# def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+#     """
+#     Asigna un paciente a un grupo desde las recomendaciones
+    
+#     Args:
+#         request: HttpRequest
+#         paciente_id: ID del paciente
+#         grupo_id: ID del grupo
+        
+#     Returns:
+#         Redirect a la vista de confirmación de asignación
+#     """
+#     # Verificar que el grupo tenga cupos
+#     grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    
+#     if grupo.cupos_disponibles <= 0:
+#         messages.warning(
+#             request,
+#             f'El grupo {grupo.nombre} no tiene cupos disponibles actualmente. '
+#             'Puede agregarlo a la lista de espera.'
+#         )
+#         # Redirigir a lista de espera si existe
+#         if hasattr(grupo, 'lista_espera'):
+#             return redirect('grupos:agregar_lista_espera', 
+#                             paciente_id=paciente_id, 
+#                             grupo_id=grupo_id)
+    
+#     # Redirigir a la vista de asignación normal
+#     # NOTA: Ajustar según tu URL pattern de asignación
+#     return redirect('grupos:asignar_paciente_especifico', 
+#                     paciente_id=paciente_id, 
+#                     grupo_id=grupo_id)
 
 
 @login_required
@@ -534,13 +844,14 @@ def exportar_recomendaciones(request, paciente_id):
     
     # Obtener paciente y recomendaciones
     paciente = get_object_or_404(Paciente, pk=paciente_id)
-    valoracion = ValoracionInicial.objects.filter(
+    valoracion = ValoracionProfesional.objects.filter(
         paciente=paciente
     ).order_by('-fecha_valoracion').first()
     
     if not valoracion:
         messages.error(request, 'No hay valoración disponible')
-        return redirect('procedimientos:paciente_detail', paciente_id=paciente_id)
+        # CORRECCIÓN: Usar 'pk' en lugar de 'paciente_id'
+        return redirect('procedimientos:paciente_detail', pk=paciente_id)
     
     recomendador = GrupoRecomendador()
     resultado = recomendador.recomendar_grupos(
@@ -561,7 +872,7 @@ def exportar_recomendaciones(request, paciente_id):
     # Información del paciente
     p.setFont("Helvetica", 12)
     y = height - 80
-    p.drawString(50, y, f"Edad: {paciente.edad_actual} años")
+    p.drawString(50, y, f"Edad: {paciente.edad} años")
     y -= 20
     p.drawString(50, y, f"Valoración: {valoracion.fecha_valoracion.strftime('%d/%m/%Y')}")
     y -= 40
@@ -613,6 +924,503 @@ def exportar_recomendaciones(request, paciente_id):
     
     return response
 
+
+#@login_required
+# def control_asistencia_grupo(request, grupo_id):
+#     """Control de asistencia diaria por grupo"""
+#     grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+#     hoy = timezone.now().date()
+    
+#     # Pacientes activos del grupo con admisiones vigentes
+#     asignaciones = AsignacionGrupo.objects.filter(
+#         grupo=grupo,
+#         estado='ACTIVA',
+#         admision_terapia__estado='VIGENTE',
+#         admision_terapia__fecha_fin__gte=hoy
+#     ).select_related('paciente', 'admision_terapia')
+    
+#     # Asistencias ya registradas hoy
+#     asistencias_hoy = AsistenciaSesion.objects.filter(
+#         grupo=grupo,
+#         fecha=hoy
+#     ).values_list('paciente_id', flat=True)
+    
+#     if request.method == 'POST':
+#         with transaction.atomic():
+#             hora_inicio = request.POST.get('hora_inicio')
+#             hora_fin = request.POST.get('hora_fin')
+            
+#             for asignacion in asignaciones:
+#                 # Verificar si ya tiene registro hoy
+#                 if asignacion.paciente.id in asistencias_hoy:
+#                     continue
+                
+#                 asistio = request.POST.get(f'asistio_{asignacion.paciente.id}') == 'on'
+#                 justificada = request.POST.get(f'justificada_{asignacion.paciente.id}') == 'on'
+#                 observaciones = request.POST.get(f'obs_{asignacion.paciente.id}', '')
+                
+#                 AsistenciaSesion.objects.create(
+#                     grupo=grupo,
+#                     paciente=asignacion.paciente,
+#                     admision=asignacion.admision_terapia,
+#                     fecha=hoy,
+#                     hora_inicio=hora_inicio or None,
+#                     hora_fin=hora_fin or None,
+#                     asistio=asistio,
+#                     justificada=justificada,
+#                     observaciones=observaciones,
+#                     registrado_por=request.user
+#                 )
+                
+#                 # Actualizar contador de inasistencias
+#                 if not asistio:
+#                     asignacion.dias_inasistencias_consecutivas += 1
+#                 else:
+#                     asignacion.dias_inasistencias_consecutivas = 0
+#                     asignacion.fecha_ultima_asistencia = hoy
+                
+#                 asignacion.save()
+            
+#             messages.success(request, 'Asistencia registrada')
+#             return redirect('grupos:control_asistencia_grupo', grupo_id=grupo_id)
+    
+#     context = {
+#         'grupo': grupo,
+#         'asignaciones': asignaciones,
+#         'asistencias_registradas': asignacion.paciente.id in asistencias_hoy,
+#         'fecha': hoy,
+#     }
+#     return render(request, 'grupos/control_asistencia.html', context)
+
+
+#@login_required
+# def historial_asistencia_paciente(request, paciente_id):
+    """Historial de asistencias de un paciente"""
+    from apps.procedimientos.models import Paciente
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    asistencias = AsistenciaSesion.objects.filter(
+        paciente=paciente
+    ).select_related('grupo', 'admision').order_by('-fecha')[:30]
+    
+    # Estadísticas
+    total = asistencias.count()
+    asistencias_count = asistencias.filter(asistio=True).count()
+    inasistencias = total - asistencias_count
+    porcentaje = (asistencias_count / total * 100) if total > 0 else 0
+    
+    context = {
+        'paciente': paciente,
+        'asistencias': asistencias,
+        'stats': {
+            'total': total,
+            'asistencias': asistencias_count,
+            'inasistencias': inasistencias,
+            'porcentaje': round(porcentaje, 1)
+        }
+    }
+    return render(request, 'grupos/historial_asistencia.html', context)
+
+
+@login_required
+def control_asistencia_grupo(request, grupo_id):
+    """
+    Vista para tomar asistencia diaria del grupo
+    Solo muestra pacientes con admisiones vigentes
+    """
+    grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    fecha_hoy = date.today()
+    
+    # Obtener asignaciones activas del grupo
+    asignaciones = AsignacionGrupo.objects.filter(
+        grupo=grupo,
+        estado='ACTIVA'
+    ).select_related('paciente', 'admision_terapia')
+    
+    # ✅ FILTRAR: Solo pacientes con admisión vigente
+    asignaciones_vigentes = []
+    for asig in asignaciones:
+        if asig.admision_terapia:
+            # Verificar que la admisión esté vigente
+            if (asig.admision_terapia.estado == 'VIGENTE' and
+                asig.admision_terapia.fecha_fin >= fecha_hoy):
+                asignaciones_vigentes.append(asig)
+    
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                hora_inicio = request.POST.get('hora_inicio')
+                hora_fin = request.POST.get('hora_fin')
+                
+                asistencias_registradas = 0
+                
+                for asig in asignaciones_vigentes:
+                    paciente_id = asig.paciente.id
+                    asistio = request.POST.get(f'asistio_{paciente_id}') == 'on'
+                    justificada = request.POST.get(f'justificada_{paciente_id}') == 'on'
+                    observaciones = request.POST.get(f'obs_{paciente_id}', '').strip()
+                    
+                    # Crear registro de asistencia
+                    # NOTA: Necesitas crear el modelo AsistenciaPaciente si no existe
+                    # o usar el que ya tengas
+                    from apps.grupos.models import AsistenciaPaciente
+                    
+                    AsistenciaPaciente.objects.create(
+                        paciente=asig.paciente,
+                        grupo=grupo,
+                        asignacion=asig,
+                        fecha=fecha_hoy,
+                        asistio=asistio,
+                        justificada=justificada if not asistio else False,
+                        observaciones=observaciones,
+                        hora_inicio=hora_inicio or None,
+                        hora_fin=hora_fin or None,
+                        registrado_por=request.user
+                    )
+                    
+                    # ✅ Actualizar contador en admisión si asistió
+                    if asistio and asig.admision_terapia:
+                        asig.admision_terapia.cantidad_realizada += 1
+                        asig.admision_terapia.save()
+                    
+                    asistencias_registradas += 1
+                
+                messages.success(
+                    request,
+                    f'✅ Asistencia registrada: {asistencias_registradas} pacientes'
+                )
+                return redirect('grupos:detalle_grupo', pk=grupo.id)
+                
+        except Exception as e:
+            messages.error(request, f'Error al registrar asistencia: {str(e)}')
+    
+    # Ver si ya hay asistencias registradas hoy
+    from apps.grupos.models import AsistenciaPaciente
+    asistencias_hoy = AsistenciaPaciente.objects.filter(
+        grupo=grupo,
+        fecha=fecha_hoy
+    ).values_list('paciente_id', flat=True)
+    
+    context = {
+        'grupo': grupo,
+        'asignaciones': asignaciones_vigentes,
+        'fecha': fecha_hoy,
+        'asistencias_registradas': list(asistencias_hoy),
+        'total_pacientes': len(asignaciones_vigentes)
+    }
+    
+    return render(request, 'grupos/control_asistencia.html', context)
+
+
+@login_required
+def lista_grupos_terapeuta(request):
+    """
+    Lista de grupos donde el terapeuta es responsable
+    Para acceso rápido a tomar asistencia
+    """
+    # Filtrar grupos donde el usuario es el terapeuta responsable
+    grupos = GrupoTerapeutico.objects.filter(
+        terapeuta_responsable=request.user,
+        estado='ACTIVO'
+    ).annotate(
+        total_pacientes=models.Count('asignaciones', filter=models.Q(asignaciones__estado='ACTIVA'))
+    )
+    
+    context = {
+        'grupos': grupos,
+        'fecha_hoy': date.today()
+    }
+    
+    return render(request, 'grupos/mis_grupos.html', context)
+
+
+@login_required
+def historial_asistencia_paciente(request, paciente_id):
+    """
+    Historial completo de asistencias de un paciente
+    """
+    from apps.procedimientos.models import Paciente
+    from apps.grupos.models import AsistenciaPaciente
+    
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    asistencias = AsistenciaPaciente.objects.filter(
+        paciente=paciente
+    ).select_related('grupo').order_by('-fecha')
+    
+    # Estadísticas
+    total = asistencias.count()
+    asistencias_count = asistencias.filter(asistio=True).count()
+    inasistencias_count = asistencias.filter(asistio=False).count()
+    porcentaje = round((asistencias_count / total * 100) if total > 0 else 0, 1)
+    
+    stats = {
+        'total': total,
+        'asistencias': asistencias_count,
+        'inasistencias': inasistencias_count,
+        'porcentaje': porcentaje
+    }
+    
+    context = {
+        'paciente': paciente,
+        'asistencias': asistencias[:50],  # Últimas 50
+        'stats': stats
+    }
+    
+    return render(request, 'grupos/historial_asistencia.html', context)
+
+
+
+@login_required
+def cambiar_cupo_grupo(request, grupo_id):
+    """Cambiar capacidad máxima del grupo"""
+    grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    
+    if request.method == 'POST':
+        from .forms import CambioCupoGrupoForm
+        form = CambioCupoGrupoForm(request.POST)
+        
+        if form.is_valid():
+            nueva_capacidad = form.cleaned_data['capacidad_maxima']
+            capacidad_anterior = grupo.capacidad_maxima
+            
+            # Contar pacientes activos actuales
+            activos = AsignacionGrupo.objects.filter(
+                grupo=grupo,
+                estado='ACTIVA',
+                admision_terapia__estado='VIGENTE'
+            ).count()
+            
+            grupo.capacidad_maxima = nueva_capacidad
+            grupo.save()
+            
+            # Generar alerta si hay sobrecupo
+            if activos > nueva_capacidad:
+                from .models import AlertaCupo
+                alerta = AlertaCupo.objects.create(
+                    grupo=grupo,
+                    capacidad_anterior=capacidad_anterior,
+                    capacidad_nueva=nueva_capacidad,
+                    pacientes_excedentes=activos - nueva_capacidad,
+                    generada_por=request.user,
+                    observaciones=form.cleaned_data.get('observaciones', '')
+                )
+                messages.warning(
+                    request,
+                    f'Cupo actualizado. ALERTA: {alerta.pacientes_excedentes} pacientes deben reasignarse'
+                )
+                return redirect('grupos:reasignar_pacientes', alerta_id=alerta.id)
+            
+            messages.success(request, 'Cupo actualizado correctamente')
+            return redirect('grupos:detalle_grupo', pk=grupo_id)
+    else:
+        from .forms import CambioCupoGrupoForm
+        form = CambioCupoGrupoForm(initial={'capacidad_maxima': grupo.capacidad_maxima})
+    
+    # Contar activos
+    activos = AsignacionGrupo.objects.filter(
+        grupo=grupo,
+        estado='ACTIVA',
+        admision_terapia__estado='VIGENTE'
+    ).count()
+    
+    context = {
+        'grupo': grupo,
+        'form': form,
+        'pacientes_activos': activos
+    }
+    return render(request, 'grupos/cambiar_cupo.html', context)
+
+
+@login_required
+def reasignar_pacientes(request, alerta_id):
+    """Reasignar pacientes por sobrecupo"""
+    from .models import AlertaCupo
+    alerta = get_object_or_404(AlertaCupo, pk=alerta_id)
+    
+    if alerta.estado == 'RESUELTA':
+        messages.info(request, 'Esta alerta ya fue resuelta')
+        return redirect('grupos:detalle_grupo', pk=alerta.grupo.id)
+    
+    # Pacientes que deben reasignarse (últimos asignados)
+    pacientes_afectados = alerta.pacientes_afectados()
+    
+    if request.method == 'POST':
+        # Procesar reasignaciones
+        for asignacion in pacientes_afectados:
+            nuevo_grupo_id = request.POST.get(f'grupo_{asignacion.id}')
+            if nuevo_grupo_id:
+                nuevo_grupo = GrupoTerapeutico.objects.get(pk=nuevo_grupo_id)
+                asignacion.grupo = nuevo_grupo
+                asignacion.save()
+        
+        # Marcar alerta como resuelta
+        alerta.estado = 'RESUELTA'
+        alerta.fecha_resolucion = timezone.now()
+        alerta.resuelta_por = request.user
+        alerta.save()
+        
+        messages.success(request, 'Pacientes reasignados correctamente')
+        return redirect('grupos:detalle_grupo', pk=alerta.grupo.id)
+    
+    # Grupos disponibles con cupo
+    grupos_disponibles = GrupoTerapeutico.objects.filter(
+        activo=True,
+        terapia=alerta.grupo.terapia
+    ).exclude(id=alerta.grupo.id)
+    
+    context = {
+        'alerta': alerta,
+        'pacientes_afectados': pacientes_afectados,
+        'grupos_disponibles': grupos_disponibles
+    }
+    return render(request, 'grupos/reasignar_pacientes.html', context)
+
+
+@login_required
+def mis_grupos(request):
+    """
+    Lista de grupos donde el usuario es terapeuta responsable
+    Con estadísticas de asistencia del día
+    """
+    fecha_hoy = date.today()
+    
+    # Obtener grupos del terapeuta
+    grupos_base = GrupoTerapeutico.objects.filter(
+        terapeuta_responsable=request.user,
+        estado='ACTIVO'
+    ).select_related('terapia', 'consultorio')
+    
+    # Procesar cada grupo
+    grupos_procesados = []
+    
+    for grupo in grupos_base:
+        # Obtener asignaciones activas
+        asignaciones = AsignacionGrupo.objects.filter(
+            grupo=grupo,
+            estado='ACTIVA'
+        ).select_related('paciente', 'admision_terapia')
+        
+        # ✅ FILTRAR: Solo pacientes con admisión vigente
+        pacientes_vigentes = []
+        for asig in asignaciones:
+            if asig.admision_terapia:
+                admision = asig.admision_terapia
+                if (admision.estado == 'VIGENTE' and
+                    admision.fecha_inicio <= fecha_hoy <= admision.fecha_fin):
+                    pacientes_vigentes.append(asig)
+        
+        # Verificar si ya se registró asistencia hoy
+        # Importar modelo si existe
+        try:
+            from apps.grupos.models import AsistenciaPaciente
+            asistencias_hoy = AsistenciaPaciente.objects.filter(
+                grupo=grupo,
+                fecha=fecha_hoy
+            )
+            asistencia_registrada = asistencias_hoy.exists()
+            total_asistencias_hoy = asistencias_hoy.count()
+        except ImportError:
+            asistencia_registrada = False
+            total_asistencias_hoy = 0
+        
+        # Calcular porcentaje de ocupación
+        total_vigentes = len(pacientes_vigentes)
+        porcentaje_ocupacion = round(
+            (total_vigentes / grupo.capacidad_maxima * 100) 
+            if grupo.capacidad_maxima > 0 else 0, 
+            1
+        )
+        
+        # Agregar datos calculados al grupo
+        grupo.total_pacientes_vigentes = total_vigentes
+        grupo.asistencia_registrada_hoy = asistencia_registrada
+        grupo.total_asistencias_hoy = total_asistencias_hoy
+        grupo.porcentaje_ocupacion = porcentaje_ocupacion
+        grupo.pacientes_sample = pacientes_vigentes[:3]  # Primeros 3 para preview
+        
+        grupos_procesados.append(grupo)
+    
+    # Ordenar por nombre
+    grupos_procesados.sort(key=lambda x: x.nombre)
+    
+    context = {
+        'grupos': grupos_procesados,
+        'fecha_hoy': fecha_hoy,
+        'total_grupos': len(grupos_procesados),
+    }
+    
+    return render(request, 'grupos/mis_grupos.html', context)
+
+
+# ================================================
+# ALTERNATIVA: Vista optimizada con anotaciones
+# ================================================
+
+@login_required
+def mis_grupos_optimizado(request):
+    """
+    Versión optimizada con anotaciones de Django ORM
+    """
+    from django.db.models import Prefetch
+    fecha_hoy = date.today()
+    
+    # Prefetch asignaciones con admisiones vigentes
+    asignaciones_vigentes = AsignacionGrupo.objects.filter(
+        estado='ACTIVA',
+        admision_terapia__estado='VIGENTE',
+        admision_terapia__fecha_inicio__lte=fecha_hoy,
+        admision_terapia__fecha_fin__gte=fecha_hoy
+    ).select_related('paciente', 'admision_terapia')
+    
+    # Obtener grupos con anotaciones
+    grupos = GrupoTerapeutico.objects.filter(
+        terapeuta_responsable=request.user,
+        estado='ACTIVO'
+    ).select_related(
+        'terapia', 
+        'consultorio'
+    ).prefetch_related(
+        Prefetch('asignaciones', queryset=asignaciones_vigentes, to_attr='asignaciones_vigentes')
+    ).annotate(
+        total_asignaciones=Count('asignaciones', filter=Q(asignaciones__estado='ACTIVA'))
+    )
+    
+    # Procesar grupos
+    for grupo in grupos:
+        # Contar pacientes vigentes
+        grupo.total_pacientes_vigentes = len(grupo.asignaciones_vigentes)
+        
+        # Porcentaje de ocupación
+        grupo.porcentaje_ocupacion = round(
+            (grupo.total_pacientes_vigentes / grupo.capacidad_maxima * 100) 
+            if grupo.capacidad_maxima > 0 else 0, 
+            1
+        )
+        
+        # Sample de pacientes
+        grupo.pacientes_sample = grupo.asignaciones_vigentes[:3]
+        
+        # Verificar asistencia del día
+        try:
+            from apps.grupos.models import AsistenciaPaciente
+            asistencias = AsistenciaPaciente.objects.filter(
+                grupo=grupo,
+                fecha=fecha_hoy
+            )
+            grupo.asistencia_registrada_hoy = asistencias.exists()
+            grupo.total_asistencias_hoy = asistencias.count()
+        except ImportError:
+            grupo.asistencia_registrada_hoy = False
+            grupo.total_asistencias_hoy = 0
+    
+    context = {
+        'grupos': grupos,
+        'fecha_hoy': fecha_hoy,
+        'total_grupos': grupos.count(),
+    }
+    
+    return render(request, 'grupos/mis_grupos.html', context)
 
 
 

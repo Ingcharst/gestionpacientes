@@ -1,0 +1,267 @@
+<!-- ✅ BOTÓN PARA COMPLETAR VALORACIONES -->
+<!-- Agregar en: templates/procedimientos/pacientes_pendientes_valoracion.html -->
+
+<!-- ============================================ -->
+<!-- OPCIÓN 1: En la tabla de pacientes pendientes -->
+<!-- ============================================ -->
+
+<!-- En la columna "Acciones" de la tabla, REEMPLAZAR el botón "Valorar" con esto: -->
+
+<td>
+    <!-- Botón Valorar (existente) -->
+    <a href="{% url 'procedimientos:valoraciones_paciente' paciente.id %}" 
+       class="btn btn-sm btn-info">
+        <i class="bi bi-clipboard-check me-1"></i>Valorar
+    </a>
+    
+    <!-- ✅ NUEVO: Botón Completar Valoraciones -->
+    <button type="button" 
+            class="btn btn-sm btn-success ms-2" 
+            onclick="verificarYCompletar({{ paciente.id }}, '{{ paciente.nombre_completo }}')"
+            id="btn-completar-{{ paciente.id }}">
+        <i class="bi bi-check-circle me-1"></i>Completar
+    </button>
+</td>
+
+<!-- ============================================ -->
+<!-- OPCIÓN 2: En la página de valoraciones del paciente -->
+<!-- ============================================ -->
+
+<!-- En templates/procedimientos/valoraciones_paciente.html -->
+<!-- Agregar después del título, antes de la lista de valoraciones -->
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Estado de Valoraciones
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <p class="mb-2">
+                    <strong>Paciente:</strong> {{ paciente.nombre_completo }}
+                </p>
+                <p class="mb-2">
+                    <strong>Estado actual:</strong> 
+                    <span class="badge bg-warning">{{ paciente.get_estado_display }}</span>
+                </p>
+                <p class="mb-0">
+                    <strong>Valoraciones completadas:</strong> 
+                    <span id="total-valoraciones">{{ valoraciones.count }}</span>
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <!-- ✅ BOTÓN PRINCIPAL PARA COMPLETAR -->
+                {% if valoraciones.count > 0 and paciente.estado == 'PENDIENTE_VALORACION' %}
+                <button type="button" 
+                        class="btn btn-success btn-lg"
+                        onclick="completarValoraciones({{ paciente.id }}, '{{ paciente.nombre_completo }}', {{ valoraciones.count }})">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Marcar como Valorado
+                </button>
+                {% elif paciente.estado == 'PENDIENTE_ASIGNACION' %}
+                <div class="alert alert-success mb-0">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Paciente listo para asignación de grupos
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    Complete al menos una valoración
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT PARA MANEJAR LAS ACCIONES -->
+<!-- ============================================ -->
+
+<!-- Agregar al final del template, antes de {% endblock %} -->
+
+{% block extra_js %}
+<script>
+// ✅ Verificar valoraciones y mostrar confirmación
+function verificarYCompletar(pacienteId, nombrePaciente) {
+    // Verificar estado de valoraciones
+    fetch(`/procedimientos/pacientes/${pacienteId}/valoraciones/verificar/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.total_valoraciones === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin Valoraciones',
+                    text: `El paciente ${nombrePaciente} no tiene valoraciones registradas.`,
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+            
+            // Mostrar confirmación con detalles
+            let valoracionesHtml = '<ul class="text-start">';
+            data.valoraciones.forEach(val => {
+                valoracionesHtml += `<li><strong>${val.terapia}</strong> - ${val.terapeuta} (${val.fecha})</li>`;
+            });
+            valoracionesHtml += '</ul>';
+            
+            Swal.fire({
+                title: '¿Completar Valoraciones?',
+                html: `
+                    <p><strong>Paciente:</strong> ${data.paciente}</p>
+                    <p><strong>Total de valoraciones:</strong> ${data.total_valoraciones}</p>
+                    <p><strong>Estado actual:</strong> ${data.estado_actual}</p>
+                    <hr>
+                    <p class="text-start"><strong>Valoraciones realizadas:</strong></p>
+                    ${valoracionesHtml}
+                    <hr>
+                    <p class="text-muted">Al confirmar, el paciente pasará a <strong>"Pendiente de Asignación"</strong> y ya no aparecerá en esta lista.</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Sí, Completar',
+                cancelButtonText: '<i class="bi bi-x-circle me-1"></i> Cancelar',
+                width: '600px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    completarValoracionesConfirmado(pacienteId, nombrePaciente);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo verificar el estado de las valoraciones.',
+            });
+        });
+}
+
+// ✅ Completar valoraciones (confirmado)
+function completarValoraciones(pacienteId, nombrePaciente, totalValoraciones) {
+    Swal.fire({
+        title: '¿Marcar como Valorado?',
+        html: `
+            <p><strong>Paciente:</strong> ${nombrePaciente}</p>
+            <p><strong>Valoraciones completadas:</strong> ${totalValoraciones}</p>
+            <hr>
+            <p class="text-muted">El paciente pasará a <strong>"Pendiente de Asignación"</strong> y estará listo para ser asignado a grupos terapéuticos.</p>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Sí, Marcar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            completarValoracionesConfirmado(pacienteId, nombrePaciente);
+        }
+    });
+}
+
+// ✅ Ejecutar el cambio de estado
+function completarValoracionesConfirmado(pacienteId, nombrePaciente) {
+    // Mostrar loading
+    Swal.fire({
+        title: 'Procesando...',
+        text: 'Actualizando estado del paciente',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Redirigir a la URL que hace el cambio
+    window.location.href = `/procedimientos/pacientes/${pacienteId}/valoraciones/completar/`;
+}
+
+// ✅ SweetAlert2 - Incluir si no está ya
+// Agregar en el <head> del template base o en este template:
+</script>
+
+<!-- SweetAlert2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% endblock %}
+
+
+<!-- ============================================ -->
+<!-- ALTERNATIVA SIN SWEETALERT (Bootstrap Modal) -->
+<!-- ============================================ -->
+
+<!-- Si no quieres usar SweetAlert2, usa un modal Bootstrap -->
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="modalCompletarValoraciones" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Completar Valoraciones
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Paciente:</strong> <span id="modal-paciente-nombre"></span></p>
+                <p><strong>Total valoraciones:</strong> <span id="modal-total-valoraciones"></span></p>
+                <hr>
+                <div id="modal-valoraciones-lista"></div>
+                <hr>
+                <p class="text-muted">
+                    Al confirmar, el paciente pasará a <strong>"Pendiente de Asignación"</strong> 
+                    y ya no aparecerá en la lista de pacientes pendientes de valoración.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-success" onclick="confirmarCompletarModal()">
+                    <i class="bi bi-check-circle me-1"></i>Sí, Completar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para Modal Bootstrap -->
+<script>
+let pacienteIdGlobal = null;
+
+function verificarYCompletarModal(pacienteId, nombrePaciente) {
+    pacienteIdGlobal = pacienteId;
+    
+    fetch(`/procedimientos/pacientes/${pacienteId}/valoraciones/verificar/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('modal-paciente-nombre').textContent = data.paciente;
+            document.getElementById('modal-total-valoraciones').textContent = data.total_valoraciones;
+            
+            let html = '<ul>';
+            data.valoraciones.forEach(val => {
+                html += `<li><strong>${val.terapia}</strong> - ${val.terapeuta}</li>`;
+            });
+            html += '</ul>';
+            document.getElementById('modal-valoraciones-lista').innerHTML = html;
+            
+            const modal = new bootstrap.Modal(document.getElementById('modalCompletarValoraciones'));
+            modal.show();
+        });
+}
+
+function confirmarCompletarModal() {
+    window.location.href = `/procedimientos/pacientes/${pacienteIdGlobal}/valoraciones/completar/`;
+}
+</script>

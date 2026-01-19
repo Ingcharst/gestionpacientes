@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import GrupoTerapeutico, AsignacionGrupo, PacientePendiente
+from .models import GrupoTerapeutico, AsignacionGrupo, PacientePendiente, AlertaCupo
 
 
 @admin.register(GrupoTerapeutico)
@@ -85,11 +85,12 @@ class GrupoTerapeuticoAdmin(admin.ModelAdmin):
         else:
             color = 'green'
         
+        porcentaje_formateado = f"{porcentaje:.1f}"
         return format_html(
             '<div style="width:100px; background-color:#f0f0f0; border-radius:3px;">'
-            '<div style="width:{}%; background-color:{}; height:20px; border-radius:3px; text-align:center; color:white; font-size:11px; line-height:20px;">{:.1f}%</div>'
+            '<div style="width:{}%; background-color:{}; height:20px; border-radius:3px; text-align:center; color:white; font-size:11px; line-height:20px;">{}%</div>'
             '</div>',
-            porcentaje, color, porcentaje
+            porcentaje, color, porcentaje_formateado
         )
     ocupacion_display.short_description = 'Ocupación'
     
@@ -381,3 +382,12 @@ class PacientePendienteAdmin(admin.ModelAdmin):
                 count += 1
         self.message_user(request, f'{count} solicitud(es) cancelada(s).')
     cancelar_solicitudes.short_description = 'Cancelar solicitudes'
+
+
+@admin.register(AlertaCupo)
+class AlertaCupoAdmin(admin.ModelAdmin):
+    list_display = ['grupo', 'pacientes_excedentes', 'estado', 'fecha_generacion']
+    list_filter = ['estado', 'fecha_generacion']
+    readonly_fields = ['fecha_generacion', 'fecha_resolucion']
+
+

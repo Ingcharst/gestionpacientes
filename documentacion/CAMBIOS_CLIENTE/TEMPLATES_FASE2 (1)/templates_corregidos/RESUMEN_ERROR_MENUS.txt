@@ -1,0 +1,92 @@
+# 🔴 PROBLEMA DETECTADO
+
+## Error 1: NoReverseMatch (Línea 119)
+**Archivo:** `pacientes_pendientes_valoracion.html`
+**Error:** URL intenta pasar solo `paciente_id` pero requiere también `terapia_id`
+
+```django
+<!-- ❌ INCORRECTO (Línea 119): -->
+<a href="{% url 'procedimientos:crear_valoracion' paciente.pk %}">
+
+<!-- ✅ CORRECTO: -->
+<a href="{% url 'procedimientos:valoraciones_paciente' pk=paciente.pk %}">
+```
+
+**Razón:** La vista `crear_valoracion` requiere AMBOS parámetros (paciente_id y terapia_id), pero el flujo correcto es ir primero a `valoraciones_paciente` donde el usuario selecciona la terapia.
+
+## Error 2: Menús no existen
+No hay enlaces en navbar para acceder a las nuevas funcionalidades.
+
+---
+
+# ✅ SOLUCIÓN INMEDIATA (5 minutos)
+
+## 1. CORREGIR TEMPLATE (URGENTE)
+**Archivo:** `apps/procedimientos/templates/procedimientos/pacientes_pendientes_valoracion.html`
+
+**Cambiar línea 119:**
+```django
+<a href="{% url 'procedimientos:valoraciones_paciente' pk=paciente.pk %}" 
+   class="btn btn-sm btn-primary">
+    <i class="bi bi-clipboard-check"></i> Valorar
+</a>
+```
+
+## 2. AGREGAR MENÚS A NAVBAR
+**Archivo:** `templates/base/base.html` (o donde tengas la navbar)
+
+**Buscar** la sección `<nav>` y **agregar** estos menús:
+
+```html
+<!-- Menú Pacientes -->
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-people-fill"></i> Pacientes
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{% url 'procedimientos:registrar_paciente' %}">
+            <i class="bi bi-person-plus"></i> Registrar Nuevo
+        </a></li>
+        <li><a class="dropdown-item" href="{% url 'procedimientos:pacientes_pendientes_valoracion' %}">
+            <i class="bi bi-clipboard-pulse"></i> Pendientes Valoración
+        </a></li>
+    </ul>
+</li>
+
+<!-- Menú Alertas -->
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'alertas:dashboard_alertas' %}">
+        <i class="bi bi-bell-fill"></i> Alertas
+    </a>
+</li>
+```
+
+---
+
+# 📦 ARCHIVOS EN EL ZIP
+
+1. **pacientes_pendientes_valoracion.html** - Template corregido
+2. **navbar_actualizado.html** - Navbar completo con menús
+3. **urls_procedimientos_completas.py** - URLs necesarias
+4. **GUIA_CORRECCION_COMPLETA.txt** - Instrucciones detalladas
+
+---
+
+# 🚀 APLICAR SOLUCIÓN
+
+```bash
+# 1. Copiar template corregido
+cp templates_corregidos/pacientes_pendientes_valoracion.html \
+   apps/procedimientos/templates/procedimientos/
+
+# 2. Actualizar navbar en templates/base/base.html
+# Reemplazar <nav> con contenido de navbar_actualizado.html
+
+# 3. Probar
+python manage.py runserver
+```
+
+---
+
+**Tiempo: 5 minutos** ⏱️
+**Prioridad: ALTA** 🔴

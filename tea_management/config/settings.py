@@ -62,14 +62,15 @@ INSTALLED_APPS = [
     'drf_spectacular',
     
     # Local apps
-    'apps.usuarios',
+    'apps.alertas',
     'apps.consultorios',
-    'apps.terapias',
-    'apps.procedimientos',
-    'apps.grupos',
-    'apps.reportes',
     'apps.evolucion',
+    'apps.grupos',
     'apps.ml_models',
+    'apps.procedimientos',
+    'apps.reportes',
+    'apps.terapias',
+    'apps.usuarios',
 ]
 
 MIDDLEWARE = [
@@ -98,6 +99,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.alertas.context_processors.alertas_pendientes',
             ],
         },
     },
@@ -156,7 +158,7 @@ TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

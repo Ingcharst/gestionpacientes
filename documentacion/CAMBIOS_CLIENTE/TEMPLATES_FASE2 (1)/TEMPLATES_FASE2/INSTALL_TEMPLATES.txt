@@ -1,0 +1,178 @@
+# INSTALACIÓN TEMPLATES FASE 2
+
+## ESTRUCTURA DE DIRECTORIOS
+
+```
+apps/
+├── procedimientos/templates/procedimientos/
+│   ├── registrar_paciente.html
+│   ├── valoraciones_paciente.html
+│   ├── crear_valoracion.html
+│   ├── admisiones_paciente.html
+│   ├── crear_admision.html
+│   └── dashboard_admisiones.html
+│
+├── grupos/templates/grupos/
+│   ├── control_asistencia.html
+│   ├── historial_asistencia.html
+│   ├── cambiar_cupo.html
+│   └── reasignar_pacientes.html
+│
+└── alertas/templates/alertas/
+    ├── dashboard.html
+    ├── atender_alerta.html
+    ├── configuracion.html
+    └── forzar_verificacion.html
+```
+
+## INSTALACIÓN RÁPIDA
+
+### 1. Crear directorios
+```bash
+mkdir -p apps/procedimientos/templates/procedimientos
+mkdir -p apps/grupos/templates/grupos
+mkdir -p apps/alertas/templates/alertas
+```
+
+### 2. Copiar templates
+
+**Templates completos (del ZIP):**
+- registrar_paciente.html → procedimientos/
+- valoraciones_paciente.html → procedimientos/
+- control_asistencia.html → grupos/
+- dashboard_alertas.html → alertas/
+
+**Templates compactos (de TEMPLATES_RESTANTES.txt):**
+Copiar cada sección al archivo correspondiente según comentarios.
+
+## TEMPLATES INCLUIDOS
+
+### Procedimientos (6):
+✅ registrar_paciente.html - Registro paciente simple
+✅ valoraciones_paciente.html - Lista valoraciones
+✅ crear_valoracion.html - Form valoración
+✅ admisiones_paciente.html - Lista admisiones
+✅ crear_admision.html - Form admisión
+✅ dashboard_admisiones.html - Dashboard vigentes
+
+### Grupos (4):
+✅ control_asistencia.html - Registro diario
+✅ historial_asistencia.html - Historial paciente
+✅ cambiar_cupo.html - Modificar capacidad
+✅ reasignar_pacientes.html - Gestión sobrecupo
+
+### Alertas (4):
+✅ dashboard.html - Panel alertas
+✅ atender_alerta.html - Marcar atendida
+✅ configuracion.html - Config sistema
+✅ forzar_verificacion.html - Verificación manual
+
+## DEPENDENCIAS
+
+### CSS (ya incluido en templates):
+- Bootstrap 5 Icons
+- Select2 (solo registrar_paciente.html)
+
+### Template Base:
+Todos extienden `base/base.html`. Asegúrate que existe:
+```django
+{# base/base.html #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TEA Management{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% include 'base/navbar.html' %}
+    
+    <main>
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+```
+
+## VERIFICAR INSTALACIÓN
+
+### 1. URLs configuradas:
+```python
+# Verificar en urls.py de cada app
+python manage.py show_urls | grep -E "(registrar|valoracion|admision|asistencia|alerta)"
+```
+
+### 2. Probar templates:
+```bash
+python manage.py runserver
+
+# Acceder:
+http://localhost:8000/procedimientos/pacientes/registrar/
+http://localhost:8000/alertas/
+```
+
+## PERSONALIZACIÓN
+
+### Cambiar colores tema:
+En cada template buscar clases Bootstrap:
+- `bg-primary` → `bg-success` (verde)
+- `btn-primary` → `btn-info` (azul claro)
+
+### Agregar logo IPS:
+En base.html agregar:
+```django
+<img src="{% static 'img/logo.png' %}" alt="Logo">
+```
+
+## TROUBLESHOOTING
+
+### Error: TemplateDoesNotExist
+- Verificar estructura directorios
+- Verificar nombre exacto del template
+- Verificar que app esté en INSTALLED_APPS
+
+### Error: url tag not found
+- Verificar namespace en urls.py
+- Ejemplo: `{% url 'procedimientos:registrar_paciente' %}`
+
+### Estilos no cargan:
+- Verificar CDN Bootstrap en base.html
+- Limpiar cache navegador (Ctrl+F5)
+
+## MEJORAS OPCIONALES
+
+### Agregar HTMX (dinámico):
+```html
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+```
+
+### DataTables (tablas):
+```html
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+```
+
+## PRÓXIMO PASO
+
+Después de instalar templates:
+1. Probar cada funcionalidad
+2. Ajustar estilos según necesidad
+3. Continuar con Fase 3 (IA mejorada)

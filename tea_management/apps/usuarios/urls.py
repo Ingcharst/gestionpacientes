@@ -21,4 +21,5 @@ urlpatterns = [
     
     # Perfil
     path('perfil/<int:pk>/editar/', views.perfil_update, name='perfil_update'),
+
 ]

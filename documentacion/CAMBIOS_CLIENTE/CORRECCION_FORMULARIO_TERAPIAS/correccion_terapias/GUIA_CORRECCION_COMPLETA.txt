@@ -1,0 +1,272 @@
+# 🔴 ERROR: FORMULARIO TERAPIA NO FUNCIONA
+
+## PROBLEMA DETECTADO
+
+El template `terapia_form.html` usa campos que **NO están** en el formulario `TerapiaForm`
+
+### Campos que el template usa pero NO están en el formulario:
+
+| Campo Template | En Formulario | En Modelo | Solución |
+|----------------|---------------|-----------|----------|
+| `imagen` | ❌ NO | ✅ SÍ | Agregar a formulario |
+| `objetivos` | ❌ NO | ✅ SÍ | Agregar a formulario |
+| `metodologia` | ❌ NO | ✅ SÍ | Agregar a formulario |
+| `contraindicaciones` | ❌ NO | ✅ SÍ | Agregar a formulario |
+| `materiales_necesarios` | ❌ NO | ❌ NO | **Quitar del template** |
+| `precio_base` | ❌ NO | ❌ NO | **Cambiar a `costo_sesion`** |
+| `requisitos` | ❌ NO | ❌ NO | **Quitar del template** |
+
+---
+
+## ✅ SOLUCIÓN 1: ACTUALIZAR FORMULARIO
+
+### Archivo: `apps/terapias/forms.py`
+
+**Campos a AGREGAR en TerapiaForm:**
+
+```python
+class TerapiaForm(forms.ModelForm):
+    class Meta:
+        model = Terapia
+        fields = [
+            'nombre', 'codigo', 'categoria',
+            'descripcion', 'descripcion_corta',
+            'imagen',  # ← AGREGAR
+            
+            'modalidad', 'especialidad', 'nivel_intensidad',
+            'duracion_minutos', 'frecuencia_semanal_recomendada',
+            'costo_sesion', 'permite_descuento',
+            'edad_minima', 'edad_maxima',
+            'requiere_evaluacion_previa', 'requiere_orden_medica',
+            'capacidad_minima', 'capacidad_maxima',
+            'requiere_acompanante',
+            
+            # AGREGAR ESTOS 3:
+            'objetivos',
+            'metodologia',
+            'contraindicaciones',
+            
+            'disponible_online', 'disponible_domicilio',
+            'activo', 'destacado'
+        ]
+        widgets = {
+            # ... widgets existentes ...
+            
+            # AGREGAR ESTOS:
+            'imagen': forms.FileInput(attrs={'class': 'form-control'}),
+            'objetivos': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'metodologia': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'contraindicaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+```
+
+---
+
+## ✅ SOLUCIÓN 2: ACTUALIZAR TEMPLATE
+
+### Archivo: `apps/terapias/templates/terapias/terapia_form.html`
+
+### Cambios a realizar:
+
+#### 1. QUITAR sección "Materiales Necesarios" (NO EXISTE):
+
+```html
+<!-- ❌ QUITAR ESTO (líneas ~150-160): -->
+<div class="mb-3">
+    <label for="{{ form.materiales_necesarios.id_for_label }}" class="form-label">
+        Materiales Necesarios
+    </label>
+    {{ form.materiales_necesarios }}
+    {% if form.materiales_necesarios.errors %}
+    <div class="invalid-feedback d-block">{{ form.materiales_necesarios.errors }}</div>
+    {% endif %}
+</div>
+```
+
+#### 2. CAMBIAR `precio_base` por `costo_sesion`:
+
+```html
+<!-- ❌ ANTES (línea ~190): -->
+<div class="col-md-4 mb-3">
+    <label for="{{ form.precio_base.id_for_label }}" class="form-label">Precio Base</label>
+    {{ form.precio_base }}
+    {% if form.precio_base.errors %}
+    <div class="invalid-feedback d-block">{{ form.precio_base.errors }}</div>
+    {% endif %}
+</div>
+
+<!-- ✅ DESPUÉS: -->
+<div class="col-md-4 mb-3">
+    <label for="{{ form.costo_sesion.id_for_label }}" class="form-label">
+        Costo por Sesión <span class="text-danger">*</span>
+    </label>
+    {{ form.costo_sesion }}
+    {% if form.costo_sesion.errors %}
+    <div class="invalid-feedback d-block">{{ form.costo_sesion.errors }}</div>
+    {% endif %}
+</div>
+```
+
+#### 3. QUITAR sección "Requisitos" (NO EXISTE):
+
+```html
+<!-- ❌ QUITAR ESTO (líneas ~200-210): -->
+<div class="mb-3">
+    <label for="{{ form.requisitos.id_for_label }}" class="form-label">Requisitos</label>
+    {{ form.requisitos }}
+    {% if form.requisitos.errors %}
+    <div class="invalid-feedback d-block">{{ form.requisitos.errors }}</div>
+    {% endif %}
+</div>
+```
+
+#### 4. AGREGAR condicionales a campos opcionales:
+
+```html
+<!-- ✅ USAR {% if %} para campos que pueden no estar: -->
+
+{% if form.objetivos %}
+<div class="mb-3">
+    <label for="{{ form.objetivos.id_for_label }}" class="form-label">Objetivos</label>
+    {{ form.objetivos }}
+    {% if form.objetivos.errors %}
+    <div class="invalid-feedback d-block">{{ form.objetivos.errors }}</div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if form.metodologia %}
+<div class="mb-3">
+    <label for="{{ form.metodologia.id_for_label }}" class="form-label">Metodología</label>
+    {{ form.metodologia }}
+    {% if form.metodologia.errors %}
+    <div class="invalid-feedback d-block">{{ form.metodologia.errors }}</div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if form.contraindicaciones %}
+<div class="mb-3">
+    <label for="{{ form.contraindicaciones.id_for_label }}" class="form-label">
+        Contraindicaciones
+    </label>
+    {{ form.contraindicaciones }}
+    {% if form.contraindicaciones.errors %}
+    <div class="invalid-feedback d-block">{{ form.contraindicaciones.errors }}</div>
+    {% endif %}
+</div>
+{% endif %}
+```
+
+---
+
+## 🚀 APLICAR CORRECCIÓN
+
+### Opción 1: Copiar archivos completos (RECOMENDADO)
+
+```bash
+# 1. Copiar formulario corregido
+cp correccion_terapias/forms.py apps/terapias/forms.py
+
+# 2. Copiar template corregido
+cp correccion_terapias/terapia_form.html apps/terapias/templates/terapias/terapia_form.html
+
+# 3. Reiniciar servidor
+python manage.py runserver
+```
+
+### Opción 2: Editar manualmente
+
+1. **Editar** `apps/terapias/forms.py`
+   - Agregar campos: `imagen`, `objetivos`, `metodologia`, `contraindicaciones`
+   - Agregar widgets correspondientes
+
+2. **Editar** `apps/terapias/templates/terapias/terapia_form.html`
+   - Quitar: `materiales_necesarios`
+   - Quitar: `requisitos`
+   - Cambiar: `precio_base` → `costo_sesion`
+   - Agregar `{% if %}` a campos opcionales
+
+---
+
+## ✅ VERIFICAR
+
+```bash
+python manage.py runserver
+```
+
+1. **Ir a:** http://localhost:8000/admin/terapias/terapia/add/
+   - O la URL configurada: `/terapias/crear/`
+
+2. **Verificar que:**
+   - ✅ Form carga sin errores
+   - ✅ Todos los campos se muestran
+   - ✅ No hay campos undefined
+   - ✅ Se puede guardar
+
+3. **Probar crear terapia:**
+   - Llenar campos obligatorios
+   - Guardar
+   - ✅ Debe funcionar correctamente
+
+---
+
+## 📊 RESUMEN CAMBIOS
+
+### Formulario (forms.py):
+| Acción | Campos |
+|--------|--------|
+| **AGREGAR** | imagen, objetivos, metodologia, contraindicaciones |
+| Total agregados | **4 campos** |
+
+### Template (terapia_form.html):
+| Acción | Campos/Secciones |
+|--------|------------------|
+| **QUITAR** | materiales_necesarios, requisitos |
+| **CAMBIAR** | precio_base → costo_sesion |
+| **PROTEGER** | {% if %} en campos opcionales |
+
+---
+
+## 🎯 CAMPOS FINALES FORMULARIO
+
+**Total: 24 campos**
+
+1. **Básicos (5):** nombre, codigo, categoria, descripcion, descripcion_corta
+2. **Imagen (1):** imagen
+3. **Clasificación (3):** modalidad, especialidad, nivel_intensidad
+4. **Duración (2):** duracion_minutos, frecuencia_semanal_recomendada
+5. **Costos (2):** costo_sesion, permite_descuento
+6. **Edad (2):** edad_minima, edad_maxima
+7. **Requisitos (2):** requiere_evaluacion_previa, requiere_orden_medica
+8. **Capacidad (3):** capacidad_minima, capacidad_maxima, requiere_acompanante
+9. **Adicional (3):** objetivos, metodologia, contraindicaciones
+10. **Disponibilidad (2):** disponible_online, disponible_domicilio
+11. **Estado (2):** activo, destacado
+
+---
+
+## ⚠️ NOTA IMPORTANTE
+
+**Campos que NO existen en el modelo y NO se pueden agregar:**
+- `materiales_necesarios` - No existe
+- `requisitos` - No existe
+- `precio_base` - Se llama `costo_sesion`
+
+**Si necesitas estos campos:**
+1. Agregar al modelo: `python manage.py makemigrations`
+2. Migrar: `python manage.py migrate`
+3. Agregar al formulario
+4. Actualizar template
+
+---
+
+## 🎉 RESULTADO FINAL
+
+✅ Formulario funcional con todos los campos del modelo
+✅ Template sincronizado con formulario
+✅ Sin campos inexistentes
+✅ Validaciones correctas
+✅ Se puede crear/editar terapias
+
+**Tiempo estimado corrección: 5 minutos** ⏱️

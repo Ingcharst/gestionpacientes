@@ -1,0 +1,329 @@
+# ⚡ APLICACIÓN RÁPIDA - Código CIE-10 (5 minutos)
+
+## 🎯 CAMBIOS A REALIZAR
+
+1. ✅ Agregar campo CIE-10 a modelo ValoracionProfesional
+2. ✅ Actualizar formularios (Paciente y Valoración)
+3. ✅ Actualizar templates con Select2
+4. ✅ Migración de base de datos
+
+---
+
+## 🚀 PASO 1: Modelo ValoracionProfesional (1 min)
+
+**Archivo:** `apps/procedimientos/models.py`
+
+**Buscar clase `ValoracionProfesional` y agregar el campo:**
+
+```python
+class ValoracionProfesional(models.Model):
+    """Valoración individual por terapeuta"""
+    paciente = models.ForeignKey(...)
+    terapeuta = models.ForeignKey(...)
+    terapia = models.ForeignKey(...)
+    
+    # ✅ AGREGAR ESTE CAMPO (después de terapia):
+    codigo_cie10 = models.ForeignKey(
+        'CodigoCIE10',
+        on_delete=models.PROTECT,
+        related_name='valoraciones_profesionales',
+        verbose_name='Código CIE-10',
+        null=True,
+        blank=True,
+        help_text='Diagnóstico según CIE-10'
+    )
+    
+    fecha_valoracion = models.DateTimeField(auto_now_add=True)
+    # ... resto del modelo ...
+```
+
+**Guardar:** Ctrl+S
+
+---
+
+## 🚀 PASO 2: Migración (30 seg)
+
+```bash
+# Crear migración
+python manage.py makemigrations procedimientos
+
+# Aplicar
+python manage.py migrate procedimientos
+```
+
+---
+
+## 🚀 PASO 3: Formularios (2 min)
+
+**Archivo:** `apps/procedimientos/forms.py`
+
+### 3.1 PacienteRegistroForm
+
+**Buscar `class PacienteRegistroForm` y modificar:**
+
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            'tipo_documento',
+            'numero_documento',
+            'nombres',
+            'apellidos',
+            'fecha_nacimiento',
+            'genero',
+            'foto',
+            'telefono',
+            'email',
+            'direccion',
+            'acudiente_nombre',
+            'acudiente_telefono',
+            'acudiente_parentesco',
+            'codigo_enfermedad',  # ✅ VERIFICAR que esté incluido
+        ]
+        
+        widgets = {
+            # ... widgets existentes ...
+            
+            # ✅ AGREGAR o VERIFICAR:
+            'codigo_enfermedad': forms.Select(attrs={
+                'class': 'form-control select2',
+                'data-placeholder': 'Seleccione código CIE-10'
+            }),
+        }
+        
+        labels = {
+            # ... labels existentes ...
+            'codigo_enfermedad': 'Código CIE-10',  # ✅ AGREGAR
+        }
+```
+
+### 3.2 ValoracionProfesionalForm
+
+**Buscar `class ValoracionProfesionalForm` y modificar:**
+
+```python
+class ValoracionProfesionalForm(forms.ModelForm):
+    class Meta:
+        model = ValoracionProfesional
+        fields = [
+            'terapia',
+            'codigo_cie10',  # ✅ AGREGAR
+            'estado_salud_general',
+            'observaciones',
+            'recomendaciones',
+            'objetivos_terapeuticos',
+        ]
+        
+        widgets = {
+            # ... widgets existentes ...
+            
+            # ✅ AGREGAR:
+            'codigo_cie10': forms.Select(attrs={
+                'class': 'form-control select2',
+                'data-placeholder': 'Seleccione código CIE-10'
+            }),
+        }
+        
+        labels = {
+            # ... labels existentes ...
+            'codigo_cie10': 'Código CIE-10',  # ✅ AGREGAR
+        }
+```
+
+**Guardar:** Ctrl+S
+
+---
+
+## 🚀 PASO 4: Templates (2 min)
+
+### 4.1 Template Registro Paciente
+
+**Archivo:** `apps/procedimientos/templates/procedimientos/paciente_form.html`
+
+**Buscar la sección de "Información de Contacto" y agregar DESPUÉS:**
+
+```html
+<!-- ✅ AGREGAR SECCIÓN INFORMACIÓN MÉDICA -->
+<div class="form-section">
+    <h5><i class="bi bi-heart-pulse me-2"></i>Información Médica</h5>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <label for="{{ form.codigo_enfermedad.id_for_label }}" class="form-label">
+                {{ form.codigo_enfermedad.label }}
+                <small class="text-muted">(Opcional)</small>
+            </label>
+            {{ form.codigo_enfermedad }}
+            {% if form.codigo_enfermedad.errors %}
+            <div class="invalid-feedback d-block">
+                {{ form.codigo_enfermedad.errors }}
+            </div>
+            {% endif %}
+            <small class="form-text text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Busque por código (ej: F84) o nombre de la condición
+            </small>
+        </div>
+    </div>
+</div>
+```
+
+**Y en el bloque {% block extra_css %} AGREGAR:**
+
+```html
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    /* ... otros estilos ... */
+</style>
+{% endblock %}
+```
+
+**Y en el bloque {% block extra_js %} AGREGAR:**
+
+```html
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Select2 para CIE-10
+        $('#id_codigo_enfermedad').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Buscar código CIE-10...',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}
+```
+
+---
+
+### 4.2 Template Valoración Profesional
+
+**Archivo:** `apps/procedimientos/templates/procedimientos/crear_valoracion.html`
+
+**Buscar donde está el formulario y AGREGAR después del campo terapia:**
+
+```html
+<!-- ✅ AGREGAR SECCIÓN DIAGNÓSTICO -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Diagnóstico:</strong> Seleccione el código CIE-10 según su evaluación
+        </div>
+    </div>
+    <div class="col-md-12 mb-3">
+        <label for="{{ form.codigo_cie10.id_for_label }}" class="form-label">
+            <i class="bi bi-bookmark-check me-1"></i>
+            {{ form.codigo_cie10.label }}
+            <small class="text-muted">(Opcional)</small>
+        </label>
+        {{ form.codigo_cie10 }}
+        {% if form.codigo_cie10.errors %}
+        <div class="invalid-feedback d-block">
+            {{ form.codigo_cie10.errors }}
+        </div>
+        {% endif %}
+        <small class="form-text text-muted">
+            <i class="bi bi-search me-1"></i>
+            Busque por código o nombre de la condición
+        </small>
+    </div>
+</div>
+
+<hr class="my-4">
+```
+
+**Y en {% block extra_css %} AGREGAR:**
+
+```html
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+```
+
+**Y en {% block extra_js %} AGREGAR:**
+
+```html
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Select2 para CIE-10
+        $('#id_codigo_cie10').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Buscar código CIE-10...',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}
+```
+
+---
+
+## ✅ VERIFICAR
+
+```bash
+# Reiniciar servidor
+python manage.py runserver
+```
+
+### Probar Registro Paciente:
+```
+http://127.0.0.1:8000/procedimientos/pacientes/crear/
+```
+- ✓ Ver campo "Código CIE-10" con buscador
+- ✓ Buscar por código o nombre
+- ✓ Seleccionar y guardar
+
+### Probar Valoración:
+```
+http://127.0.0.1:8000/procedimientos/pacientes/<id>/valoraciones/crear/?terapia=<id>
+```
+- ✓ Ver campo "Código CIE-10"
+- ✓ Select2 funciona
+- ✓ Guardar valoración
+
+---
+
+## 📋 CHECKLIST RÁPIDO
+
+```
+☐ Agregar campo codigo_cie10 en modelo ValoracionProfesional
+☐ Guardar models.py
+☐ makemigrations procedimientos
+☐ migrate procedimientos
+☐ Actualizar PacienteRegistroForm (agregar codigo_enfermedad)
+☐ Actualizar ValoracionProfesionalForm (agregar codigo_cie10)
+☐ Guardar forms.py
+☐ Actualizar paciente_form.html (sección médica + Select2)
+☐ Actualizar crear_valoracion.html (campo CIE-10 + Select2)
+☐ Reiniciar servidor
+☐ Probar registro paciente
+☐ Probar crear valoración
+```
+
+---
+
+## ⏱️ TIEMPO: 5 MINUTOS
+
+1. Modelo: 1 min
+2. Migración: 30 seg
+3. Formularios: 2 min
+4. Templates: 2 min
+5. Verificar: 1 min
+
+---
+
+✅ **¡Listo para usar!**

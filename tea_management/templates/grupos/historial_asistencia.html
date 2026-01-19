@@ -1,0 +1,37 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h3>Historial Asistencia - {{ paciente.nombre_completo }}</h3>
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3"><h4>{{ stats.total }}</h4><small>Total</small></div>
+                <div class="col-md-3"><h4 class="text-success">{{ stats.asistencias }}</h4><small>Asistencias</small></div>
+                <div class="col-md-3"><h4 class="text-danger">{{ stats.inasistencias }}</h4><small>Faltas</small></div>
+                <div class="col-md-3"><h4>{{ stats.porcentaje }}%</h4><small>Cumplimiento</small></div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <table class="table">
+            <thead><tr><th>Fecha</th><th>Grupo</th><th>Estado</th><th>Obs</th></tr></thead>
+            <tbody>
+            {% for a in asistencias %}
+            <tr>
+                <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                <td>{{ a.grupo.nombre }}</td>
+                <td>
+                    {% if a.asistio %}
+                    <span class="badge bg-success">Asistió</span>
+                    {% else %}
+                    <span class="badge bg-danger">Falta{% if a.justificada %} (Just.){% endif %}</span>
+                    {% endif %}
+                </td>
+                <td>{{ a.observaciones|truncatewords:5 }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

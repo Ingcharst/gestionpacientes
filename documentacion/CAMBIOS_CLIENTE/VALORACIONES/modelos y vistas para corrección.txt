@@ -1,0 +1,764 @@
+##  Código de vistas y modelos para revisión
+
+# ================================================================
+# Vista procediminetos/pacientes_pendientes_asignacion
+# ================================================================
+
+@login_required
+def pacientes_pendientes_asignacion(request):
+    """
+    Lista de pacientes que han sido valorados por profesionales
+    y están pendientes de asignación a grupos terapéuticos.
+    
+    ✅ ACTUALIZADO: Usa ValoracionProfesional (múltiples valoraciones)
+    ✅ CORREGIDO: Compara por terapia_id en vez de objetos
+    """
+    
+    # =========================================================================
+    # 1. BUSCAR PACIENTES CON VALORACIONES COMPLETADAS
+    # =========================================================================
+    
+    # Subquery para verificar si tiene valoraciones completadas
+    tiene_valoraciones = ValoracionProfesional.objects.filter(
+        paciente=OuterRef('pk'),
+        estado='COMPLETADA'
+    )
+    
+    # Pacientes con al menos una valoración completada
+    pacientes_con_valoraciones = Paciente.objects.annotate(
+        tiene_valoraciones_completadas=Exists(tiene_valoraciones),
+        total_valoraciones=Count(
+            'valoraciones_profesionales',
+            filter=Q(valoraciones_profesionales__estado='COMPLETADA')
+        )
+    ).filter(
+        tiene_valoraciones_completadas=True
+    )
+    
+    # =========================================================================
+    # 2. FILTRAR POR ESTADO Y SIN ASIGNACIÓN ACTIVA
+    # =========================================================================
+    
+    # Filtrar por estado PENDIENTE_ASIGNACION
+    pacientes = pacientes_con_valoraciones.filter(
+        estado=Paciente.Estado.PENDIENTE_ASIGNACION
+    )
+    
+    pacientes_ok = pacientes.select_related(
+        'codigo_enfermedad'
+    ).prefetch_related(
+        'valoraciones_profesionales__terapia',
+        'valoraciones_profesionales__terapeuta',
+        'admisiones__terapia'
+    ).order_by('-fecha_ingreso')
+    
+    # =========================================================================
+    # 3. CONSTRUIR DATOS PARA CADA PACIENTE
+    # =========================================================================
+    
+    pacientes_data = []
+    
+    for paciente in pacientes_ok:
+        # Obtener valoraciones completadas
+        valoraciones = paciente.valoraciones_profesionales.filter(
+            estado='COMPLETADA'
+        )
+        
+        # Obtener admisiones vigentes
+        admisiones_vigentes = paciente.admisiones.filter(
+            estado='VIGENTE',
+            fecha_inicio__lte=date.today(),
+            fecha_fin__gte=date.today()
+        )
+        
+        # ✅ CORRECCIÓN: Comparar por IDs de terapia
+        terapias_valoradas_ids = set(val.terapia_id for val in valoraciones)
+        terapias_con_admision_ids = set(adm.terapia_id for adm in admisiones_vigentes)
+        
+        falta_admision_ids = terapias_valoradas_ids - terapias_con_admision_ids
+        
+        # Obtener objetos Terapia únicos para mostrar
+        from apps.terapias.models import Terapia
+        terapias_recomendadas = Terapia.objects.filter(
+            id__in=terapias_valoradas_ids
+        )
+        
+        terapias_falta_admision = Terapia.objects.filter(
+            id__in=falta_admision_ids
+        )
+        
+        pacientes_data.append({
+            'paciente': paciente,
+            'valoraciones': valoraciones,
+            'total_valoraciones': valoraciones.count(),
+            'terapias_recomendadas': list(terapias_recomendadas),
+            'admisiones_vigentes': admisiones_vigentes,
+            'falta_admision': list(terapias_falta_admision),
+            'tiene_todas_admisiones': len(falta_admision_ids) == 0,
+        })
+    
+    # =========================================================================
+    # 4. MENSAJES INFORMATIVOS
+    # =========================================================================
+    
+    if pacientes_data:
+        # Contar cuántos están listos para asignar
+        listos = sum(1 for p in pacientes_data if p['tiene_todas_admisiones'])
+        pendientes = len(pacientes_data) - listos
+        
+        if listos > 0:
+            messages.success(
+                request,
+                f'✅ {listos} paciente(s) listo(s) para asignación a grupos'
+            )
+        
+        if pendientes > 0:
+            messages.warning(
+                request,
+                f'⚠️ {pendientes} paciente(s) valorado(s) pero sin todas las admisiones de terapia'
+            )
+    else:
+        messages.info(
+            request,
+            'No hay pacientes pendientes de asignación a grupos'
+        )
+    
+    # =========================================================================
+    # 5. RENDERIZAR
+    # =========================================================================
+    
+    context = {
+        'pacientes_data': pacientes_data,
+        'titulo': 'Pacientes Pendientes de Asignación a Terapias',
+    }
+    
+    return render(request, 'procedimientos/pacientes_pendientes_asignacion.html', context)
+
+
+# ================================================================
+# Modelo Procedimientos/ValoracionProfesional
+# ================================================================
+
+class ValoracionProfesional(models.Model):
+    """Valoración individual por terapeuta"""
+    paciente = models.ForeignKey(
+        'Paciente',
+        on_delete=models.CASCADE,
+        related_name='valoraciones_profesionales'
+    )
+    terapeuta = models.ForeignKey(
+        Usuario,
+        on_delete=models.PROTECT,
+        related_name='valoraciones_como_terapeuta'
+    )
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='valoraciones_profesionales_terapia'
+    )
+    codigo_cie10 = models.ForeignKey(
+        'CodigoCIE10',
+        on_delete=models.PROTECT,
+        related_name='valoraciones_profesionales',
+        verbose_name='Código CIE-10',
+        null=True,
+        blank=True,
+        help_text='Diagnóstico según clasificación CIE-10'
+    )    
+    fecha_valoracion = models.DateTimeField(auto_now_add=True)
+    
+    # Campos de valoración
+    estado_salud_general = models.TextField()
+    observaciones = models.TextField()
+    recomendaciones = models.TextField()
+    objetivos_terapeuticos = models.TextField(blank=True)
+    
+    # Estado
+    ESTADOS = [
+        ('PENDIENTE', 'Pendiente'),
+        ('COMPLETADA', 'Completada'),
+        ('REVISADA', 'Revisada'),
+    ]
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='COMPLETADA')
+    
+    # Firma
+    firma_terapeuta = models.ImageField(upload_to='firmas_valoraciones/', null=True, blank=True)
+    
+    class Meta:
+        verbose_name = 'Valoración Profesional'
+        verbose_name_plural = 'Valoraciones Profesionales'
+        unique_together = ['paciente', 'terapeuta', 'terapia']
+        ordering = ['-fecha_valoracion']
+        
+    def __str__(self):
+        return f"{self.paciente} - {self.terapeuta} - {self.terapia}"
+    
+    def save(self, *args, **kwargs):
+            """
+            Guardar valoración y actualizar estado del paciente.
+            Cambia paciente a PENDIENTE_ASIGNACION al completar primera valoración.
+            """
+            # Detectar si cambió a COMPLETADA
+            cambio_completada = False
+            
+            if self.pk:  # Si ya existe
+                try:
+                    anterior = ValoracionProfesional.objects.get(pk=self.pk)
+                    cambio_completada = anterior.estado != 'COMPLETADA' and self.estado == 'COMPLETADA'
+                except ValoracionProfesional.DoesNotExist:
+                    cambio_completada = self.estado == 'COMPLETADA'
+            else:  # Es nueva
+                cambio_completada = self.estado == 'COMPLETADA'
+            
+            # Auto-copiar firma del terapeuta
+            if not self.firma_terapeuta and self.terapeuta.firma:
+                self.firma_terapeuta = self.terapeuta.firma
+            
+            # Guardar primero
+            super().save(*args, **kwargs)
+            
+            # Cambiar estado del paciente si completó valoración
+            if cambio_completada:
+                from apps.grupos.models import AsignacionGrupo
+                
+                # Verificar si no tiene grupo activo
+                tiene_grupo = AsignacionGrupo.objects.filter(
+                    paciente=self.paciente,
+                    estado='ACTIVA'
+                ).exists()
+                
+                # Cambiar a PENDIENTE_ASIGNACION si no tiene grupo
+                if not tiene_grupo and self.paciente.estado != 'ACTIVO':
+                    self.paciente.estado = 'PENDIENTE_ASIGNACION'
+                    self.paciente.save(update_fields=['estado'])
+
+
+
+# ================================================================
+# Modelo Procedimientos/AdmisionTerapia
+# ================================================================
+
+class AdmisionTerapia(models.Model):
+    """Admisión por terapia ordenada por EPS"""
+    paciente = models.ForeignKey(
+        'Paciente',
+        on_delete=models.CASCADE,
+        related_name='admisiones'
+    )
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='admisiones_terapia'
+    )
+    
+    # Número EPS
+    numero_admision = models.CharField(max_length=50, unique=True)
+    
+    # Vigencia (4 semanas)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    
+    # Cantidad
+    cantidad_ordenada = models.IntegerField(validators=[MinValueValidator(1)])
+    cantidad_realizada = models.IntegerField(default=0)
+    
+    # Estado
+    ESTADOS = [
+        ('VIGENTE', 'Vigente'),
+        ('VENCIDA', 'Vencida'),
+        ('COMPLETADA', 'Completada'),
+        ('CANCELADA', 'Cancelada'),
+    ]
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='VIGENTE')
+    
+    # Auditoría
+    creado_por = models.ForeignKey(
+        Usuario,
+        on_delete=models.PROTECT,
+        related_name='admisiones_terapia_creadas'
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Admisión por Terapia'
+        verbose_name_plural = 'Admisiones por Terapia'
+        ordering = ['-fecha_inicio']
+        
+    def __str__(self):
+        return f"{self.numero_admision} - {self.paciente} - {self.terapia}"
+    
+    @property
+    def esta_vigente(self):
+        from django.utils import timezone
+        hoy = timezone.now().date()
+        return self.fecha_inicio <= hoy <= self.fecha_fin and self.estado == 'VIGENTE'
+    
+    @property
+    def terapias_pendientes(self):
+        return max(0, self.cantidad_ordenada - self.cantidad_realizada)
+    
+    @property
+    def progreso_porcentaje(self):
+        if self.cantidad_ordenada == 0:
+            return 0
+        return int((self.cantidad_realizada / self.cantidad_ordenada) * 100)
+
+
+# ================================================================
+# Modelo Procedimientos/Paciente
+# ================================================================
+
+
+class Paciente(models.Model):
+    """
+    Modelo para pacientes del centro TEA.
+    Historia clínica se genera automáticamente: HC-{documento}-{año}
+    """
+    
+    class TipoDocumento(models.TextChoices):
+        CC = 'CC', _('Cédula de Ciudadanía')
+        TI = 'TI', _('Tarjeta de Identidad')
+        RC = 'RC', _('Registro Civil')
+        CE = 'CE', _('Cédula de Extranjería')
+        PASAPORTE = 'PASAPORTE', _('Pasaporte')
+    
+    class Estado(models.TextChoices):
+        ACTIVO = 'ACTIVO', _('Activo')
+        ADMITIDO = 'ADMITIDO', _('Admitido - Sin Valorar')
+        PENDIENTE_VALORACION = 'PENDIENTE_VALORACION', _('Pendiente Valoración')
+        PENDIENTE_ASIGNACION = 'PENDIENTE_ASIGNACION', _('Pendiente Asignación Terapias')
+        INACTIVO = 'INACTIVO', _('Inactivo')
+        SUSPENDIDO = 'SUSPENDIDO', _('Suspendido')
+        DADO_ALTA = 'DADO_ALTA', _('Dado de Alta')
+    
+    class Genero(models.TextChoices):
+        MASCULINO = 'M', _('Masculino')
+        FEMENINO = 'F', _('Femenino')
+        OTRO = 'O', _('Otro')
+
+    class EstadoAsignacion(models.TextChoices):
+        SIN_ASIGNAR = 'SIN_ASIGNAR', _('Sin Asignar')
+        ASIGNADO = 'ASIGNADO', _('Asignado')
+        EN_ESPERA = 'EN_ESPERA', _('En Espera')
+
+    # Información Personal
+    nombres = models.CharField(
+        max_length=100,
+        verbose_name='Nombres'
+    )
+    
+    apellidos = models.CharField(
+        max_length=100,
+        verbose_name='Apellidos'
+    )
+    
+    tipo_documento = models.CharField(
+        max_length=20,
+        choices=TipoDocumento.choices,
+        default=TipoDocumento.RC,
+        verbose_name='Tipo de Documento'
+    )
+    
+    numero_documento = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name='Número de Documento'
+    )
+    
+    fecha_nacimiento = models.DateField(
+        verbose_name='Fecha de Nacimiento'
+    )
+
+    edad_actual = models.FloatField(
+        verbose_name='Edad',
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(20)
+        ],
+        null=True,
+        blank=True,
+        editable=False,  # No se puede editar manualmente
+        help_text='Edad calculada automáticamente a partir de la fecha de nacimiento'
+    )
+    
+    genero = models.CharField(
+        max_length=1,
+        choices=Genero.choices,
+        verbose_name='Género'
+    )
+    
+    foto = models.ImageField(
+        upload_to='pacientes/fotos/',
+        blank=True,
+        null=True,
+        verbose_name='Fotografía'
+    )
+    
+    # Contacto
+    telefono = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name='Teléfono'
+    )
+    
+    email = models.EmailField(
+        blank=True,
+        verbose_name='Email'
+    )
+    
+    direccion = models.TextField(
+        blank=True,
+        verbose_name='Dirección'
+    )
+    
+    ciudad = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Ciudad'
+    )
+    
+    # Responsables
+    nombre_responsable = models.CharField(
+        max_length=200,
+        verbose_name='Nombre del Responsable'
+    )
+    
+    parentesco_responsable = models.CharField(
+        max_length=50,
+        verbose_name='Parentesco'
+    )
+    
+    telefono_responsable = models.CharField(
+        max_length=20,
+        verbose_name='Teléfono del Responsable'
+    )
+    
+    email_responsable = models.EmailField(
+        blank=True,
+        verbose_name='Email del Responsable'
+    )
+    
+    # Información Médica
+    diagnostico_principal = models.TextField(
+        verbose_name='Diagnóstico Principal',
+        help_text='Diagnóstico médico principal'
+    )
+
+    codigo_enfermedad = models.ForeignKey(
+        CodigoCIE10,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='pacientes',
+        verbose_name='Código CIE-10'
+    )
+    
+    diagnosticos_secundarios = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Diagnósticos Secundarios',
+        help_text='Lista de diagnósticos adicionales'
+    )
+    
+    alergias = models.TextField(
+        blank=True,
+        verbose_name='Alergias',
+        help_text='Alergias conocidas del paciente'
+    )
+    
+    medicamentos = models.TextField(
+        blank=True,
+        verbose_name='Medicamentos',
+        help_text='Medicamentos que toma actualmente'
+    )
+    
+    eps = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='EPS'
+    )
+    
+    # CAMBIO 1: Número de admisión en lugar de HC automática
+    numero_admision = models.CharField(
+        max_length=10,
+        unique=True,
+        verbose_name='Número de Admisión',
+        help_text='Número de admisión del paciente (manual)',
+        null=True,
+        blank=True
+    )
+    
+    # ✅ MODIFICADO: Ahora es opcional y se auto-genera
+    numero_historia_clinica = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        blank=True,  # ✅ Ahora es opcional en formularios
+        editable=True,  # Permite edición manual si es necesario
+        verbose_name='Número de Historia Clínica',
+        help_text='Se genera automáticamente si no se especifica (HC-{documento}-{año})'
+    )
+    
+    # ✅ NUEVO: Firma digital del acudiente
+    firma_acudiente = models.TextField(
+        blank=True,
+        verbose_name='Firma Digital Acudiente',
+        help_text='Firma del acudiente en formato base64'
+    )
+
+    fecha_firma_acudiente = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha y Hora de Firma'
+    )
+
+    ip_firma = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name='IP donde se firmó'
+    )
+
+    # Información Adicional
+    observaciones = models.TextField(
+        blank=True,
+        verbose_name='Observaciones Generales'
+    )
+    
+    necesidades_especiales = models.TextField(
+        blank=True,
+        verbose_name='Necesidades Especiales',
+        help_text='Necesidades especiales o consideraciones'
+    )
+    
+    # Estado
+    estado = models.CharField(
+        max_length=30,
+        choices=Estado.choices,
+        default=Estado.ADMITIDO,
+        verbose_name='Estado'
+    )
+    
+    fecha_ingreso = models.DateField(
+        default=timezone.now,
+        blank=True,
+        verbose_name='Fecha de Ingreso'
+    )
+    
+    fecha_alta = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Fecha de Alta'
+    )
+    
+    motivo_inactividad = models.TextField(
+        blank=True,
+        verbose_name='Motivo de Inactividad'
+    )
+    
+    # Metadata
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha de Creación'
+    )
+    
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Última Actualización'
+    )
+    
+    creado_por = models.ForeignKey(
+        'usuarios.Usuario',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='pacientes_creados',
+        verbose_name='Creado Por'
+    )
+    
+    tiene_grupo_asignado = models.BooleanField(
+        default=False
+    )
+    
+    grupo_actual = models.ForeignKey(
+        'grupos.GrupoTerapeutico', 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+        
+    estado_asignacion = models.CharField(
+        max_length=20,
+        choices=EstadoAsignacion.choices,
+        default=EstadoAsignacion.SIN_ASIGNAR
+    )
+    
+    class Meta:
+        verbose_name = 'Paciente'
+        verbose_name_plural = 'Pacientes'
+        ordering = ['apellidos', 'nombres']
+        indexes = [
+            models.Index(fields=['numero_documento']),
+            models.Index(fields=['numero_historia_clinica']),
+            models.Index(fields=['estado']),
+            models.Index(fields=['fecha_nacimiento']),
+        ]
+    
+    def __str__(self):
+        return f"{self.numero_historia_clinica} - {self.nombre_completo}"
+
+    def calcular_edad(self):
+        """Calcula la edad actual del paciente."""
+        if not self.fecha_nacimiento:
+            return None
+        today = timezone.now().date()
+        age = today.year - self.fecha_nacimiento.year
+        
+        cumplio_este_año = (today.month, today.day) >= (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
+        
+        if not cumplio_este_año:
+            age -= 1
+        
+        if age >= 2:
+            return age
+        else:
+            age = (today.year - self.fecha_nacimiento.year) * 12 + (today.month - self.fecha_nacimiento.month)
+            if today.day < self.fecha_nacimiento.day:
+                age -= 1
+            return round(age / 12, 2)
+        
+
+    # ✅ NUEVO MÉTODO: Genera número de historia clínica único
+    def generar_numero_historia_clinica(self):
+        """
+        Genera número de historia clínica automáticamente.
+        Formato: HC-{NUMERO_DOCUMENTO}-{AÑO}
+        Si existe duplicado, agrega sufijo: HC-{NUMERO_DOCUMENTO}-{AÑO}-1
+        """
+        year = timezone.now().year
+        base = f"HC-{self.numero_documento}-{year}"
+        
+        # Verificar si ya existe
+        numero = base
+        counter = 1
+        
+        # Excluir el propio registro si está actualizando
+        queryset = Paciente.objects.filter(numero_historia_clinica=numero)
+        if self.pk:
+            queryset = queryset.exclude(pk=self.pk)
+        
+        while queryset.exists():
+            numero = f"{base}-{counter}"
+            counter += 1
+            queryset = Paciente.objects.filter(numero_historia_clinica=numero)
+            if self.pk:
+                queryset = queryset.exclude(pk=self.pk)
+        
+        return numero
+
+    # ✅ MÉTODO SAVE SOBRESCRITO: Auto-genera historia clínica si está vacía
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe save para auto-generar número de historia clínica.
+        Si el campo está vacío, lo genera automáticamente.
+        """
+        # Auto-generar historia clínica si está vacía
+        if not self.numero_historia_clinica:
+            self.numero_historia_clinica = self.generar_numero_historia_clinica()
+
+        # Calcular y actualizar la edad automáticamente
+        if not self.edad_actual:
+            self.edad_actual = self.calcular_edad()
+
+        # Guardar normalmente
+        super().save(*args, **kwargs)
+    
+    @property
+    def nombre_completo(self):
+        """Retorna el nombre completo del paciente."""
+        return f"{self.nombres} {self.apellidos}"
+    
+    @property
+    def edad(self):
+        return self.calcular_edad()
+    
+    @property
+    def edad_meses(self):
+        """Calcula la edad en meses (útil para niños pequeños)."""
+        today = timezone.now().date()
+        months = (today.year - self.fecha_nacimiento.year) * 12
+        months += today.month - self.fecha_nacimiento.month
+        return months
+
+    @property
+    def categoria_edad(self):
+        """Devuelve la categoría de edad del paciente."""
+        if not self.edad:
+            return 'Sin fecha de nacimiento'
+        
+        if self.edad < 1:
+            meses = self.edad_meses
+            if meses < 1:
+                return 'Menos de 1 mes'
+            elif meses < 12:
+                return f'{meses} meses'
+            else:
+                return '1 año'
+        elif self.edad <= 3:
+            return '1-3 años'
+        elif self.edad <= 6:
+            return '4-6 años'
+        elif self.edad <= 12:
+            return '7-12 años'
+        elif self.edad <= 18:
+            return '13-18 años'
+        elif self.edad <= 30:
+            return '19-30 años'
+        elif self.edad <= 50:
+            return '31-50 años'
+        elif self.edad <= 70:
+            return '51-70 años'
+        else:
+            return 'Más de 70 años'
+    
+    # ✅ NUEVO: Próximo cumpleaños
+    @property
+    def dias_hasta_cumpleanos(self):
+        """Calcula cuántos días faltan para el próximo cumpleaños."""
+        if not self.fecha_nacimiento:
+            return None
+        
+        today = timezone.now().date()
+        next_birthday = datetime.date(today.year, self.fecha_nacimiento.month, self.fecha_nacimiento.day)
+        
+        if today > next_birthday:
+            next_birthday = datetime.date(today.year + 1, self.fecha_nacimiento.month, self.fecha_nacimiento.day)
+        
+        return (next_birthday - today).days
+
+    @property
+    def esta_activo(self):
+        """Verifica si el paciente está activo."""
+        return self.estado == self.Estado.ACTIVO
+    
+    @property
+    def tiene_alergias(self):
+        """Verifica si tiene alergias registradas."""
+        return bool(self.alergias.strip())
+    
+    @property
+    def tiene_medicamentos(self):
+        """Verifica si toma medicamentos."""
+        return bool(self.medicamentos.strip())
+    
+    def agregar_diagnostico_secundario(self, diagnostico):
+        """Agrega un diagnóstico secundario."""
+        if diagnostico not in self.diagnosticos_secundarios:
+            self.diagnosticos_secundarios.append(diagnostico)
+            self.save(update_fields=['diagnosticos_secundarios'])
+    
+    def dar_alta(self, motivo=''):
+        """Da de alta al paciente."""
+        self.estado = self.Estado.DADO_ALTA
+        self.fecha_alta = timezone.now().date()
+        self.motivo_inactividad = motivo
+        self.save(update_fields=['estado', 'fecha_alta', 'motivo_inactividad'])
+

@@ -23,10 +23,11 @@
             <i class="bi bi-file-medical"></i>Ver Evoluciones
         </a>
         <!-- Botón para Recomendaciones IA -->
-        <a href="{% url 'grupos:recomendar_grupos_paciente' paciente.id %}" 
+        {% comment %} <a href="{% url 'grupos:recomendar_grupos_paciente' paciente.id %}" 
         class="btn btn-primary">
             <i class="bi bi-robot me-1"></i>Recomendar Grupos IA
-        </a>
+        </a> {% endcomment %}
+
     </div>
 </div>
 <div class="card">
@@ -39,7 +40,7 @@
         <a href="{% url 'grupos:recomendar_grupos_paciente' paciente.id %}" 
             class="btn btn-primary w-100 mb-2">
             <i class="bi bi-robot me-2"></i>
-            Obtener Recomendaciones de Grupos IA
+            Obtener Recomendaciones de Grupos
         </a>
     </div>
 </div>
@@ -78,7 +79,58 @@
                 </div>
             </div>
         </div>
-        
+
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    
+                    <!-- Valoraciones -->
+                    <div class="col-12 col-md-4 mb-2">
+                        <a href="{% url 'procedimientos:valoraciones_paciente' pk=paciente.pk %}" 
+                        class="btn btn-outline-primary w-110">
+                            <i class="bi bi-clipboard-pulse d-block fs-3 mb-2"></i>
+                            <strong>Valoraciones</strong>
+                            <hr>
+                            <small class="text-muted">
+                                {{ paciente.valoraciones_profesionales.count }} registradas
+                            </small>
+                        </a>
+                    </div>
+                    
+                    <!-- Admisiones -->
+                    <div class="col-12 col-md-4 mb-2">
+                        <a href="{% url 'procedimientos:admisiones_paciente' pk=paciente.pk %}" 
+                        class="btn btn-outline-success w-110">
+                            <i class="bi bi-file-medical d-block fs-3 mb-2"></i>
+                            <strong>Admisiones</strong>
+                            <hr>
+                            <small class="text-muted">
+                                {{ admisiones_vigentes }} vigente{{ admisiones_vigentes|pluralize }}
+                            </small>
+                        </a>
+                    </div>
+                    
+                    <!-- Asistencias -->
+                    <div class="col-12 col-md-4 mb-2">
+                        <a href="{% url 'grupos:historial_asistencia_paciente' paciente_id=paciente.pk %}" 
+                        class="btn btn-outline-info w-110">
+                            <i class="bi bi-calendar-check d-block fs-3 mb-2"></i>
+                            <strong>Asistencias</strong>
+                            <hr>
+                            <small class="text-muted">
+                                {{ paciente.asistencias.count }} registros
+                            </small>
+                        </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+
         <!-- Card de Grupo Terapéutico -->
         <div class="card shadow mt-3">
             <div class="card-header bg-primary text-white">

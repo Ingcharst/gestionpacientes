@@ -1,0 +1,456 @@
+# 🎯 GUÍA COMPLETA: Accesos al Registro de Asistencias
+
+## 📋 PROBLEMA
+
+No puedes acceder al registro de asistencias desde ningún lugar de la aplicación.
+
+## ✅ SOLUCIÓN
+
+Crear múltiples puntos de acceso para que los terapeutas puedan:
+1. Ver sus grupos desde un menú "Mis Grupos"
+2. Acceder al registro de asistencia con 1 clic
+3. Ver solo pacientes con admisión vigente
+4. Registrar asistencia diaria
+
+---
+
+## ⚡ IMPLEMENTACIÓN (10 minutos)
+
+### PASO 1: Actualizar URLs (2 min)
+
+**Archivo:** `apps/grupos/urls.py`
+
+```python
+from django.urls import path
+from . import views
+
+app_name = 'grupos'
+
+urlpatterns = [
+    # ... URLs existentes ...
+    
+    # ✅ AGREGAR ESTAS URLs:
+    
+    # Mis Grupos (terapeuta)
+    path('mis-grupos/', 
+         views.mis_grupos, 
+         name='mis_grupos'),
+    
+    # Detalle del grupo con listado
+    path('grupos/<int:pk>/', 
+         views.grupo_detalle, 
+         name='detalle_grupo'),
+    
+    # Tomar asistencia (esta ya debe existir)
+    path('grupos/<int:grupo_id>/asistencia/', 
+         views.control_asistencia_grupo, 
+         name='control_asistencia_grupo'),
+]
+```
+
+---
+
+### PASO 2: Agregar vista "Mis Grupos" (3 min)
+
+**Archivo:** `apps/grupos/views.py`
+
+**Copiar:** Contenido completo de `vista_mis_grupos.py`
+
+O usar versión corta:
+
+```python
+@login_required
+def mis_grupos(request):
+    fecha_hoy = date.today()
+    
+    grupos_base = GrupoTerapeutico.objects.filter(
+        terapeuta_responsable=request.user,
+        estado='ACTIVO'
+    )
+    
+    grupos_procesados = []
+    
+    for grupo in grupos_base:
+        asignaciones = AsignacionGrupo.objects.filter(
+            grupo=grupo,
+            estado='ACTIVA'
+        ).select_related('paciente', 'admision_terapia')
+        
+        # Filtrar pacientes con admisión vigente
+        pacientes_vigentes = []
+        for asig in asignaciones:
+            if asig.admision_terapia:
+                admision = asig.admision_terapia
+                if (admision.estado == 'VIGENTE' and
+                    admision.fecha_inicio <= fecha_hoy <= admision.fecha_fin):
+                    pacientes_vigentes.append(asig)
+        
+        grupo.total_pacientes_vigentes = len(pacientes_vigentes)
+        grupo.pacientes_sample = pacientes_vigentes[:3]
+        grupos_procesados.append(grupo)
+    
+    return render(request, 'grupos/mis_grupos.html', {
+        'grupos': grupos_procesados,
+        'fecha_hoy': fecha_hoy,
+    })
+```
+
+---
+
+### PASO 3: Actualizar vista detalle_grupo (2 min)
+
+**Archivo:** `apps/grupos/views.py`
+
+**Copiar:** Contenido de `vista_detalle_grupo.py`
+
+**O modificar tu vista existente:**
+
+```python
+@login_required
+def grupo_detalle(request, pk):
+    grupo = get_object_or_404(GrupoTerapeutico, pk=pk)
+    fecha_hoy = date.today()
+    
+    asignaciones = AsignacionGrupo.objects.filter(
+        grupo=grupo,
+        estado='ACTIVA'
+    ).select_related('paciente', 'admision_terapia')
+    
+    # ✅ SEPARAR por vigencia de admisión
+    pacientes_con_admision = []
+    pacientes_sin_admision = []
+    
+    for asig in asignaciones:
+        if asig.admision_terapia:
+            admision = asig.admision_terapia
+            if (admision.estado == 'VIGENTE' and
+                admision.fecha_inicio <= fecha_hoy <= admision.fecha_fin):
+                pacientes_con_admision.append(asig)
+            else:
+                pacientes_sin_admision.append(asig)
+        else:
+            pacientes_sin_admision.append(asig)
+    
+    return render(request, 'grupos/detalle_grupo.html', {
+        'grupo': grupo,
+        'pacientes_con_admision': pacientes_con_admision,
+        'pacientes_sin_admision': pacientes_sin_admision,
+        'pacientes_activos': len(pacientes_con_admision),
+        'fecha_hoy': fecha_hoy,
+    })
+```
+
+---
+
+### PASO 4: Crear template "Mis Grupos" (2 min)
+
+**Crear archivo:** `apps/grupos/templates/grupos/mis_grupos.html`
+
+**Copiar:** Contenido completo de `template_mis_grupos.html`
+
+---
+
+### PASO 5: Actualizar template detalle_grupo (1 min)
+
+**Editar:** `apps/grupos/templates/grupos/detalle_grupo.html`
+
+**Opción A - Reemplazar completo:**
+Copiar contenido de `template_detalle_grupo.html`
+
+**Opción B - Agregar solo botón:**
+Agregar en la parte superior del template:
+
+```html
+<div class="d-flex justify-content-between mb-4">
+    <h3>{{ grupo.nombre }}</h3>
+    
+    <!-- ✅ BOTÓN TOMAR ASISTENCIA -->
+    <a href="{% url 'grupos:control_asistencia_grupo' grupo_id=grupo.id %}" 
+       class="btn btn-success btn-lg">
+        <i class="bi bi-calendar-check me-2"></i>
+        Tomar Asistencia
+    </a>
+</div>
+```
+
+---
+
+### PASO 6: Agregar enlace en navbar (1 min)
+
+**Editar:** Tu archivo de navbar (base.html o navbar.html)
+
+```html
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">VIDAMED</a>
+        
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+                
+                <!-- Enlaces existentes -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'procedimientos:paciente_list' %}">
+                        <i class="bi bi-people"></i> Pacientes
+                    </a>
+                </li>
+                
+                <!-- ✅ NUEVO: Mis Grupos -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'grupos:mis_grupos' %}">
+                        <i class="bi bi-calendar-check"></i> Mis Grupos
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'grupos:grupo_lista' %}">
+                        <i class="bi bi-grid"></i> Todos los Grupos
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+---
+
+## 🔄 FLUJO COMPLETO
+
+```
+1. Terapeuta ve navbar
+   └─ Clic en "Mis Grupos"
+
+2. Página "Mis Grupos"
+   ├─ Muestra cards de cada grupo
+   ├─ Info: horario, días, pacientes
+   └─ Botón: "Tomar Asistencia"
+
+3. Clic en "Tomar Asistencia"
+   └─ Abre formulario de asistencia
+
+4. Formulario muestra:
+   ├─ Solo pacientes con admisión vigente
+   ├─ Nombre, documento, progreso
+   └─ Checkboxes para marcar
+
+5. Terapeuta marca y guarda
+   └─ Sistema registra asistencias
+
+6. Alternativa: Desde detalle del grupo
+   ├─ Ver "Todos los Grupos"
+   ├─ Clic en un grupo
+   └─ Botón "Tomar Asistencia"
+```
+
+---
+
+## 📍 PUNTOS DE ACCESO CREADOS
+
+### 1. Navbar - "Mis Grupos"
+```
+Ubicación: Menú principal (siempre visible)
+Usuario: Cualquier terapeuta autenticado
+URL: /mis-grupos/
+```
+
+### 2. Mis Grupos - Botón en card
+```
+Ubicación: Card de cada grupo
+Acción: Tomar Asistencia
+URL: /grupos/{id}/asistencia/
+```
+
+### 3. Detalle Grupo - Botón principal
+```
+Ubicación: Página detalle del grupo
+Acción: Tomar Asistencia del Día
+URL: /grupos/{id}/asistencia/
+```
+
+### 4. Detalle Grupo - Botón en footer
+```
+Ubicación: Pie de tabla de pacientes
+Acción: Registrar Asistencia
+URL: /grupos/{id}/asistencia/
+```
+
+---
+
+## ✅ CARACTERÍSTICAS IMPLEMENTADAS
+
+### Filtro Automático
+```python
+# Solo muestra pacientes si:
+✓ Tiene asignación activa
+✓ Tiene admisión vinculada
+✓ Admisión estado == 'VIGENTE'
+✓ fecha_inicio <= hoy <= fecha_fin
+```
+
+### Indicadores Visuales
+```
+✓ Badge verde: Admisión vigente
+✓ Progress bar: Progreso de sesiones
+✓ Alert verde: Asistencia ya registrada
+✓ Alert amarillo: Asistencia pendiente
+```
+
+### Estadísticas en Tiempo Real
+```
+✓ Total pacientes vigentes
+✓ Porcentaje ocupación
+✓ Asistencias del día
+✓ Preview de pacientes
+```
+
+---
+
+## 📋 CHECKLIST IMPLEMENTACIÓN
+
+```
+☐ 1. URLs agregadas en urls.py
+  ☐ mis_grupos
+  ☐ detalle_grupo (verificar)
+  ☐ control_asistencia_grupo (verificar)
+
+☐ 2. Vista mis_grupos agregada
+  ☐ Importaciones correctas
+  ☐ Lógica de filtro implementada
+
+☐ 3. Vista grupo_detalle actualizada
+  ☐ Separa pacientes vigentes
+  ☐ Pasa contexto correcto
+
+☐ 4. Template mis_grupos.html creado
+  ☐ En carpeta correcta
+  ☐ Extends base.html
+
+☐ 5. Template detalle_grupo.html actualizado
+  ☐ Botón "Tomar Asistencia" visible
+  ☐ Muestra solo pacientes vigentes
+
+☐ 6. Enlace en navbar agregado
+  ☐ Ícono visible
+  ☐ URL correcta
+
+☐ 7. Servidor reiniciado
+
+☐ 8. Prueba completa:
+  ☐ Navbar → Mis Grupos funciona
+  ☐ Card muestra grupos correctos
+  ☐ Botón redirige a asistencia
+  ☐ Formulario muestra pacientes vigentes
+```
+
+---
+
+## 🎨 ESTRUCTURA VISUAL
+
+### Página "Mis Grupos"
+```
+┌─────────────────────────────────────────┐
+│ Navbar                                   │
+│ [Inicio] [Pacientes] [MIS GRUPOS ✓]    │
+└─────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│ Mis Grupos - Registro de Asistencias    │
+│ Viernes, 16 de Enero de 2026            │
+│                                          │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐│
+│ │ Grupo A  │  │ Grupo B  │  │ Grupo C  ││
+│ │ TEA 3-5  │  │ TEA 6-8  │  │ Lenguaje ││
+│ │          │  │          │  │          ││
+│ │ 5 pac.   │  │ 3 pac.   │  │ 4 pac.   ││
+│ │          │  │          │  │          ││
+│ │ [Tomar   │  │ [Tomar   │  │ [Tomar   ││
+│ │Asistencia│  │Asistencia│  │Asistencia││
+│ └──────────┘  └──────────┘  └──────────┘│
+└─────────────────────────────────────────┘
+```
+
+### Página Detalle Grupo
+```
+┌─────────────────────────────────────────┐
+│ Grupo TEA 3-5 Años                       │
+│                    [TOMAR ASISTENCIA ✓] │
+├─────────────────────────────────────────┤
+│ Pacientes Activos (Con Admisión Vigente)│
+│                                          │
+│ ┌─────────────────────────────────────┐ │
+│ │ Juan Pérez - CC 123 - Admisión #5   │ │
+│ │ █████████████░░░ 85% (17/20)        │ │
+│ ├─────────────────────────────────────┤ │
+│ │ María López - TI 456 - Admisión #7  │ │
+│ │ ██████████░░░░░ 60% (12/20)         │ │
+│ └─────────────────────────────────────┘ │
+│                                          │
+│ [Registrar Asistencia]                  │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+### No aparece en navbar
+```
+Verificar:
+- URL correcta: {% url 'grupos:mis_grupos' %}
+- Namespace 'grupos' definido
+- Usuario autenticado
+```
+
+### Página "Mis Grupos" vacía
+```
+Verificar:
+- Usuario es terapeuta_responsable de algún grupo
+- Estado del grupo es 'ACTIVO'
+- Query en vista correcta
+```
+
+### No muestra pacientes
+```
+Verificar:
+- Asignaciones estado 'ACTIVA'
+- Pacientes tienen admision_terapia
+- Admisión estado 'VIGENTE'
+- Fechas inicio/fin válidas
+```
+
+### Botón no redirige
+```
+Verificar:
+- URL control_asistencia_grupo existe
+- Parámetro grupo_id correcto
+- Vista implementada
+```
+
+---
+
+## ⏱️ TIEMPO TOTAL: 10 MINUTOS
+
+- URLs: 2 min
+- Vista mis_grupos: 3 min
+- Vista detalle_grupo: 2 min
+- Template mis_grupos: 2 min
+- Navbar: 1 min
+
+---
+
+## 🎯 RESULTADO FINAL
+
+✅ **Acceso rápido desde navbar**  
+✅ **Vista con todos los grupos del terapeuta**  
+✅ **Botones destacados para tomar asistencia**  
+✅ **Solo muestra pacientes con admisión vigente**  
+✅ **Indicadores visuales claros**  
+✅ **Estadísticas en tiempo real**  
+✅ **Múltiples puntos de acceso**
+
+---
+
+**Implementación completa y lista** 🚀  
+**Acceso en 1 clic desde navbar** ✅  
+**Filtro automático de pacientes vigentes** ✅

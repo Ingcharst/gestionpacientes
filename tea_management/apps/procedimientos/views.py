@@ -5,18 +5,22 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Exists, OuterRef
 from django.utils import timezone
 from django.db import transaction
+from datetime import date, timedelta
 
 from apps.terapias.models import Terapia
+from apps.grupos.models import AsignacionGrupo
 from .models import (
     Paciente, Procedimiento, SesionTerapeutica,
-    ObjetivoTerapeutico, EvolucionPaciente, ValoracionInicial, CodigoCIE10
+    ObjetivoTerapeutico, EvolucionPaciente, ValoracionInicial, CodigoCIE10,
+    ValoracionProfesional, AdmisionTerapia
 )
 from .forms import (
     AdmisionPacienteForm, PacienteForm, ProblemaDetectadoForm, ProcedimientoForm, SesionTerapeuticaForm,
-    ObjetivoTerapeuticoForm, EvolucionPacienteForm, ValoracionInicialForm
+    ObjetivoTerapeuticoForm, EvolucionPacienteForm, ValoracionInicialForm,
+    PacienteRegistroForm, ValoracionProfesionalForm, AdmisionTerapiaForm
 )
 
 
@@ -65,33 +69,23 @@ def paciente_detalle(request, pk):
         paciente=paciente
     ).select_related('profesional', 'terapia', 'grupo').order_by('-fecha_sesion')[:10]
     
+    admisiones_vigentes = AdmisionTerapia.objects.filter(
+        paciente=paciente,
+        estado='VIGENTE'
+    ).count()    
+    
     context = {
         'paciente': paciente,
         'procedimientos': procedimientos,
         'sesiones': sesiones,
         'objetivos': objetivos,
         'evoluciones': evoluciones,
+        'admisiones_vigentes': admisiones_vigentes,
     }
     
     return render(request, 'procedimientos/paciente_detalle.html', context)
 
 
-# @login_required
-# def paciente_crear(request):
-#     """Crear un nuevo paciente."""
-#     if request.method == 'POST':
-#         form = PacienteForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             paciente = form.save(commit=False)
-#             paciente.creado_por = request.user
-#             paciente.save()
-#             messages.success(request, f'Paciente {paciente.nombre_completo} creado exitosamente.')
-#             return redirect('procedimientos:paciente_detalle', pk=paciente.pk)
-#     else:
-#         form = PacienteForm()
-    
-#     context = {'form': form, 'titulo': 'Crear Paciente'}
-#     return render(request, 'procedimientos/paciente_form.html', context)
 
 @login_required
 def paciente_crear(request):
@@ -130,7 +124,7 @@ def paciente_editar(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f'Paciente {paciente.nombre_completo} actualizado exitosamente.')
-            return redirect('procedimientos:paciente_detalle', pk=paciente.pk)
+            return redirect('procedimientos:paciente_detail', pk=paciente.pk)
     else:
         form = PacienteForm(instance=paciente)
     
@@ -327,6 +321,7 @@ def admision_paciente(request):
                     
                     # Establecer creado_por
                     paciente.creado_por = request.user
+                    paciente.estado = Paciente.Estado.ADMITIDO 
                     
                     # Guardar paciente
                     paciente.save()
@@ -335,7 +330,8 @@ def admision_paciente(request):
                     messages.success(
                         request,
                         f'Paciente {paciente.nombre_completo} admitido exitosamente. '
-                        f'Número de Admisión: {paciente.numero_admision}'
+                        f'Estado: {paciente.get_estado_display()}. '  # ✅ Mostrar estado
+                        f'El paciente está pendiente de valoración inicial.'  # ✅ Informar
                     )
                     
                     # Redirigir a detalle del paciente
@@ -356,7 +352,7 @@ def admision_paciente(request):
         'titulo': 'Admisión de Nuevo Paciente',
         'mostrar_firma': True,  # Flag para mostrar pad de firma
     }
-    
+
     return render(request, 'procedimientos/admision_paciente.html', context)
 
 
@@ -578,27 +574,125 @@ def completar_valoracion(request, valoracion_id):
 @login_required
 def pacientes_pendientes_asignacion(request):
     """
-    Lista de pacientes que han sido valorados y están pendientes de 
-    asignación a grupos terapéuticos.
+    Lista de pacientes que han sido valorados por profesionales
+    y están pendientes de asignación a grupos terapéuticos.
     
-    Esta vista es para el ASESOR que asigna grupos.
+    ✅ ACTUALIZADO: Usa ValoracionProfesional (múltiples valoraciones)
+    ✅ CORREGIDO: Compara por terapia_id en vez de objetos
     """
-    pacientes = Paciente.objects.filter(
-        estado=Paciente.Estado.PENDIENTE_ASIGNACION
-    ).select_related('valoracion_inicial').order_by('-fecha_ingreso')
     
-    # Agregar información de valoración a cada paciente
+    # =========================================================================
+    # 1. BUSCAR PACIENTES CON VALORACIONES COMPLETADAS
+    # =========================================================================
+    
+    # Subquery para verificar si tiene valoraciones completadas
+    tiene_valoraciones = ValoracionProfesional.objects.filter(
+        paciente=OuterRef('pk'),
+        estado='COMPLETADA'
+    )
+    
+    # Pacientes con al menos una valoración completada
+    pacientes_con_valoraciones = Paciente.objects.annotate(
+        tiene_valoraciones_completadas=Exists(tiene_valoraciones),
+        total_valoraciones=Count(
+            'valoraciones_profesionales',
+            filter=Q(valoraciones_profesionales__estado='COMPLETADA')
+        )
+    ).filter(
+        tiene_valoraciones_completadas=True
+    )
+    
+    # =========================================================================
+    # 2. FILTRAR POR ESTADO Y SIN ASIGNACIÓN ACTIVA
+    # =========================================================================
+    
+    # Filtrar por estado PENDIENTE_ASIGNACION
+    pacientes = pacientes_con_valoraciones.filter(
+        estado=Paciente.Estado.PENDIENTE_ASIGNACION
+    )
+    
+    pacientes_ok = pacientes.select_related(
+        'codigo_enfermedad'
+    ).prefetch_related(
+        'valoraciones_profesionales__terapia',
+        'valoraciones_profesionales__terapeuta',
+        'admisiones__terapia'
+    ).order_by('-fecha_ingreso')
+    
+    # =========================================================================
+    # 3. CONSTRUIR DATOS PARA CADA PACIENTE
+    # =========================================================================
+    
     pacientes_data = []
-    for paciente in pacientes:
-        if hasattr(paciente, 'valoracion_inicial'):
-            valoracion = paciente.valoracion_inicial
-            pacientes_data.append({
-                'paciente': paciente,
-                'valoracion': valoracion,
-                'terapias_recomendadas': valoracion.terapias_recomendadas.all(),
-                'cantidad_problemas': valoracion.cantidad_problemas,
-                'areas_afectadas': valoracion.areas_afectadas,
-            })
+    
+    for paciente in pacientes_ok:
+        # Obtener valoraciones completadas
+        valoraciones = paciente.valoraciones_profesionales.filter(
+            estado='COMPLETADA'
+        )
+        
+        # Obtener admisiones vigentes
+        admisiones_vigentes = paciente.admisiones.filter(
+            estado='VIGENTE',
+            fecha_inicio__lte=date.today() + timedelta(days=7),
+            fecha_fin__gte=date.today()
+        )
+        
+        # ✅ CORRECCIÓN: Comparar por IDs de terapia
+        terapias_valoradas_ids = set(val.terapia_id for val in valoraciones)
+        terapias_con_admision_ids = set(adm.terapia_id for adm in admisiones_vigentes)
+        
+        falta_admision_ids = terapias_valoradas_ids - terapias_con_admision_ids
+        
+        # Obtener objetos Terapia únicos para mostrar
+        from apps.terapias.models import Terapia
+        terapias_recomendadas = Terapia.objects.filter(
+            id__in=terapias_valoradas_ids
+        )
+        
+        terapias_falta_admision = Terapia.objects.filter(
+            id__in=falta_admision_ids
+        )
+        
+        pacientes_data.append({
+            'paciente': paciente,
+            'valoraciones': valoraciones,
+            'total_valoraciones': valoraciones.count(),
+            'terapias_recomendadas': list(terapias_recomendadas),
+            'admisiones_vigentes': admisiones_vigentes,
+            'falta_admision': list(terapias_falta_admision),
+            'tiene_todas_admisiones': len(falta_admision_ids) == 0,
+        })
+    
+    # =========================================================================
+    # 4. MENSAJES INFORMATIVOS
+    # =========================================================================
+    
+    if pacientes_data:
+        # Contar cuántos están listos para asignar
+        listos = sum(1 for p in pacientes_data if p['tiene_todas_admisiones'])
+        pendientes = len(pacientes_data) - listos
+        
+        if listos > 0:
+            messages.success(
+                request,
+                f'✅ {listos} paciente(s) listo(s) para asignación a grupos'
+            )
+        
+        if pendientes > 0:
+            messages.warning(
+                request,
+                f'⚠️ {pendientes} paciente(s) valorado(s) pero sin todas las admisiones de terapia'
+            )
+    else:
+        messages.info(
+            request,
+            'No hay pacientes pendientes de asignación a grupos'
+        )
+    
+    # =========================================================================
+    # 5. RENDERIZAR
+    # =========================================================================
     
     context = {
         'pacientes_data': pacientes_data,
@@ -606,6 +700,7 @@ def pacientes_pendientes_asignacion(request):
     }
     
     return render(request, 'procedimientos/pacientes_pendientes_asignacion.html', context)
+
 
 
 # ============================================================================
@@ -813,7 +908,7 @@ def evoluciones_paciente(request, paciente_id):
         estadisticas['porcentaje_asistencia'] = 0
     
     # Terapias disponibles para filtro
-    from .models import Terapia
+    # from .models import Terapia
     # terapias = Terapia.objects.filter(evoluciones_paciente=paciente).distinct()
     terapias_ids = EvolucionPaciente.objects.filter(
         paciente=paciente
@@ -930,7 +1025,390 @@ def eliminar_evolucion(request, evolucion_id):
     return render(request, 'procedimientos/confirmar_eliminar_evolucion.html', context)
 
 
+@login_required
+def registrar_paciente(request):
+    """Registro simple sin admisión ni historia"""
+    if request.method == 'POST':
+        form = PacienteRegistroForm(request.POST, request.FILES)
+        form.request = request
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    paciente = form.save(commit=False)
+                    
+                    # Establecer creado_por
+                    paciente.creado_por = request.user
+                    
+                    # Guardar paciente
+                    paciente.save()
+                    form.save_m2m()
+                    
+                    messages.success(
+                        request,
+                        f'Paciente {paciente.nombre_completo} registrado exitosamente. '
+                    )
+                    
+                    # Redirigir a detalle del paciente
+                    return redirect('procedimientos:paciente_detail', pk=paciente.pk)
+                    
+            except Exception as e:
+                messages.error(request, f'Error al guardar paciente: {str(e)}')
+        else:
+            # Mostrar errores de validación
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = PacienteRegistroForm()
+    
+    context = {
+        'form': form,
+        'titulo': 'Registro de Nuevo Paciente',
+        'mostrar_firma': True,  # Flag para mostrar pad de firma
+    }
+
+    return render(request, 'procedimientos/registrar_paciente.html', context)
+
+
+@login_required
+def valoraciones_paciente(request, pk):
+    """Lista de valoraciones pendientes y completadas por terapeuta"""
+    paciente = get_object_or_404(Paciente, pk=pk)
+    
+    # Valoraciones por terapeuta
+    valoraciones = ValoracionProfesional.objects.filter(
+        paciente=paciente
+    ).select_related('terapeuta', 'terapia').order_by('-fecha_valoracion')
+    
+    # Terapias disponibles
+    terapias = Terapia.objects.filter(activo=True)
+    
+    # Contar valoraciones por terapia
+    terapias_valoradas = valoraciones.values_list('terapia_id', flat=True)
+    
+    context = {
+        'paciente': paciente,
+        'valoraciones': valoraciones,
+        'terapias': terapias,
+        'terapias_valoradas': list(terapias_valoradas),
+    }
+    return render(request, 'procedimientos/valoraciones_paciente.html', context)
 
 
 
+@login_required
+def crear_valoracion(request, paciente_id, terapia_id):
+    """Crear valoración por terapeuta"""
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    terapia = get_object_or_404(Terapia, pk=terapia_id)
+    
+    # Verificar si ya existe valoración
+    existe = ValoracionProfesional.objects.filter(
+        paciente=paciente,
+        terapeuta=request.user,
+        terapia=terapia
+    ).exists()
+    
+    if existe:
+        messages.warning(request, 'Ya realizó valoración para esta terapia')
+        return redirect('procedimientos:valoraciones_paciente', pk=paciente_id)
+    
+    if request.method == 'POST':
+        form = ValoracionProfesionalForm(request.POST)
+        if form.is_valid():
+            valoracion = form.save(commit=False)
+            valoracion.paciente = paciente
+            valoracion.terapeuta = request.user
+            valoracion.save()
+            messages.success(request, 'Valoración registrada')
+            return redirect('procedimientos:valoraciones_paciente', pk=paciente_id)
+    else:
+        form = ValoracionProfesionalForm(initial={'terapia': terapia})
+    
+    return render(request, 'procedimientos/crear_valoracion.html', {
+        'form': form,
+        'paciente': paciente,
+        'terapia': terapia
+    })
+
+
+@login_required
+def admisiones_paciente(request, pk):
+    """Lista de admisiones del paciente"""
+    paciente = get_object_or_404(Paciente, pk=pk)
+    admisiones = AdmisionTerapia.objects.filter(
+        paciente=paciente
+    ).select_related('terapia').order_by('-fecha_inicio')
+    
+    return render(request, 'procedimientos/admisiones_paciente.html', {
+        'paciente': paciente,
+        'admisiones': admisiones
+    })
+
+
+@login_required
+def crear_admision(request, paciente_id):
+    """Crear admisión por terapia"""
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    if request.method == 'POST':
+        form = AdmisionTerapiaForm(request.POST)
+        if form.is_valid():
+            admision = form.save(commit=False)
+            admision.paciente = paciente
+            admision.creado_por = request.user
+            admision.save()
+            messages.success(request, f'Admisión {admision.numero_admision} creada')
+            return redirect('procedimientos:admisiones_paciente', pk=paciente_id)
+    else:
+        form = AdmisionTerapiaForm()
+    
+    return render(request, 'procedimientos/crear_admision.html', {
+        'form': form,
+        'paciente': paciente
+    })
+
+
+@login_required
+def dashboard_admisiones(request):
+    """Dashboard de admisiones vigentes y próximas a vencer"""
+    hoy = timezone.now().date()
+    
+    # Vigentes
+    vigentes = AdmisionTerapia.objects.filter(
+        estado='VIGENTE',
+        fecha_fin__gte=hoy
+    ).select_related('paciente', 'terapia').order_by('fecha_fin')
+    
+    # Por vencer (7 días)
+    por_vencer = vigentes.filter(fecha_fin__lte=hoy + timezone.timedelta(days=7))
+    
+    # Vencidas sin completar
+    vencidas = AdmisionTerapia.objects.filter(
+        estado='VIGENTE',
+        fecha_fin__lt=hoy
+    ).select_related('paciente', 'terapia')
+    
+    context = {
+        'vigentes': vigentes,
+        'por_vencer': por_vencer,
+        'vencidas': vencidas,
+    }
+    return render(request, 'procedimientos/dashboard_admisiones.html', context)
+
+
+def api_buscar_cie10(request):
+    """
+    API para búsqueda de códigos CIE-10 en tiempo real
+    
+    GET /procedimientos/api/buscar-cie10/?q=<busqueda>
+    
+    Returns:
+        JSON con lista de códigos que coinciden
+    """
+    query = request.GET.get('q', '').strip()
+    
+    # Mínimo 2 caracteres para buscar
+    if len(query) < 2:
+        return JsonResponse({
+            'resultados': [],
+            'mensaje': 'Escriba al menos 2 caracteres'
+        })
+    
+    try:
+        # Buscar por código o descripción
+        codigos = CodigoCIE10.objects.filter(
+            Q(codigo__icontains=query) | 
+            Q(descripcion__icontains=query) |
+            Q(nombre__icontains=query),
+            activo=True
+        ).order_by('codigo')[:20]  # Máximo 20 resultados
+        
+        # Formatear resultados
+        resultados = []
+        for c in codigos:
+            resultados.append({
+                'id': c.id,
+                'codigo': c.codigo,
+                'descripcion': c.descripcion,
+                'nombre': c.nombre if c.nombre else c.descripcion
+            })
+        
+        return JsonResponse({
+            'resultados': resultados,
+            'total': len(resultados)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'resultados': [],
+            'error': str(e)
+        }, status=500)
+
+
+
+@login_required
+def completar_todas_valoraciones(request, paciente_id):
+    """
+    Marca todas las valoraciones del paciente como completadas
+    y cambia su estado a PENDIENTE_ASIGNACION
+    
+    Esta función se llama cuando un asesor verifica que todas
+    las valoraciones profesionales están completadas.
+    """
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    # Verificar que el usuario tenga permisos (asesor o admin)
+    if not request.user.is_staff:
+        messages.error(request, 'No tiene permisos para realizar esta acción.')
+        return redirect('procedimientos:pacientes_pendientes_valoracion')
+    
+    try:
+        with transaction.atomic():
+            # Contar valoraciones profesionales del paciente
+            valoraciones = ValoracionProfesional.objects.filter(
+                paciente=paciente
+            )
+            
+            total_valoraciones = valoraciones.count()
+            
+            # Verificar que tiene al menos una valoración
+            if total_valoraciones == 0:
+                messages.warning(
+                    request, 
+                    f'El paciente {paciente.nombre_completo} no tiene ninguna valoración registrada.'
+                )
+                return redirect('procedimientos:pacientes_pendientes_valoracion')
+            
+            # Cambiar estado del paciente
+            paciente.estado = 'PENDIENTE_ASIGNACION'
+            paciente.save()
+            
+            messages.success(
+                request,
+                f'✅ Valoraciones completadas. {paciente.nombre_completo} está listo para asignación de grupos. '
+                f'Total de valoraciones: {total_valoraciones}'
+            )
+            
+    except Exception as e:
+        messages.error(request, f'Error al completar valoraciones: {str(e)}')
+    
+    return redirect('procedimientos:pacientes_pendientes_valoracion')
+
+
+@login_required
+def verificar_estado_valoraciones(request, paciente_id):
+    """
+    API para verificar el estado de las valoraciones de un paciente
+    Retorna información sobre cuántas valoraciones tiene completadas
+    """
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    # Obtener todas las valoraciones profesionales
+    valoraciones = ValoracionProfesional.objects.filter(
+        paciente=paciente
+    ).select_related('terapia', 'terapeuta')
+    
+    # Preparar respuesta
+    valoraciones_data = []
+    for val in valoraciones:
+        valoraciones_data.append({
+            'terapia': val.terapia.nombre,
+            'terapeuta': val.terapeuta.get_full_name() if val.terapeuta else 'No asignado',
+            'fecha': val.fecha_valoracion.strftime('%d/%m/%Y'),
+            'estado_salud': val.estado_salud_general[:50] + '...' if len(val.estado_salud_general) > 50 else val.estado_salud_general
+        })
+    
+    return JsonResponse({
+        'paciente': paciente.nombre_completo,
+        'total_valoraciones': len(valoraciones_data),
+        'valoraciones': valoraciones_data,
+        'puede_completar': len(valoraciones_data) > 0,
+        'estado_actual': paciente.get_estado_display()
+    })
+
+
+@login_required
+def cambiar_estado_paciente(request, paciente_id):
+    """
+    Vista general para cambiar el estado de un paciente
+    Permite cambiar entre diferentes estados según el flujo
+    """
+    if request.method != 'POST':
+        messages.error(request, 'Método no permitido.')
+        return redirect('procedimientos:pacientes_pendientes_valoracion')
+    
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    nuevo_estado = request.POST.get('nuevo_estado')
+    
+    # Validar estados permitidos
+    estados_validos = ['ADMITIDO', 'PENDIENTE_VALORACION', 'PENDIENTE_ASIGNACION', 'ACTIVO']
+    
+    if nuevo_estado not in estados_validos:
+        messages.error(request, f'Estado inválido: {nuevo_estado}')
+        return redirect('procedimientos:pacientes_pendientes_valoracion')
+    
+    try:
+        estado_anterior = paciente.get_estado_display()
+        paciente.estado = nuevo_estado
+        paciente.save()
+        
+        messages.success(
+            request,
+            f'✅ Estado del paciente {paciente.nombre_completo} cambiado de '
+            f'"{estado_anterior}" a "{paciente.get_estado_display()}"'
+        )
+        
+    except Exception as e:
+        messages.error(request, f'Error al cambiar estado: {str(e)}')
+    
+    return redirect('procedimientos:pacientes_pendientes_valoracion')
+
+
+@login_required
+def completar_valoraciones_paciente(request, paciente_id):
+    """
+    Cambia el estado del paciente de PENDIENTE_VALORACION a PENDIENTE_ASIGNACION
+    
+    NO valida cantidad de valoraciones - el asesor es quien decide si está listo.
+    Cada paciente puede tener diferentes órdenes (1, 2, 3 o más terapias).
+    """
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    # Verificar que el usuario tenga permisos (staff o asesor)
+    if not request.user.is_staff:
+        messages.error(request, 'No tiene permisos para realizar esta acción.')
+        return redirect('procedimientos:pacientes_pendientes_valoracion')
+    
+    try:
+        with transaction.atomic():
+            # Contar valoraciones (solo para el mensaje)
+            total_valoraciones = ValoracionProfesional.objects.filter(
+                paciente=paciente
+            ).count()
+            
+            # Cambiar estado - SIN VALIDAR si tiene o no valoraciones
+            # El asesor ya verificó que las valoraciones requeridas están completas
+            paciente.estado = 'PENDIENTE_ASIGNACION'
+            paciente.save()
+            
+            # Mensaje de éxito
+            if total_valoraciones > 0:
+                messages.success(
+                    request,
+                    f'✅ {paciente.nombre_completo} marcado como valorado. '
+                    f'Valoraciones registradas: {total_valoraciones}. '
+                    f'Ahora puede asignarlo a grupos terapéuticos.'
+                )
+            else:
+                messages.success(
+                    request,
+                    f'✅ {paciente.nombre_completo} marcado como valorado. '
+                    f'Ahora puede asignarlo a grupos terapéuticos.'
+                )
+            
+    except Exception as e:
+        messages.error(request, f'Error al cambiar estado: {str(e)}')
+    
+    return redirect('procedimientos:pacientes_pendientes_valoracion')
 

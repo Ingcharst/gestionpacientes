@@ -1,0 +1,274 @@
+# 🔴 ERROR: 'GrupoTerapeutico' object has no attribute 'terapia'
+
+## CAUSA
+
+El código en `predictor.py` intenta acceder a `grupo.terapia`:
+
+```python
+# predictor.py línea ~90
+valoracion_grupo = valoraciones.filter(terapia=grupo.terapia).first()
+```
+
+Pero el modelo `GrupoTerapeutico` **NO tiene** un campo llamado `terapia`.
+
+---
+
+## 🔍 PASO 1: IDENTIFICAR EL CAMPO CORRECTO
+
+Necesitamos saber cómo se llama el campo en tu modelo `GrupoTerapeutico`.
+
+### Opción A: Verificar en el modelo
+
+**Archivo:** `apps/grupos/models.py`
+
+Buscar el modelo `GrupoTerapeutico` y ver qué campo relaciona con terapias:
+
+```python
+class GrupoTerapeutico(models.Model):
+    # ¿Cuál de estos tiene?
+    # terapia = ForeignKey(Terapia, ...)  ← Si tiene este
+    # tipo_terapia = ForeignKey(Terapia, ...)  ← O este
+    # nombre = CharField(...)  ← O solo nombre sin FK
+    # ...
+```
+
+### Opción B: Verificar en Django shell
+
+```bash
+python manage.py shell
+
+from apps.grupos.models import GrupoTerapeutico
+grupo = GrupoTerapeutico.objects.first()
+
+# Ver todos los campos
+print(grupo.__dict__)
+
+# O ver atributos
+print(dir(grupo))
+```
+
+---
+
+## ✅ SOLUCIONES SEGÚN EL CASO
+
+### CASO 1: El campo se llama diferente (ej: tipo_terapia)
+
+**Si el campo es `tipo_terapia` en lugar de `terapia`:**
+
+#### Archivo: `apps/ml_models/predictor.py`
+
+**Buscar línea ~66:**
+```python
+grupos_disponibles = GrupoTerapeutico.objects.filter(
+    activo=True,
+    terapia_id__in=terapias_valoradas  # ← CAMBIAR
+)
+```
+
+**Cambiar por:**
+```python
+grupos_disponibles = GrupoTerapeutico.objects.filter(
+    activo=True,
+    tipo_terapia_id__in=terapias_valoradas  # ← Nuevo nombre
+)
+```
+
+**Y línea ~90:**
+```python
+# ❌ ANTES:
+valoracion_grupo = valoraciones.filter(terapia=grupo.terapia).first()
+
+# ✅ DESPUÉS:
+valoracion_grupo = valoraciones.filter(terapia=grupo.tipo_terapia).first()
+```
+
+---
+
+### CASO 2: No hay campo de terapia (grupo solo tiene nombre)
+
+**Si GrupoTerapeutico NO tiene relación con Terapia:**
+
+Necesitamos modificar la lógica para NO filtrar por terapia.
+
+#### Archivo: `apps/ml_models/predictor.py`
+
+**Reemplazar el método `recomendar_grupos` completo:**
+
+```python
+def recomendar_grupos(self, paciente, grupos_disponibles=None, valoraciones=None, top_n=5):
+    """
+    Recomienda grupos para un paciente - SIN FILTRAR POR TERAPIA
+    """
+    # Obtener valoraciones si no se pasan
+    if valoraciones is None:
+        from apps.procedimientos.models import ValoracionProfesional
+        valoraciones = ValoracionProfesional.objects.filter(
+            paciente=paciente
+        ).select_related('terapia', 'terapeuta')
+    
+    # Verificar que existan valoraciones
+    if not valoraciones.exists():
+        return {
+            'recomendaciones': [],
+            'mensaje': 'El paciente no tiene valoraciones registradas.',
+            'total_grupos_evaluados': 0,
+            'grupos_filtrados': 0,
+            'error': True
+        }
+    
+    # ✅ CAMBIO: NO filtrar por terapia, obtener todos los grupos activos
+    if grupos_disponibles is None:
+        from apps.grupos.models import GrupoTerapeutico
+        grupos_disponibles = GrupoTerapeutico.objects.filter(activo=True)
+    
+    if not grupos_disponibles.exists():
+        return {
+            'recomendaciones': [],
+            'mensaje': 'No hay grupos activos disponibles',
+            'total_grupos_evaluados': 0,
+            'grupos_filtrados': 0
+        }
+    
+    # Aplicar filtros duros
+    grupos_candidatos = self.filtros.aplicar_filtros(
+        grupos_disponibles, 
+        paciente, 
+        valoraciones=valoraciones
+    )
+    
+    if not grupos_candidatos:
+        return {
+            'recomendaciones': [],
+            'mensaje': 'No se encontraron grupos compatibles',
+            'total_grupos_evaluados': grupos_disponibles.count(),
+            'grupos_filtrados': 0
+        }
+    
+    # Calcular scores
+    recomendaciones = []
+    
+    for grupo in grupos_candidatos:
+        # ✅ CAMBIO: Usar primera valoración disponible (no filtrar por terapia)
+        valoracion_grupo = valoraciones.first()
+        
+        # Extraer features
+        features = self.feature_extractor.extraer_features(
+            paciente, 
+            grupo, 
+            valoracion=valoracion_grupo,
+            valoraciones_todas=valoraciones
+        )
+        
+        # Calcular score
+        score_final = self.score_calculator.calcular_score(grupo, features)
+        
+        # Generar explicación y alertas
+        razones = self._generar_explicacion(features, score_final)
+        alertas = self._generar_alertas(grupo, paciente, features)
+        
+        recomendacion = {
+            'grupo': grupo,
+            'score': score_final,
+            'disponible': grupo.cupos_disponibles > 0,
+            'cupos': grupo.cupos_disponibles,
+            'razones': razones,
+            'alertas': alertas,
+            'features': features,
+            'valoracion_usada': valoracion_grupo,
+        }
+        
+        recomendaciones.append(recomendacion)
+    
+    # Ordenar por score
+    recomendaciones.sort(key=lambda x: x['score'], reverse=True)
+    
+    return {
+        'recomendaciones': recomendaciones[:top_n],
+        'mensaje': f'Se encontraron {len(recomendaciones)} grupos compatibles',
+        'total_grupos_evaluados': grupos_disponibles.count(),
+        'grupos_filtrados': len(grupos_candidatos),
+        'paciente': {
+            'nombre': paciente.nombre_completo,
+            'edad': paciente.edad_actual,
+            'genero': paciente.genero
+        },
+        'valoraciones_count': valoraciones.count(),
+    }
+```
+
+---
+
+### CASO 3: El grupo tiene nombre de terapia en CharField
+
+**Si el grupo tiene `nombre` que contiene el nombre de la terapia:**
+
+```python
+# En predictor.py, línea ~90
+# Usar coincidencia por nombre
+terapias_nombres = valoraciones.values_list('terapia__nombre', flat=True).distinct()
+# Filtrar grupos que contengan el nombre de alguna terapia
+# (Esto es menos preciso pero funciona sin FK)
+```
+
+---
+
+## 🚀 SOLUCIÓN RÁPIDA (RECOMENDADA)
+
+### Si NO estás seguro del nombre del campo:
+
+**Usa esta versión SIN filtro de terapia:**
+
+1. **Copia el archivo:** `predictor_sin_filtro_terapia.py`
+2. **Reemplaza:** `apps/ml_models/predictor.py`
+3. **Reinicia servidor**
+
+Esta versión recomienda **todos** los grupos activos sin filtrar por terapia.
+
+---
+
+## 📝 PARA AYUDARTE MEJOR
+
+**Por favor envíame:**
+
+1. El archivo `apps/grupos/models.py` (o al menos el modelo GrupoTerapeutico)
+2. O ejecuta esto y envíame el resultado:
+
+```bash
+python manage.py shell
+
+from apps.grupos.models import GrupoTerapeutico
+grupo = GrupoTerapeutico.objects.first()
+print(grupo.__dict__)
+```
+
+Con eso puedo darte la solución exacta para tu caso.
+
+---
+
+## ⏱️ MIENTRAS TANTO (Solución temporal)
+
+**Comenta las líneas problemáticas:**
+
+### Archivo: `apps/ml_models/predictor.py`
+
+**Línea ~66, cambiar:**
+```python
+# Comentar filtro por terapia temporalmente
+grupos_disponibles = GrupoTerapeutico.objects.filter(
+    activo=True,
+    # terapia_id__in=terapias_valoradas  # ← Comentar esta línea
+)
+```
+
+**Línea ~90, cambiar:**
+```python
+# Usar primera valoración sin filtrar por terapia
+# valoracion_grupo = valoraciones.filter(terapia=grupo.terapia).first()  # ← Comentar
+valoracion_grupo = valoraciones.first()  # ← Usar esta
+```
+
+**Guardar y probar** → Debería funcionar temporalmente.
+
+---
+
+**Necesito ver tu modelo GrupoTerapeutico para darte la solución definitiva** 🔍

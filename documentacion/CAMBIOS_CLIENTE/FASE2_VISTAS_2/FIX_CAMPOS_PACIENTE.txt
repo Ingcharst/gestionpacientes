@@ -1,0 +1,171 @@
+# CORRECCIÓN: CAMPOS FORMULARIO PACIENTE
+
+## PROBLEMA
+El formulario usa campos que tu modelo `Paciente` no tiene:
+- acudiente_nombre
+- acudiente_telefono
+- nombre
+- documento
+- acudiente_parentesco
+
+## SOLUCIÓN
+
+### 1. IDENTIFICAR CAMPOS REALES
+
+Ejecutar en shell:
+```bash
+python manage.py shell
+```
+
+```python
+from apps.procedimientos.models import Paciente
+# Ver todos los campos
+for field in Paciente._meta.get_fields():
+    print(f"{field.name} - {field.__class__.__name__}")
+```
+
+O más simple:
+```python
+print([f.name for f in Paciente._meta.get_fields()])
+```
+
+### 2. AJUSTAR FORMULARIO
+
+Opción A - Usar todos los campos (temporal):
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = '__all__'
+        exclude = ['numero_historia_clinica']  # Deprecado
+```
+
+Opción B - Especificar campos existentes:
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            # USAR SOLO LOS CAMPOS QUE EXISTEN EN TU MODELO
+            # Ejemplo común:
+            'primer_nombre',  # o 'nombres'
+            'primer_apellido',
+            'segundo_apellido',
+            'tipo_identificacion',  # o 'tipo_documento'
+            'numero_identificacion',  # o 'documento'
+            'fecha_nacimiento',
+            'sexo',  # o 'genero'
+            'codigo_enfermedad',  # Nuevo campo agregado
+            # ... agregar más según tu modelo
+        ]
+```
+
+### 3. CAMPOS COMUNES EN MODELOS PACIENTE
+
+Revisa cuáles tienes:
+
+**Identificación:**
+- tipo_identificacion / tipo_documento
+- numero_identificacion / documento
+- numero_documento
+
+**Nombres:**
+- primer_nombre, segundo_nombre
+- primer_apellido, segundo_apellido
+- nombres, apellidos
+- nombre_completo
+
+**Demográficos:**
+- fecha_nacimiento
+- sexo / genero
+- edad (calculado)
+
+**Contacto:**
+- telefono / telefono_contacto
+- celular
+- email / correo
+- direccion
+
+**Acudiente:**
+- acudiente (texto completo)
+- responsable_nombre
+- responsable_telefono
+- contacto_emergencia
+
+**Diagnóstico:**
+- codigo_enfermedad (FK a CodigoCIE10) - NUEVO
+- diagnostico
+- observaciones
+
+### 4. EJEMPLO AJUSTADO
+
+Basado en campos típicos:
+
+```python
+# apps/procedimientos/forms.py
+
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            'tipo_identificacion',
+            'numero_identificacion',
+            'primer_nombre',
+            'segundo_nombre',
+            'primer_apellido',
+            'segundo_apellido',
+            'fecha_nacimiento',
+            'sexo',
+            'codigo_enfermedad',  # Nuevo
+            'telefono',
+            'direccion',
+        ]
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Aplicar form-control
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+```
+
+### 5. VERIFICAR OTROS FORMULARIOS
+
+También revisar:
+- `ValoracionProfesionalForm` (campos de Valoracion)
+- `AdmisionTerapiaForm` (campos de Admision)
+
+Usar mismo proceso:
+```python
+from apps.procedimientos.models import ValoracionProfesional
+print([f.name for f in ValoracionProfesional._meta.get_fields()])
+```
+
+### 6. FORMULARIO TEMPORAL (SOLUCIÓN RÁPIDA)
+
+Ya está aplicado en `forms_fase2.py`:
+```python
+fields = '__all__'  # Incluye todos los campos
+exclude = ['numero_historia_clinica']  # Excluye deprecados
+```
+
+Esto funcionará temporalmente, luego ajusta con campos específicos.
+
+## APLICAR
+
+1. **Identificar campos reales** (shell)
+2. **Ajustar `forms_fase2.py`** con campos correctos
+3. **Probar**: `python manage.py runserver`
+
+## SI PERSISTE ERROR
+
+Enviar output de:
+```python
+python manage.py shell
+>>> from apps.procedimientos.models import Paciente
+>>> print([f.name for f in Paciente._meta.get_fields()])
+```
+
+Y ajustaré el formulario exacto.

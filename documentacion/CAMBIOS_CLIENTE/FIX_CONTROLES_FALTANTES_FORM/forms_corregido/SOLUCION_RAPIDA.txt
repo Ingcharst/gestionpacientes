@@ -1,0 +1,286 @@
+# 🔴 PROBLEMA IDENTIFICADO
+
+## ❌ Síntoma
+
+Los campos en el template de registro de paciente aparecen SIN controles de entrada:
+- ✗ Alergias (solo label, sin textarea)
+- ✗ Medicamentos Actuales (solo label, sin textarea)
+- ✗ EPS (solo label, sin input)
+- ✗ Fecha de Ingreso (solo label, sin date picker)
+- ✗ Fecha de Alta (solo label, sin date picker)
+- ✗ Motivo de Inactividad (solo label, sin textarea)
+- ✗ Observaciones Generales (solo label, sin textarea)
+- ✗ Necesidades Especiales (solo label, sin textarea)
+
+---
+
+## 🎯 CAUSA RAÍZ
+
+El formulario `PacienteRegistroForm` en `forms.py` **NO incluye** estos campos en su definición:
+
+```python
+fields = [
+    'tipo_documento',
+    'numero_documento',
+    # ... otros campos ...
+    'codigo_enfermedad',  # ✅ Último campo definido
+    
+    # ❌ FALTAN ESTOS CAMPOS:
+    # 'ciudad',
+    # 'diagnostico_principal',
+    # 'alergias',
+    # 'medicamentos',
+    # 'eps',
+    # 'fecha_ingreso',
+    # 'fecha_alta',
+    # 'motivo_inactividad',
+    # 'observaciones',
+    # 'necesidades_especiales',
+]
+```
+
+**Resultado:** Django no genera los widgets HTML para estos campos
+
+---
+
+## ✅ SOLUCIÓN (2 minutos)
+
+### PASO 1: Ubicar el formulario
+
+**Archivo:** `apps/procedimientos/forms.py`
+
+**Buscar:** `class PacienteRegistroForm(forms.ModelForm):`
+
+---
+
+### PASO 2: Reemplazar la clase completa
+
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    """Formulario de registro de paciente completo"""
+    
+    # Campo extra para búsqueda CIE-10
+    diagnostico_cie10_search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Buscar código CIE-10',
+            'autocomplete': 'off'
+        }),
+        label='Buscar Diagnóstico CIE-10'
+    )
+    
+    class Meta:
+        model = Paciente
+        fields = [
+            # Información Personal
+            'tipo_documento', 'numero_documento', 'nombres', 'apellidos',
+            'fecha_nacimiento', 'genero', 'foto',
+            # Información de Contacto
+            'telefono', 'email', 'direccion', 'ciudad',
+            # Acudiente
+            'nombre_responsable', 'telefono_responsable',
+            'parentesco_responsable', 'email_responsable',
+            # ✅ Información Médica (AGREGADOS)
+            'codigo_enfermedad', 'diagnostico_principal',
+            'alergias', 'medicamentos', 'eps',
+            # ✅ Fechas (AGREGADOS)
+            'fecha_ingreso', 'fecha_alta', 'motivo_inactividad',
+            # ✅ Observaciones (AGREGADOS)
+            'observaciones', 'necesidades_especiales',
+        ]
+        
+        widgets = {
+            # Información Personal
+            'tipo_documento': forms.Select(attrs={'class': 'form-control'}),
+            'numero_documento': forms.TextInput(attrs={'class': 'form-control'}),
+            'nombres': forms.TextInput(attrs={'class': 'form-control'}),
+            'apellidos': forms.TextInput(attrs={'class': 'form-control'}),
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'genero': forms.Select(attrs={'class': 'form-control'}),
+            'foto': forms.FileInput(attrs={'class': 'form-control'}),
+            
+            # Información de Contacto
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'direccion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'ciudad': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            # Acudiente
+            'nombre_responsable': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono_responsable': forms.TextInput(attrs={'class': 'form-control'}),
+            'parentesco_responsable': forms.TextInput(attrs={'class': 'form-control'}),
+            'email_responsable': forms.EmailInput(attrs={'class': 'form-control'}),
+            
+            # ✅ Información Médica
+            'codigo_enfermedad': forms.HiddenInput(),
+            'diagnostico_principal': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'alergias': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'medicamentos': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'eps': forms.TextInput(attrs={'class': 'form-control'}),
+            
+            # ✅ Fechas
+            'fecha_ingreso': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'fecha_alta': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'motivo_inactividad': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            
+            # ✅ Observaciones
+            'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'necesidades_especiales': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Configurar código CIE-10
+        self.fields['codigo_enfermedad'].queryset = CodigoCIE10.objects.filter(
+            activo=True
+        ).order_by('codigo')
+        
+        # Campos opcionales
+        self.fields['codigo_enfermedad'].required = False
+        self.fields['diagnostico_principal'].required = False
+        self.fields['alergias'].required = False
+        self.fields['medicamentos'].required = False
+        self.fields['eps'].required = False
+        self.fields['fecha_alta'].required = False
+        self.fields['motivo_inactividad'].required = False
+        self.fields['observaciones'].required = False
+        self.fields['necesidades_especiales'].required = False
+        self.fields['email'].required = False
+        self.fields['email_responsable'].required = False
+        self.fields['foto'].required = False
+        self.fields['ciudad'].required = False
+        
+        # Fecha ingreso por defecto
+        if not self.instance.pk:
+            self.fields['fecha_ingreso'].initial = timezone.now().date()
+    
+    def clean_numero_documento(self):
+        numero = self.cleaned_data.get('numero_documento')
+        if numero:
+            if self.instance.pk:
+                existe = Paciente.objects.filter(
+                    numero_documento=numero
+                ).exclude(pk=self.instance.pk).exists()
+            else:
+                existe = Paciente.objects.filter(
+                    numero_documento=numero
+                ).exists()
+            
+            if existe:
+                raise forms.ValidationError(
+                    'Ya existe un paciente con este número de documento.'
+                )
+        return numero
+```
+
+---
+
+### PASO 3: Agregar import si falta
+
+**Al inicio del archivo `forms.py`:**
+
+```python
+from django.utils import timezone
+```
+
+---
+
+### PASO 4: Guardar y probar
+
+```bash
+# Reiniciar servidor
+python manage.py runserver
+
+# Abrir navegador
+http://127.0.0.1:8000/procedimientos/pacientes/registrar/
+```
+
+---
+
+## ✅ RESULTADO ESPERADO
+
+Después de aplicar el cambio:
+
+```
+┌─────────────────────────────────┐
+│ Alergias                        │
+│ ┌─────────────────────────────┐ │
+│ │                             │ │  ← TEXTAREA visible
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+
+┌─────────────────────────────────┐
+│ Medicamentos Actuales           │
+│ ┌─────────────────────────────┐ │
+│ │                             │ │  ← TEXTAREA visible
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+
+┌─────────────────────────────────┐
+│ EPS                             │
+│ ┌─────────────────────────────┐ │
+│ │                             │ │  ← INPUT visible
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+
+... y así todos los campos
+```
+
+---
+
+## 📊 COMPARACIÓN
+
+| Campo | Antes | Después |
+|-------|-------|---------|
+| **alergias** | ❌ Solo label | ✅ Label + Textarea |
+| **medicamentos** | ❌ Solo label | ✅ Label + Textarea |
+| **eps** | ❌ Solo label | ✅ Label + Input |
+| **fecha_ingreso** | ❌ Solo label | ✅ Label + Date picker |
+| **fecha_alta** | ❌ Solo label | ✅ Label + Date picker |
+| **motivo_inactividad** | ❌ Solo label | ✅ Label + Textarea |
+| **observaciones** | ❌ Solo label | ✅ Label + Textarea |
+| **necesidades_especiales** | ❌ Solo label | ✅ Label + Textarea |
+
+---
+
+## 🔧 TROUBLESHOOTING
+
+### Problema: Sigo sin ver los campos
+
+**Verificar:**
+1. Guardaste el archivo forms.py
+2. Reiniciaste el servidor
+3. Recargaste la página con Ctrl+F5
+4. No hay errores en consola (F12)
+
+### Problema: Error "Unknown field"
+
+**Verificar:**
+- El modelo Paciente tiene todos estos campos
+- No hay typos en los nombres de campos
+
+### Problema: "timezone is not defined"
+
+**Solución:**
+```python
+# Agregar al inicio de forms.py
+from django.utils import timezone
+```
+
+---
+
+## ⏱️ TIEMPO
+
+- Copiar código: 30 segundos
+- Guardar: 5 segundos
+- Reiniciar: 10 segundos
+- Probar: 15 segundos
+- **TOTAL: 1 minuto**
+
+---
+
+**¡Problema resuelto!** ✅  
+**Todos los controles visibles** ✅  
+**Formulario completo funcional** ✅

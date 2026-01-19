@@ -1,0 +1,120 @@
+# INSTALACIÓN FASE 2: VISTAS Y FLUJO
+
+## ARCHIVOS A COPIAR
+
+### 1. Formularios
+- forms_fase2.py → apps/procedimientos/forms.py (agregar contenido)
+- forms_grupos.py → apps/grupos/forms.py (agregar contenido)
+
+### 2. Vistas
+- views_fase2.py → apps/procedimientos/views_fase2.py
+- views_grupos_asistencia.py → apps/grupos/views_asistencia.py
+- alertas_views.py → apps/alertas/views.py
+
+### 3. Utilidades
+- calculadora.py → apps/procedimientos/calculadora.py
+- alertas_utils.py → apps/alertas/utils.py
+
+### 4. URLs
+- Copiar contenido de urls_fase2.py a:
+  - apps/procedimientos/urls.py
+  - apps/grupos/urls.py
+
+- Crear: apps/alertas/urls.py (contenido en alertas_views.py)
+
+## URLs PRINCIPAL
+
+En proyecto/urls.py agregar:
+
+```python
+urlpatterns = [
+    # ... existentes ...
+    path('alertas/', include('apps.alertas.urls')),
+]
+```
+
+## AUTOMATIZACIÓN ALERTAS (Sin Celery)
+
+### Crear comando Django:
+```bash
+mkdir -p apps/alertas/management/commands
+touch apps/alertas/management/__init__.py
+touch apps/alertas/management/commands/__init__.py
+cp comando_verificar_inasistencias.py apps/alertas/management/commands/verificar_inasistencias.py
+```
+
+### Probar:
+```bash
+python manage.py verificar_inasistencias
+```
+
+### Automatizar con Task Scheduler (Windows):
+Ver guía completa en: **AUTOMATIZACION_SIN_CELERY.txt**
+
+1. Crear archivo `verificar_alertas.bat`:
+```batch
+@echo off
+cd C:\ruta\proyecto
+call venv\Scripts\activate
+python manage.py verificar_inasistencias
+```
+
+2. Programador de Tareas Windows:
+   - Tarea diaria a las 20:00 (8 PM)
+   - Ejecutar: `verificar_alertas.bat`
+
+### O verificación manual desde dashboard:
+Agregar botón en template de alertas para ejecutar cuando se necesite.
+
+## TEMPLATES NECESARIOS
+
+Crear estos templates (estructura básica):
+
+### apps/procedimientos/templates/procedimientos/
+- registrar_paciente.html
+- valoraciones_paciente.html
+- crear_valoracion.html
+- admisiones_paciente.html
+- crear_admision.html
+- dashboard_admisiones.html
+
+### apps/grupos/templates/grupos/
+- control_asistencia.html
+- historial_asistencia.html
+- cambiar_cupo.html
+- reasignar_pacientes.html
+
+### apps/alertas/templates/alertas/
+- dashboard.html
+- atender_alerta.html
+- configuracion.html
+- forzar_verificacion.html
+
+## VERIFICAR INSTALACIÓN
+
+1. URLs accesibles:
+```bash
+python manage.py show_urls | grep -E "(registrar|valoracion|admision|asistencia|alerta)"
+```
+
+2. Crear config inicial:
+```python
+python manage.py shell
+>>> from apps.alertas.models import ConfiguracionAlerta
+>>> config = ConfiguracionAlerta.get_config()
+>>> config.telefono_ips = '3001234567'
+>>> config.save()
+>>> exit()
+```
+
+3. Probar flujo:
+   - Registrar paciente nuevo
+   - Crear valoraciones
+   - Crear admisión
+   - Asignar a grupo
+   - Registrar asistencia
+
+## PRÓXIMO: FASE 3
+- IA mejorada
+- Algoritmos distribución
+- Integración completa

@@ -1,0 +1,280 @@
+# 📊 COMPARACIÓN VISUAL: Antes vs Después
+
+## ❌ ANTES (Código actual con problemas)
+
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    class Meta:
+        model = Paciente
+        fields = [
+            'tipo_documento',
+            'numero_documento',
+            'nombres',
+            'apellidos',
+            'fecha_nacimiento',
+            'genero',
+            'foto',
+            'telefono',
+            'email',
+            'direccion',
+            'nombre_responsable',
+            'telefono_responsable',
+            'parentesco_responsable',
+            'email_responsable',
+            'codigo_enfermedad',  # ← AQUÍ TERMINA
+        ]
+        # ❌ FALTAN 10 CAMPOS
+```
+
+### Resultado: 
+```
+Interfaz solo muestra labels sin controles ❌
+```
+
+---
+
+## ✅ DESPUÉS (Código corregido)
+
+```python
+class PacienteRegistroForm(forms.ModelForm):
+    
+    # ✅ AGREGAR CAMPO EXTRA
+    diagnostico_cie10_search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Buscar código CIE-10',
+        }),
+        label='Buscar Diagnóstico CIE-10'
+    )
+    
+    class Meta:
+        model = Paciente
+        fields = [
+            # Información Personal (igual)
+            'tipo_documento',
+            'numero_documento',
+            'nombres',
+            'apellidos',
+            'fecha_nacimiento',
+            'genero',
+            'foto',
+            # Información de Contacto
+            'telefono',
+            'email',
+            'direccion',
+            'ciudad',  # ✅ AGREGAR
+            # Acudiente (igual)
+            'nombre_responsable',
+            'telefono_responsable',
+            'parentesco_responsable',
+            'email_responsable',
+            # Información Médica
+            'codigo_enfermedad',
+            'diagnostico_principal',  # ✅ AGREGAR
+            'alergias',  # ✅ AGREGAR
+            'medicamentos',  # ✅ AGREGAR
+            'eps',  # ✅ AGREGAR
+            # Fechas
+            'fecha_ingreso',  # ✅ AGREGAR
+            'fecha_alta',  # ✅ AGREGAR
+            'motivo_inactividad',  # ✅ AGREGAR
+            # Observaciones
+            'observaciones',  # ✅ AGREGAR
+            'necesidades_especiales',  # ✅ AGREGAR
+        ]
+```
+
+### Resultado:
+```
+Interfaz muestra labels CON controles ✅
+```
+
+---
+
+## 🎯 CAMPOS AGREGADOS (10)
+
+| # | Campo | Widget | Ubicación en Template |
+|---|-------|--------|----------------------|
+| 1 | `ciudad` | TextInput | Información de Contacto |
+| 2 | `diagnostico_principal` | Textarea(2) | Información Médica |
+| 3 | `alergias` | Textarea(2) | Información Médica |
+| 4 | `medicamentos` | Textarea(2) | Información Médica |
+| 5 | `eps` | TextInput | Información Médica |
+| 6 | `fecha_ingreso` | DateInput | Fechas de Atención |
+| 7 | `fecha_alta` | DateInput | Fechas de Atención |
+| 8 | `motivo_inactividad` | Textarea(2) | Fechas de Atención |
+| 9 | `observaciones` | Textarea(3) | Observaciones |
+| 10 | `necesidades_especiales` | Textarea(3) | Observaciones |
+
+---
+
+## 📝 WIDGETS NECESARIOS
+
+```python
+widgets = {
+    # ... widgets existentes ...
+    
+    # ✅ AGREGAR ESTOS WIDGETS:
+    'ciudad': forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Ciudad'
+    }),
+    'codigo_enfermedad': forms.HiddenInput(),  # Campo oculto
+    'diagnostico_principal': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2,
+        'placeholder': 'Solo si no está en catálogo CIE-10'
+    }),
+    'alergias': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2,
+        'placeholder': 'Alergias conocidas'
+    }),
+    'medicamentos': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2,
+        'placeholder': 'Medicamentos actuales'
+    }),
+    'eps': forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'EPS del paciente'
+    }),
+    'fecha_ingreso': forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }),
+    'fecha_alta': forms.DateInput(attrs={
+        'type': 'date',
+        'class': 'form-control'
+    }),
+    'motivo_inactividad': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 2
+    }),
+    'observaciones': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 3
+    }),
+    'necesidades_especiales': forms.Textarea(attrs={
+        'class': 'form-control',
+        'rows': 3
+    }),
+}
+```
+
+---
+
+## 🔄 FLUJO DE CAMBIO
+
+```
+1. Abrir forms.py
+   └─ Buscar: class PacienteRegistroForm
+
+2. Ver campo actual
+   fields = [..., 'codigo_enfermedad']  ← Último campo
+   
+3. Agregar campos después de 'codigo_enfermedad':
+   'codigo_enfermedad',
+   'diagnostico_principal',  ← AGREGAR
+   'alergias',  ← AGREGAR
+   'medicamentos',  ← AGREGAR
+   'eps',  ← AGREGAR
+   'fecha_ingreso',  ← AGREGAR
+   'fecha_alta',  ← AGREGAR
+   'motivo_inactividad',  ← AGREGAR
+   'observaciones',  ← AGREGAR
+   'necesidades_especiales',  ← AGREGAR
+
+4. Agregar widgets para nuevos campos
+
+5. Configurar campos opcionales en __init__:
+   self.fields['alergias'].required = False
+   self.fields['medicamentos'].required = False
+   ... etc
+
+6. Guardar
+
+7. Reiniciar servidor
+
+8. ✅ Verificar en navegador
+```
+
+---
+
+## 🎨 RESULTADO VISUAL
+
+### Antes (Problema):
+```
+┌─────────────────────┐
+│ Alergias            │  ← Solo texto, sin control
+└─────────────────────┘
+
+┌─────────────────────┐
+│ Medicamentos        │  ← Solo texto, sin control
+└─────────────────────┘
+
+┌─────────────────────┐
+│ EPS                 │  ← Solo texto, sin control
+└─────────────────────┘
+```
+
+### Después (Resuelto):
+```
+┌─────────────────────────────┐
+│ Alergias                    │
+│ ┌─────────────────────────┐ │
+│ │ [Espacio para escribir] │ │  ← Textarea funcional
+│ └─────────────────────────┘ │
+└─────────────────────────────┘
+
+┌─────────────────────────────┐
+│ Medicamentos Actuales       │
+│ ┌─────────────────────────┐ │
+│ │ [Espacio para escribir] │ │  ← Textarea funcional
+│ └─────────────────────────┘ │
+└─────────────────────────────┘
+
+┌─────────────────────────────┐
+│ EPS                         │
+│ ┌─────────────────────────┐ │
+│ │ [____________________]  │ │  ← Input funcional
+│ └─────────────────────────┘ │
+└─────────────────────────────┘
+```
+
+---
+
+## 📋 CHECKLIST APLICACIÓN
+
+```
+☐ 1. Abrir apps/procedimientos/forms.py
+☐ 2. Buscar class PacienteRegistroForm
+☐ 3. Agregar diagnostico_cie10_search antes de class Meta
+☐ 4. Agregar 10 campos en fields[]
+☐ 5. Agregar widgets para los 10 campos
+☐ 6. Configurar campos opcionales en __init__
+☐ 7. Verificar import: from django.utils import timezone
+☐ 8. Guardar archivo (Ctrl+S)
+☐ 9. Reiniciar servidor
+☐ 10. Probar en navegador
+```
+
+---
+
+## ⚡ ATAJO RÁPIDO
+
+**Opción más rápida:** Copiar el código completo de:
+```
+PacienteRegistroForm_COMPLETO.py
+```
+
+Y reemplazar toda la clase `PacienteRegistroForm` en forms.py.
+
+**Tiempo:** 30 segundos ⏱️
+
+---
+
+✅ **Problema resuelto**  
+✅ **Todos los campos visibles**  
+✅ **Formulario 100% funcional**

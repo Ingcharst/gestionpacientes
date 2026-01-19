@@ -1,0 +1,43 @@
+# FASE 2: RESUMEN EJECUTIVO
+
+## ENTREGABLES (13 archivos)
+
+### VISTAS (3)
+- views_fase2.py: Registro paciente, valoraciones, admisiones (7 vistas)
+- views_grupos_asistencia.py: Asistencia diaria, cupos, reasignación (5 vistas)
+- alertas_views.py: Panel alertas, configuración (4 vistas)
+
+### FORMULARIOS (3)
+- forms_fase2.py: PacienteRegistro, Valoración, Admisión
+- forms_grupos.py: CambioCupo
+
+### UTILIDADES (2)
+- calculadora.py: Distribución 20 terapias/4 semanas
+- alertas_utils.py: GestorAlertas + tarea Celery
+
+### URLS (1)
+- urls_fase2.py: 12 URLs nuevas
+
+### DOCS (1)
+- INSTALL_FASE2.txt
+
+## FUNCIONALIDADES IMPLEMENTADAS
+
+✅ Registro paciente simple
+✅ Valoraciones múltiples (por terapeuta)
+✅ Admisiones por terapia + EPS
+✅ Control asistencia diario
+✅ Alertas 3 inasistencias + SMS
+✅ Cambio cupos + reasignación
+✅ Dashboard admisiones/alertas
+✅ Calculadora distribución
+
+## PRÓXIMOS PASOS
+
+1. Copiar archivos según INSTALL_FASE2.txt
+2. Agregar URLs a urls.py
+3. Crear templates básicos
+4. Configurar alertas (opcional Celery o cron)
+5. Probar flujo completo
+
+## LISTO PARA FASE 3

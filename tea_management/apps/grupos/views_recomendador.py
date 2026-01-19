@@ -233,3 +233,7 @@ def exportar_recomendaciones(request, paciente_id):
     response['Content-Disposition'] = f'attachment; filename="recomendaciones_{paciente_id}.pdf"'
     
     return response
+
+
+
+

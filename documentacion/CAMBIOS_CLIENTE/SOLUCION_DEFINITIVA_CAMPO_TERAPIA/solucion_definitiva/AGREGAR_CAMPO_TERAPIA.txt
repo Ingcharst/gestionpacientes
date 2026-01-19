@@ -1,0 +1,360 @@
+# ✅ SOLUCIÓN DEFINITIVA: Agregar campo 'terapia' a GrupoTerapeutico
+
+## 🎯 ESTRATEGIA
+
+Agregar el campo `terapia` como ForeignKey al modelo `GrupoTerapeutico` con datos existentes.
+
+Django manejará esto automáticamente con migraciones.
+
+---
+
+## 📝 PASO 1: Modificar el Modelo (2 minutos)
+
+### Archivo: `apps/grupos/models.py`
+
+**Buscar el modelo `GrupoTerapeutico` y agregar:**
+
+```python
+from apps.terapias.models import Terapia  # Agregar import si no existe
+
+class GrupoTerapeutico(models.Model):
+    """Modelo de Grupo Terapéutico"""
+    
+    # ... campos existentes ...
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    # ... otros campos ...
+    
+    # ✅ NUEVO CAMPO AGREGAR:
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='grupos_terapeuticos',
+        verbose_name='Terapia',
+        null=True,  # ← IMPORTANTE: Permitir NULL temporalmente
+        blank=True,
+        help_text='Tipo de terapia que ofrece este grupo'
+    )
+    
+    # ... resto de campos ...
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    # ...
+    
+    class Meta:
+        verbose_name = 'Grupo Terapéutico'
+        verbose_name_plural = 'Grupos Terapéuticos'
+    
+    def __str__(self):
+        return self.nombre
+```
+
+**IMPORTANTE:** Usar `null=True, blank=True` para permitir registros existentes sin terapia.
+
+---
+
+## 🔧 PASO 2: Crear Migración (1 minuto)
+
+```bash
+python manage.py makemigrations grupos
+```
+
+**Django preguntará:**
+```
+You are trying to add a non-nullable field 'terapia' to grupoterapeutico 
+without a default; we can't do that (the database needs something to populate 
+existing rows).
+
+Please select a fix:
+ 1) Provide a one-off default now (will be set on all existing rows)
+ 2) Quit, and let me add a default in models.py
+```
+
+**Responder:** `2` (porque ya pusimos `null=True`)
+
+**Si no pregunta, perfecto - continuar al siguiente paso.**
+
+---
+
+## 📊 PASO 3: Aplicar Migración (30 segundos)
+
+```bash
+python manage.py migrate grupos
+```
+
+**Resultado esperado:**
+```
+Running migrations:
+  Applying grupos.XXXX_add_terapia_to_grupoterapeutico... OK
+```
+
+✅ **Listo - Campo agregado sin perder datos**
+
+---
+
+## 🔍 PASO 4: Verificar en Admin (30 segundos)
+
+```bash
+# Iniciar servidor
+python manage.py runserver
+
+# Ir a admin
+http://127.0.0.1:8000/admin/grupos/grupoterapeutico/
+```
+
+**Verificar:**
+- ✓ Campo "Terapia" aparece en el formulario
+- ✓ Grupos existentes siguen ahí
+- ✓ Puedes editar y asignar terapia
+
+---
+
+## 📝 PASO 5: Asignar Terapias a Grupos Existentes (5-10 minutos)
+
+### Opción A: Manual en el Admin (Recomendado para pocos grupos)
+
+1. Ir al admin de grupos
+2. Editar cada grupo
+3. Seleccionar terapia correspondiente
+4. Guardar
+
+### Opción B: Script Python (Para muchos grupos)
+
+**Crear archivo:** `asignar_terapias.py` en la raíz del proyecto
+
+```python
+# asignar_terapias.py
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+django.setup()
+
+from apps.grupos.models import GrupoTerapeutico
+from apps.terapias.models import Terapia
+
+# Ejemplo: Asignar terapias según nombre del grupo
+terapia_lenguaje = Terapia.objects.get(nombre__icontains='lenguaje')
+terapia_ocupacional = Terapia.objects.get(nombre__icontains='ocupacional')
+terapia_fisica = Terapia.objects.get(nombre__icontains='física')
+
+# Asignar según coincidencias en nombre
+grupos_lenguaje = GrupoTerapeutico.objects.filter(
+    nombre__icontains='lenguaje'
+)
+grupos_lenguaje.update(terapia=terapia_lenguaje)
+
+grupos_ocupacional = GrupoTerapeutico.objects.filter(
+    nombre__icontains='ocupacional'
+)
+grupos_ocupacional.update(terapia=terapia_ocupacional)
+
+print(f"Actualizado {grupos_lenguaje.count()} grupos de lenguaje")
+print(f"Actualizado {grupos_ocupacional.count()} grupos ocupacionales")
+
+# Listar grupos sin terapia asignada
+sin_terapia = GrupoTerapeutico.objects.filter(terapia__isnull=True)
+print(f"\nGrupos sin terapia: {sin_terapia.count()}")
+for grupo in sin_terapia:
+    print(f"  - {grupo.nombre}")
+```
+
+**Ejecutar:**
+```bash
+python asignar_terapias.py
+```
+
+### Opción C: Comando Django (Más profesional)
+
+**Crear:** `apps/grupos/management/commands/asignar_terapias.py`
+
+```python
+from django.core.management.base import BaseCommand
+from apps.grupos.models import GrupoTerapeutico
+from apps.terapias.models import Terapia
+
+class Command(BaseCommand):
+    help = 'Asigna terapias a grupos existentes'
+    
+    def handle(self, *args, **options):
+        sin_terapia = GrupoTerapeutico.objects.filter(terapia__isnull=True)
+        
+        self.stdout.write(f"Grupos sin terapia: {sin_terapia.count()}")
+        
+        if sin_terapia.count() == 0:
+            self.stdout.write(self.style.SUCCESS('Todos los grupos tienen terapia asignada'))
+            return
+        
+        # Listar terapias disponibles
+        terapias = Terapia.objects.all()
+        self.stdout.write("\nTerapias disponibles:")
+        for i, terapia in enumerate(terapias, 1):
+            self.stdout.write(f"  {i}. {terapia.nombre}")
+        
+        # Mostrar grupos sin terapia
+        self.stdout.write("\nGrupos sin terapia:")
+        for grupo in sin_terapia:
+            self.stdout.write(f"  - {grupo.nombre}")
+        
+        self.stdout.write(self.style.WARNING(
+            '\nAsigna terapias manualmente en el admin o personaliza este comando'
+        ))
+```
+
+**Ejecutar:**
+```bash
+python manage.py asignar_terapias
+```
+
+---
+
+## ✅ PASO 6: Hacer Campo Obligatorio (OPCIONAL - Después de asignar)
+
+**Cuando TODOS los grupos tengan terapia asignada:**
+
+### Archivo: `apps/grupos/models.py`
+
+```python
+# Quitar null=True, blank=True
+terapia = models.ForeignKey(
+    Terapia,
+    on_delete=models.PROTECT,
+    related_name='grupos_terapeuticos',
+    verbose_name='Terapia',
+    # null=True,   ← QUITAR
+    # blank=True,  ← QUITAR
+    help_text='Tipo de terapia que ofrece este grupo'
+)
+```
+
+**Crear nueva migración:**
+```bash
+python manage.py makemigrations grupos
+python manage.py migrate grupos
+```
+
+---
+
+## 🎯 PASO 7: Usar el Campo en la IA (¡Automático!)
+
+**No necesitas cambiar nada más.** El código corregido que envié antes (`FIX_IA_SISTEMA_COMPLETO.zip`) ya usa `grupo.terapia`.
+
+Solo reinicia el servidor:
+```bash
+python manage.py runserver
+```
+
+**Y probar:**
+```
+http://127.0.0.1:8000/grupos/paciente/17/recomendar-grupos/
+```
+
+✅ **Debe funcionar perfectamente**
+
+---
+
+## 📊 RESUMEN COMPLETO
+
+```
+Estado ACTUAL:
+❌ GrupoTerapeutico sin campo terapia
+❌ Error en recomendaciones
+❌ Sistema bloqueado
+
+      ↓
+
+1. Agregar campo terapia (null=True)
+2. Crear migración
+3. Aplicar migración
+4. Asignar terapias a grupos existentes
+5. (Opcional) Hacer campo obligatorio
+6. Probar sistema IA
+
+      ↓
+
+Estado FINAL:
+✅ Campo terapia agregado
+✅ Datos existentes preservados
+✅ Terapias asignadas
+✅ Sistema IA funcional
+✅ Filtrado por terapia correcto
+✅ Recomendaciones óptimas
+```
+
+---
+
+## 🔒 SEGURIDAD DE DATOS
+
+**¿Se perderán datos?**
+- ✅ NO - Django preserva todos los datos existentes
+- ✅ Grupos existentes permanecen intactos
+- ✅ Solo se agrega nueva columna
+- ✅ Migración reversible
+
+**¿Puedo revertir?**
+```bash
+# Ver migraciones
+python manage.py showmigrations grupos
+
+# Revertir última migración
+python manage.py migrate grupos XXXX_nombre_migracion_anterior
+```
+
+---
+
+## ⚠️ NOTAS IMPORTANTES
+
+1. **Backup antes de migrar** (recomendado):
+```bash
+python manage.py dumpdata grupos > backup_grupos.json
+```
+
+2. **Verificar que Terapia existe:**
+```bash
+python manage.py shell
+>>> from apps.terapias.models import Terapia
+>>> Terapia.objects.all()
+```
+
+3. **Si hay error en migración:**
+- Revertir migración
+- Verificar sintaxis del modelo
+- Intentar de nuevo
+
+---
+
+## 🎉 VENTAJAS DE ESTA SOLUCIÓN
+
+✅ **Definitiva** - No más parches temporales  
+✅ **Correcta** - Estructura de BD adecuada  
+✅ **Escalable** - Fácil mantener  
+✅ **Segura** - No pierde datos  
+✅ **Profesional** - Sigue mejores prácticas Django  
+✅ **IA Óptima** - Filtra por terapia correctamente
+
+---
+
+## ⏱️ TIEMPO TOTAL
+
+| Paso | Tiempo |
+|------|--------|
+| 1. Modificar modelo | 2 min |
+| 2. Crear migración | 1 min |
+| 3. Aplicar migración | 30 seg |
+| 4. Verificar admin | 30 seg |
+| 5. Asignar terapias | 5-10 min |
+| 6. Hacer obligatorio (opcional) | 2 min |
+| 7. Probar IA | 1 min |
+| **TOTAL** | **12-17 min** |
+
+---
+
+## 🚀 ¿EMPEZAMOS?
+
+**Paso 1: Envíame el modelo GrupoTerapeutico actual**
+
+Para que pueda darte el código exacto con todos los campos actuales.
+
+O sigue la guía y agrega el campo manualmente.
+
+**Esta es la MEJOR solución** ✅

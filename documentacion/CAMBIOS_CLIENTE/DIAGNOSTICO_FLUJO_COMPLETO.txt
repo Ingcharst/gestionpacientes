@@ -1,0 +1,240 @@
+# 🔴 DIAGNÓSTICO: Problemas en el Flujo de Pacientes
+
+## FLUJO CORRECTO ESPERADO
+
+```
+1. Registro → Estado: ADMITIDO
+2. Valoración → Estado: PENDIENTE_ASIGNACION
+3. Admisión Terapia → Crear AdmisionTerapia
+4. Asignación Grupo → Vincular admision_terapia
+5. Asistencias → Incrementar cantidad_realizada
+```
+
+---
+
+## 🔴 PROBLEMAS IDENTIFICADOS
+
+### PROBLEMA 1: Estado inicial incorrecto
+**Archivo:** `models.py` línea ~292
+```python
+# ❌ ACTUAL:
+estado = models.CharField(
+    default=Estado.ACTIVO,  # MAL - debería ser ADMITIDO
+)
+```
+
+**Consecuencia:** 
+- Pacientes nuevos quedan ACTIVO
+- No aparecen en "Pendientes de Valoración"
+- `pacientes_pendientes_valoracion` busca estado ADMITIDO
+
+---
+
+### PROBLEMA 2: No se establece estado al registrar
+**Archivo:** `views.py` función `admision_paciente` línea ~318
+```python
+# ❌ ACTUAL:
+paciente = form.save(commit=False)
+paciente.creado_por = request.user
+paciente.save()  # Sin establecer estado
+
+# ✅ DEBE SER:
+paciente = form.save(commit=False)
+paciente.creado_por = request.user
+paciente.estado = Paciente.Estado.ADMITIDO  # AGREGAR ESTO
+paciente.save()
+```
+
+---
+
+### PROBLEMA 3: Sin validación en asignación a grupos
+**Las vistas de asignación NO validan:**
+- ❌ Que el paciente tenga valoración
+- ❌ Que el paciente tenga admisión de terapia
+- ❌ Que la admisión esté vigente
+
+**Resultado:** 
+- Permite asignar sin valoración
+- Permite asignar sin admisión
+- Grupos vacíos porque no hay admision_terapia vinculada
+
+---
+
+### PROBLEMA 4: Cambios de estado no automáticos
+
+**Al completar valoración:**
+```python
+# En models.py ValoracionInicial.save()
+if self.completada and cambio_completada:
+    self.paciente.estado = Paciente.Estado.PENDIENTE_ASIGNACION
+    self.paciente.save()
+```
+Esto DEBE estar en el modelo, verificar que esté presente.
+
+**Al crear admisión de terapia:**
+No cambia estado a ninguno específico (esto está bien).
+
+**Al asignar a grupo:**
+Debería cambiar a ACTIVO solo si tiene admisión vinculada.
+
+---
+
+## ✅ SOLUCIONES
+
+### SOLUCIÓN 1: Cambiar estado por defecto
+```python
+# models.py
+estado = models.CharField(
+    default=Estado.ADMITIDO,  # ✅ Cambiar a ADMITIDO
+)
+```
+
+### SOLUCIÓN 2: Establecer estado al admitir
+```python
+# views.py - admision_paciente
+paciente = form.save(commit=False)
+paciente.creado_por = request.user
+paciente.estado = Paciente.Estado.ADMITIDO  # ✅ AGREGAR
+paciente.save()
+```
+
+### SOLUCIÓN 3: Validar en asignación a grupos
+```python
+# En todas las vistas de asignación, ANTES de crear AsignacionGrupo:
+
+# 1. Verificar que tenga valoración
+if not hasattr(paciente, 'valoracion_inicial'):
+    messages.error(request, 'El paciente no tiene valoración inicial')
+    return redirect(...)
+
+# 2. Verificar que la valoración esté completada
+if not paciente.valoracion_inicial.completada:
+    messages.error(request, 'La valoración no está completada')
+    return redirect(...)
+
+# 3. Verificar que tenga admisión vigente
+from datetime import date
+admision = AdmisionTerapia.objects.filter(
+    paciente=paciente,
+    terapia=grupo.terapia,
+    estado='VIGENTE',
+    fecha_inicio__lte=date.today(),
+    fecha_fin__gte=date.today()
+).first()
+
+if not admision:
+    messages.error(
+        request,
+        'El paciente no tiene admisión vigente para esta terapia'
+    )
+    return redirect(...)
+```
+
+---
+
+## 📋 FLUJO COMPLETO CORREGIDO
+
+### 1. Registro de Paciente
+```python
+# views.py - admision_paciente
+paciente.estado = Paciente.Estado.ADMITIDO
+paciente.save()
+```
+**Resultado:** Aparece en "Pendientes de Valoración"
+
+### 2. Valoración Inicial
+```python
+# Requiere: estado == ADMITIDO (ya valida)
+# Al completar (models.py):
+if self.completada:
+    self.paciente.estado = Paciente.Estado.PENDIENTE_ASIGNACION
+```
+**Resultado:** Pasa a "Pendiente Asignación"
+
+### 3. Admisión de Terapia
+```python
+# Crear AdmisionTerapia con:
+- paciente
+- terapia
+- cantidad_ordenada
+- fecha_inicio, fecha_fin
+- estado='VIGENTE'
+```
+**Resultado:** Paciente tiene admisiones de terapias
+
+### 4. Asignación a Grupo
+```python
+# VALIDAR:
+1. Tiene valoración completada
+2. Tiene admisión vigente para la terapia del grupo
+
+# CREAR:
+AsignacionGrupo.objects.create(
+    paciente=paciente,
+    grupo=grupo,
+    admision_terapia=admision,  # ✅ Vincular
+    numero_terapias_asignadas=admision.cantidad_ordenada,
+    estado='ACTIVA'
+)
+
+# CAMBIAR ESTADO:
+paciente.estado = Paciente.Estado.ACTIVO
+paciente.save()
+```
+**Resultado:** Paciente asignado y visible en grupo
+
+### 5. Registro de Asistencias
+```python
+# Al crear AsistenciaPaciente:
+if asistio:
+    admision.cantidad_realizada += 1
+    admision.save()
+```
+**Resultado:** Progreso actualizado
+
+---
+
+## 🎯 ARCHIVOS A MODIFICAR
+
+### 1. models.py
+- [ ] Cambiar default de estado a ADMITIDO (línea ~292)
+
+### 2. views.py
+- [ ] admision_paciente: Establecer estado ADMITIDO (línea ~321)
+- [ ] asignar_paciente_grupo: Agregar validaciones (línea ~170)
+- [ ] agregar_grupo_paciente: Agregar validaciones (línea ~220)
+- [ ] asignar_desde_recomendacion: Agregar validaciones (línea ~540)
+
+### 3. Validaciones a agregar en TODAS las asignaciones:
+```python
+# 1. Verificar valoración
+if not hasattr(paciente, 'valoracion_inicial'):
+    raise ValidationError('Sin valoración')
+
+# 2. Verificar valoración completada
+if not paciente.valoracion_inicial.completada:
+    raise ValidationError('Valoración incompleta')
+
+# 3. Verificar admisión vigente
+admision = AdmisionTerapia.objects.filter(
+    paciente=paciente,
+    terapia=grupo.terapia,
+    estado='VIGENTE',
+    fecha_inicio__lte=date.today(),
+    fecha_fin__gte=date.today()
+).first()
+
+if not admision:
+    raise ValidationError('Sin admisión vigente')
+```
+
+---
+
+## ⚠️ IMPORTANTE
+
+**NO permitir asignación a grupos si:**
+1. El paciente no tiene valoración inicial
+2. La valoración no está completada
+3. No tiene admisión vigente para la terapia del grupo
+
+**Estos son los 3 candados que faltan en el sistema actual.**

@@ -1,0 +1,200 @@
+# TEMPLATES FASE 2 - RESUMEN
+
+## ARCHIVOS INCLUIDOS
+
+### ✅ Templates Completos (4):
+1. **procedimientos/registrar_paciente.html** - Form registro con Select2
+2. **procedimientos/valoraciones_paciente.html** - Lista valoraciones por terapeuta
+3. **grupos/control_asistencia.html** - Form asistencia diaria completo
+4. **alertas/dashboard_alertas.html** - Panel alertas pendientes/atendidas
+
+### ✅ Templates Compactos (10):
+En archivo **TEMPLATES_RESTANTES.txt**:
+- procedimientos/crear_valoracion.html
+- procedimientos/admisiones_paciente.html
+- procedimientos/crear_admision.html
+- procedimientos/dashboard_admisiones.html
+- grupos/historial_asistencia.html
+- grupos/cambiar_cupo.html
+- grupos/reasignar_pacientes.html
+- alertas/atender_alerta.html
+- alertas/configuracion.html
+- alertas/forzar_verificacion.html
+
+### ✅ Template Base:
+- **base/base.html** - Layout con navbar, messages, footer
+
+### 📋 Documentación:
+- **INSTALL_TEMPLATES.txt** - Guía completa instalación
+- **TEMPLATES_RESTANTES.txt** - Templates compactos para copiar
+
+---
+
+## ESTRUCTURA INSTALACIÓN
+
+```
+apps/
+├── procedimientos/templates/procedimientos/
+│   ├── registrar_paciente.html       ✅ COMPLETO
+│   ├── valoraciones_paciente.html    ✅ COMPLETO
+│   ├── crear_valoracion.html         📄 Copiar de RESTANTES
+│   ├── admisiones_paciente.html      📄 Copiar de RESTANTES
+│   ├── crear_admision.html           📄 Copiar de RESTANTES
+│   └── dashboard_admisiones.html     📄 Copiar de RESTANTES
+│
+├── grupos/templates/grupos/
+│   ├── control_asistencia.html       ✅ COMPLETO
+│   ├── historial_asistencia.html     📄 Copiar de RESTANTES
+│   ├── cambiar_cupo.html             📄 Copiar de RESTANTES
+│   └── reasignar_pacientes.html      📄 Copiar de RESTANTES
+│
+├── alertas/templates/alertas/
+│   ├── dashboard.html                ✅ COMPLETO (dashboard_alertas.html)
+│   ├── atender_alerta.html           📄 Copiar de RESTANTES
+│   ├── configuracion.html            📄 Copiar de RESTANTES
+│   └── forzar_verificacion.html      📄 Copiar de RESTANTES
+│
+└── base/templates/base/
+    └── base.html                     ✅ COMPLETO
+```
+
+---
+
+## INSTALACIÓN RÁPIDA
+
+### 1. Descomprimir
+```bash
+unzip TEMPLATES_FASE2.zip
+```
+
+### 2. Copiar templates completos
+```bash
+# Procedimientos
+cp TEMPLATES_FASE2/procedimientos/*.html apps/procedimientos/templates/procedimientos/
+
+# Grupos
+cp TEMPLATES_FASE2/grupos/*.html apps/grupos/templates/grupos/
+
+# Alertas
+cp TEMPLATES_FASE2/alertas/*.html apps/alertas/templates/alertas/
+# Renombrar: dashboard_alertas.html → dashboard.html
+
+# Base
+cp TEMPLATES_FASE2/base/base.html apps/base/templates/base/
+# O donde tengas tu template base
+```
+
+### 3. Copiar templates compactos
+Abrir **TEMPLATES_RESTANTES.txt** y copiar cada sección al archivo correspondiente.
+
+### 4. Verificar
+```bash
+python manage.py runserver
+# Probar: http://localhost:8000/procedimientos/pacientes/registrar/
+```
+
+---
+
+## CARACTERÍSTICAS TEMPLATES
+
+### Bootstrap 5
+- Diseño responsive
+- Icons incluidos
+- Modales y alerts
+
+### Select2
+- Solo en registrar_paciente.html
+- Búsqueda código CIE-10
+
+### jQuery
+- Incluido en base.html
+- Requerido por Bootstrap
+
+### Validación
+- Django forms nativa
+- Mensajes error inline
+- CSS Bootstrap
+
+---
+
+## PERSONALIZACIÓN
+
+### Cambiar colores:
+```html
+<!-- En cualquier template -->
+bg-primary → bg-success (verde)
+btn-primary → btn-info (azul)
+border-primary → border-warning (amarillo)
+```
+
+### Agregar logo:
+```html
+<!-- En base.html navbar -->
+<a class="navbar-brand" href="/">
+    <img src="{% static 'img/logo.png' %}" height="30">
+    TEA Management
+</a>
+```
+
+### Ocultar navbar items:
+```html
+<!-- En base.html, comentar enlaces no necesarios -->
+<!-- <li class="nav-item">...</li> -->
+```
+
+---
+
+## DEPENDENCIAS CDN
+
+Todas incluidas en base.html:
+- Bootstrap 5.3.0
+- Bootstrap Icons 1.11.0
+- jQuery 3.6.0
+- Select2 4.1.0 (solo registro paciente)
+
+---
+
+## TROUBLESHOOTING
+
+### ❌ Template no encontrado
+```
+TemplateDoesNotExist: procedimientos/registrar_paciente.html
+```
+**Solución:** Verificar ruta exacta y nombre archivo
+
+### ❌ Static files no cargan
+**Solución:** 
+```bash
+python manage.py collectstatic
+```
+
+### ❌ Select2 no funciona
+**Solución:** Verificar que jQuery carga ANTES de Select2
+
+### ❌ URL no encontrada
+**Solución:** Verificar namespace en urls.py:
+```python
+app_name = 'procedimientos'  # Requerido
+```
+
+---
+
+## PRÓXIMOS PASOS
+
+1. ✅ Instalar templates
+2. ✅ Probar funcionalidad
+3. ✅ Ajustar estilos
+4. ⏳ Continuar Fase 3 (IA)
+
+---
+
+## SOPORTE
+
+Ver guías:
+- **INSTALL_TEMPLATES.txt** - Instalación detallada
+- **TEMPLATES_RESTANTES.txt** - Templates compactos
+- **FASE2_VISTAS.zip** - Vistas y lógica
+
+---
+
+**14 templates listos para usar** ✅

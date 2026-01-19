@@ -1,0 +1,204 @@
+<!-- ✅ BOTÓN "COMPLETAR VALORACIONES" - VERSIÓN SIMPLIFICADA -->
+<!-- Agregar en: templates/procedimientos/pacientes_pendientes_valoracion.html -->
+
+<!-- ============================================ -->
+<!-- OPCIÓN 1: En la tabla de pacientes (RECOMENDADA) -->
+<!-- ============================================ -->
+
+<!-- Buscar la columna "Acciones" en la tabla -->
+<!-- REEMPLAZAR o AGREGAR junto al botón "Valorar" -->
+
+<td>
+    <!-- Botón Ver/Valorar (mantener el existente) -->
+    <a href="{% url 'procedimientos:valoraciones_paciente' paciente.id %}" 
+       class="btn btn-sm btn-info">
+        <i class="bi bi-clipboard-check me-1"></i>Ver/Valorar
+    </a>
+    
+    <!-- ✅ NUEVO: Botón Completar -->
+    <button type="button" 
+            class="btn btn-sm btn-success ms-2" 
+            onclick="confirmarCompletar('{{ paciente.nombre_completo }}', {{ paciente.id }})">
+        <i class="bi bi-check-circle me-1"></i>Completar
+    </button>
+</td>
+
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT - CONFIRMACIÓN DE SEGURIDAD -->
+<!-- ============================================ -->
+
+<!-- Agregar al final del template, antes de {% endblock %} -->
+
+{% block extra_js %}
+<script>
+function confirmarCompletar(nombrePaciente, pacienteId) {
+    // Pregunta de seguridad
+    const mensaje = `¿Está seguro de marcar las valoraciones como completadas?\n\n` +
+                    `Paciente: ${nombrePaciente}\n\n` +
+                    `Al confirmar:\n` +
+                    `• El paciente pasará a "Pendiente de Asignación"\n` +
+                    `• Desaparecerá de esta lista\n` +
+                    `• Podrá asignarlo a grupos terapéuticos\n\n` +
+                    `¿Desea continuar?`;
+    
+    if (confirm(mensaje)) {
+        // Redirigir a la vista que cambia el estado
+        window.location.href = `/procedimientos/pacientes/${pacienteId}/completar-valoraciones/`;
+    }
+}
+</script>
+{% endblock %}
+
+
+<!-- ============================================ -->
+<!-- OPCIÓN 2: Con SweetAlert2 (MÁS PROFESIONAL) -->
+<!-- ============================================ -->
+
+<!-- Si prefieres una confirmación más bonita, usa SweetAlert2 -->
+
+{% block extra_js %}
+<!-- SweetAlert2 CDN -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmarCompletar(nombrePaciente, pacienteId) {
+    Swal.fire({
+        title: '¿Completar Valoraciones?',
+        html: `
+            <div class="text-start">
+                <p><strong>Paciente:</strong> ${nombrePaciente}</p>
+                <hr>
+                <p><strong>Al confirmar:</strong></p>
+                <ul>
+                    <li>El paciente pasará a <strong>"Pendiente de Asignación"</strong></li>
+                    <li>Desaparecerá de la lista de pendientes</li>
+                    <li>Podrá asignarlo a grupos terapéuticos</li>
+                </ul>
+                <hr>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Asegúrese de que todas las valoraciones requeridas estén completas.
+                </p>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Sí, Completar',
+        cancelButtonText: '<i class="bi bi-x-circle me-1"></i> Cancelar',
+        width: '550px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Procesando...',
+                text: 'Cambiando estado del paciente',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Redirigir
+            window.location.href = `/procedimientos/pacientes/${pacienteId}/completar-valoraciones/`;
+        }
+    });
+}
+</script>
+{% endblock %}
+
+
+<!-- ============================================ -->
+<!-- OPCIÓN 3: Bootstrap Modal (INTEGRADO) -->
+<!-- ============================================ -->
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="modalCompletarValoracion" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Completar Valoraciones
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Paciente:</strong> <span id="modalNombrePaciente"></span></p>
+                <hr>
+                <p><strong>Al confirmar:</strong></p>
+                <ul>
+                    <li>El paciente pasará a <strong>"Pendiente de Asignación"</strong></li>
+                    <li>Desaparecerá de la lista de pendientes de valoración</li>
+                    <li>Podrá asignarlo a grupos terapéuticos</li>
+                </ul>
+                <hr>
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Asegúrese de que todas las valoraciones requeridas según la orden médica estén completas.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-success" id="btnConfirmarModal">
+                    <i class="bi bi-check-circle me-1"></i>Sí, Completar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let pacienteIdModal = null;
+
+function confirmarCompletar(nombrePaciente, pacienteId) {
+    // Guardar ID
+    pacienteIdModal = pacienteId;
+    
+    // Actualizar nombre en modal
+    document.getElementById('modalNombrePaciente').textContent = nombrePaciente;
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('modalCompletarValoracion'));
+    modal.show();
+}
+
+// Botón confirmar del modal
+document.getElementById('btnConfirmarModal').addEventListener('click', function() {
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalCompletarValoracion'));
+    modal.hide();
+    
+    // Redirigir
+    window.location.href = `/procedimientos/pacientes/${pacienteIdModal}/completar-valoraciones/`;
+});
+</script>
+
+
+<!-- ============================================ -->
+<!-- NOTA IMPORTANTE -->
+<!-- ============================================ -->
+
+<!-- 
+Solo necesitas ELEGIR UNA de las 3 opciones:
+
+OPCIÓN 1 (Recomendada para rapidez):
+- Confirmación simple con confirm()
+- No requiere librerías adicionales
+- Funcional e inmediata
+
+OPCIÓN 2 (Recomendada para profesionalismo):
+- SweetAlert2
+- Interfaz bonita y profesional
+- Requiere CDN (ya incluido)
+
+OPCIÓN 3 (Recomendada para consistencia):
+- Bootstrap Modal
+- Ya tienes Bootstrap
+- Consistente con el resto del sistema
+-->

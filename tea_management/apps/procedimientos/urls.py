@@ -32,12 +32,6 @@ urlpatterns = [
     path('sesiones/<int:pk>/', views.sesion_detalle, name='sesion_detail'),
     path('sesiones/<int:pk>/editar/', views.sesion_editar, name='sesion_update'),
 
-    # Evolución (CRUD simple) - Añadido para dar soporte al 'evolucion_form.html'
-    #path('evolucion/crear/', views.evolucion_crear, name='evolucion_create'),
-
-    # Objetivos (CRUD simple) - Añadido para dar soporte al 'objetivo_form.html'
-    #path('objetivos/crear/', views.objetivo_crear, name='objetivo_create'),
-
     # Procedimientos
     path('', views.procedimiento_lista, name='procedimiento_list'),
     path('crear/', views.procedimiento_crear, name='procedimiento_create'),
@@ -56,4 +50,21 @@ urlpatterns = [
     path('evolucion/<int:evolucion_id>/eliminar/', views.eliminar_evolucion, name='eliminar_evolucion'),
     path('paciente/<int:paciente_id>/evoluciones/', views.evoluciones_paciente, name='evoluciones_paciente'),
     path('mis-evoluciones/', views.mis_evoluciones, name='mis_evoluciones'),
+
+    # Valoraciones y Admisiones Nuevos
+    path('pacientes/registrar/', views.registrar_paciente, name='registrar_paciente'),
+    path('pacientes/<int:pk>/valoraciones/', views.valoraciones_paciente, name='valoraciones_paciente'),
+    path('pacientes/<int:paciente_id>/valoracion/<int:terapia_id>/crear/', views.crear_valoracion, name='crear_valoracion'),
+    path('pacientes/<int:pk>/admisiones/', views.admisiones_paciente, name='admisiones_paciente'),
+    path('pacientes/<int:paciente_id>/admisiones/crear/', views.crear_admision, name='crear_admision'),
+    path('admisiones/dashboard/', views.dashboard_admisiones, name='dashboard_admisiones'),
+    # Completar todas las valoraciones y cambiar estado
+    path('pacientes/<int:paciente_id>/valoraciones/completar/', views.completar_todas_valoraciones, name='completar_todas_valoraciones'),
+    # API para verificar estado de valoraciones
+    path('pacientes/<int:paciente_id>/valoraciones/verificar/', views.verificar_estado_valoraciones, name='verificar_estado_valoraciones'),
+    # Cambiar estado general del paciente
+    path('pacientes/<int:paciente_id>/cambiar-estado/', views.cambiar_estado_paciente, name='cambiar_estado_paciente'),
+    path('pacientes/<int:paciente_id>/completar-valoraciones/', views.completar_valoraciones_paciente, name='completar_valoraciones_paciente'),
+    # API para búsqueda CIE-10
+    path('api/buscar-cie10/', views.api_buscar_cie10, name='api_buscar_cie10'),
 ]

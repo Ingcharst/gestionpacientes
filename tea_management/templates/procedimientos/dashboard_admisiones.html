@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h3 class="mb-4">Dashboard de Admisiones</h3>
+    
+    <div class="card mb-3">
+        <div class="card-header bg-warning text-dark"><h5>Por Vencer (7 días)</h5></div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Paciente</th><th>Terapia</th><th>Vence</th><th>Progreso</th></tr></thead>
+                <tbody>
+                {% for adm in por_vencer %}
+                <tr>
+                    <td>{{ adm.paciente.nombre_completo }}</td>
+                    <td>{{ adm.terapia.nombre }}</td>
+                    <td>{{ adm.fecha_fin|date:"d/m/Y" }}</td>
+                    <td>{{ adm.cantidad_realizada }}/{{ adm.cantidad_ordenada }}</td>
+                </tr>
+                {% empty %}<tr><td colspan="4" class="text-center">Sin registros</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

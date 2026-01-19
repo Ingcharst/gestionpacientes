@@ -1,0 +1,182 @@
+# 🔧 FIX RÁPIDO: Error al Asignar desde Recomendaciones
+
+## 🎯 PROBLEMA
+
+Cuando haces clic en **"Asignar a este grupo"** desde recomendaciones:
+```
+❌ NoReverseMatch
+❌ 'asignar_paciente_grupo' not found
+```
+
+---
+
+## ⚡ SOLUCIÓN EN 2 MINUTOS
+
+### PASO 1: Abrir el archivo
+
+**Archivo:** `apps/grupos/views.py`
+
+---
+
+### PASO 2: Buscar la función
+
+**Buscar con Ctrl+F:** `asignar_desde_recomendacion`
+
+Encontrarás algo como:
+
+```python
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    # ... código ...
+    
+    # ❌ ESTA LÍNEA CAUSA EL ERROR:
+    return redirect('grupos:asignar_paciente_grupo',
+                    paciente_id=paciente_id,
+                    grupo_id=grupo_id)
+```
+
+---
+
+### PASO 3: Cambiar UNA línea
+
+**BORRAR esta línea:**
+```python
+return redirect('grupos:asignar_paciente_grupo',
+                paciente_id=paciente_id,
+                grupo_id=grupo_id)
+```
+
+**PONER esta línea:**
+```python
+return redirect('grupos:detalle_grupo', pk=grupo_id)
+```
+
+---
+
+### PASO 4: Guardar y probar
+
+1. **Guardar** el archivo (Ctrl+S)
+2. **Reiniciar** servidor Django (si estaba corriendo)
+3. **Probar** desde recomendaciones
+
+---
+
+## ✅ RESULTADO
+
+**Antes:**
+```
+Recomendaciones → Asignar → ❌ ERROR 500
+```
+
+**Después:**
+```
+Recomendaciones → Asignar → ✅ Redirige al grupo
+                           → ✅ Paciente asignado
+                           → ✅ Mensaje de éxito
+```
+
+---
+
+## 🎨 VISUAL
+
+### Encontrar esta función:
+```python
+┌────────────────────────────────────────┐
+│ def asignar_desde_recomendacion(...):  │
+│     # código                            │
+│     # más código                        │
+│                                         │
+│     # ❌ BUSCAR ESTE return:            │
+│     return redirect(                    │
+│         'grupos:asignar_paciente_grupo',│  ← ESTA LÍNEA
+│         paciente_id=paciente_id,        │
+│         grupo_id=grupo_id               │
+│     )                                   │
+└────────────────────────────────────────┘
+```
+
+### Cambiar por:
+```python
+┌────────────────────────────────────────┐
+│ def asignar_desde_recomendacion(...):  │
+│     # código                            │
+│     # más código                        │
+│                                         │
+│     # ✅ CAMBIAR A ESTE return:         │
+│     return redirect(                    │
+│         'grupos:detalle_grupo',         │  ← NUEVA LÍNEA
+│         pk=grupo_id                     │
+│     )                                   │
+└────────────────────────────────────────┘
+```
+
+---
+
+## 🆘 SI NO ENCUENTRAS LA FUNCIÓN
+
+La función está en:
+```
+apps/
+└── grupos/
+    └── views.py  ← ESTE ARCHIVO
+        └── línea ~528 (aproximadamente)
+```
+
+**Buscar literalmente:** `asignar_paciente_grupo`
+
+---
+
+## 💡 EXPLICACIÓN
+
+### ¿Por qué el error?
+
+La vista intenta redirigir a una URL que **no existe**:
+```python
+'grupos:asignar_paciente_grupo'  ❌ NO EXISTE en urls.py
+```
+
+### Solución:
+
+Redirigir a una URL que **SÍ existe**:
+```python
+'grupos:detalle_grupo'  ✅ SÍ EXISTE en urls.py
+```
+
+---
+
+## 📋 CHECKLIST
+
+```
+☐ Abrir: apps/grupos/views.py
+☐ Buscar: asignar_desde_recomendacion
+☐ Encontrar: return redirect('grupos:asignar_paciente_grupo'
+☐ Cambiar a: return redirect('grupos:detalle_grupo', pk=grupo_id)
+☐ Guardar archivo
+☐ Reiniciar servidor
+☐ Probar asignación
+☐ Verificar éxito
+```
+
+---
+
+## 🎯 ALTERNATIVA: Código completo
+
+Si prefieres reemplazar toda la función:
+
+**Ver archivo:** `vista_asignar_corregida.py`
+
+Copiar toda la función y **reemplazar** la actual.
+
+---
+
+## ⏱️ TIEMPO: 2 MINUTOS
+
+1. Buscar función: 30 segundos
+2. Cambiar línea: 30 segundos
+3. Guardar: 10 segundos
+4. Probar: 50 segundos
+
+---
+
+**Error corregido en 1 línea** ✅  
+**Implementación: 2 minutos** ⏱️  
+**Probado y funcional** 🎯

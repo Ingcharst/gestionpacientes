@@ -1,0 +1,91 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h3><i class="bi bi-calendar-check me-2"></i>Control de Asistencia - {{ grupo.nombre }}</h3>
+            <p class="text-muted">{{ fecha|date:"l, d \d\e F \d\e Y" }}</p>
+        </div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Hora Inicio:</label>
+                        <input type="time" name="hora_inicio" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Hora Fin:</label>
+                        <input type="time" name="hora_fin" class="form-control">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Admisión</th>
+                            <th class="text-center">Asistió</th>
+                            <th class="text-center">Justificada</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asig in asignaciones %}
+                        <tr>
+                            <td>
+                                <strong>{{ asig.paciente.nombre_completo }}</strong><br>
+                                <small class="text-muted">{{ asig.paciente.documento }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ asig.admision_terapia.numero_admision }}</span><br>
+                                <small>{{ asig.admision_terapia.cantidad_realizada }}/{{ asig.admision_terapia.cantidad_ordenada }}</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="asistio_{{ asig.paciente.id }}" 
+                                           {% if asig.paciente.id in asistencias_registradas %}checked disabled{% endif %}>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="justificada_{{ asig.paciente.id }}">
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" name="obs_{{ asig.paciente.id }}" 
+                                       class="form-control form-control-sm" placeholder="Opcional">
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay pacientes asignados</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'grupos:detalle_grupo' pk=grupo.id %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Guardar Asistencia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

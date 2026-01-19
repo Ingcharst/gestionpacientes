@@ -1,0 +1,189 @@
+# 📋 CÓDIGO PARA COPIAR Y PEGAR
+
+## 1️⃣ MODELO - apps/procedimientos/models.py
+
+### Agregar en clase ValoracionProfesional (después de campo terapia):
+
+```python
+    codigo_cie10 = models.ForeignKey(
+        'CodigoCIE10',
+        on_delete=models.PROTECT,
+        related_name='valoraciones_profesionales',
+        verbose_name='Código CIE-10',
+        null=True,
+        blank=True,
+        help_text='Diagnóstico según CIE-10'
+    )
+```
+
+---
+
+## 2️⃣ COMANDOS - Terminal:
+
+```bash
+python manage.py makemigrations procedimientos
+python manage.py migrate procedimientos
+```
+
+---
+
+## 3️⃣ FORMULARIOS - apps/procedimientos/forms.py
+
+### PacienteRegistroForm - Agregar en fields:
+
+```python
+            'codigo_enfermedad',  # Agregar esta línea
+```
+
+### PacienteRegistroForm - Agregar en widgets:
+
+```python
+            'codigo_enfermedad': forms.Select(attrs={
+                'class': 'form-control select2',
+                'data-placeholder': 'Seleccione código CIE-10'
+            }),
+```
+
+### PacienteRegistroForm - Agregar en labels:
+
+```python
+            'codigo_enfermedad': 'Código CIE-10',
+```
+
+### ValoracionProfesionalForm - Agregar en fields:
+
+```python
+            'codigo_cie10',  # Agregar después de 'terapia'
+```
+
+### ValoracionProfesionalForm - Agregar en widgets:
+
+```python
+            'codigo_cie10': forms.Select(attrs={
+                'class': 'form-control select2',
+                'data-placeholder': 'Seleccione código CIE-10'
+            }),
+```
+
+### ValoracionProfesionalForm - Agregar en labels:
+
+```python
+            'codigo_cie10': 'Código CIE-10',
+```
+
+---
+
+## 4️⃣ TEMPLATE PACIENTE - paciente_form.html
+
+### Agregar después de sección "Información de Contacto":
+
+```html
+<!-- Información Médica -->
+<div class="form-section">
+    <h5><i class="bi bi-heart-pulse me-2"></i>Información Médica</h5>
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <label for="{{ form.codigo_enfermedad.id_for_label }}" class="form-label">
+                Código CIE-10 <small class="text-muted">(Opcional)</small>
+            </label>
+            {{ form.codigo_enfermedad }}
+            {% if form.codigo_enfermedad.errors %}
+            <div class="invalid-feedback d-block">
+                {{ form.codigo_enfermedad.errors }}
+            </div>
+            {% endif %}
+            <small class="form-text text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Busque por código o nombre de la condición
+            </small>
+        </div>
+    </div>
+</div>
+```
+
+### Agregar en {% block extra_css %}:
+
+```html
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+```
+
+### Agregar en {% block extra_js %}:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_codigo_enfermedad').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar código CIE-10...',
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
+```
+
+---
+
+## 5️⃣ TEMPLATE VALORACIÓN - crear_valoracion.html
+
+### Agregar después del campo terapia:
+
+```html
+<!-- Diagnóstico CIE-10 -->
+<div class="row mb-4">
+    <div class="col-md-12 mb-3">
+        <label for="{{ form.codigo_cie10.id_for_label }}" class="form-label">
+            <i class="bi bi-bookmark-check me-1"></i>
+            Código CIE-10 <small class="text-muted">(Opcional)</small>
+        </label>
+        {{ form.codigo_cie10 }}
+        {% if form.codigo_cie10.errors %}
+        <div class="invalid-feedback d-block">
+            {{ form.codigo_cie10.errors }}
+        </div>
+        {% endif %}
+        <small class="form-text text-muted">
+            <i class="bi bi-search me-1"></i>
+            Busque por código o nombre de la condición
+        </small>
+    </div>
+</div>
+<hr class="my-4">
+```
+
+### Agregar en {% block extra_css %}:
+
+```html
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+```
+
+### Agregar en {% block extra_js %}:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_codigo_cie10').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar código CIE-10...',
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
+```
+
+---
+
+## ✅ APLICAR
+
+1. Copiar código del modelo → Guardar
+2. Ejecutar comandos migración
+3. Copiar código formularios → Guardar
+4. Copiar código templates → Guardar
+5. Reiniciar servidor
+
+---
+
+⏱️ **Tiempo: 5 minutos**

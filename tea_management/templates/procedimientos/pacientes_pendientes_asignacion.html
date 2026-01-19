@@ -16,15 +16,17 @@
     <!-- Estadísticas -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card border-info">
+            <div class="card border-success">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1">Pendientes de Asignación</p>
-                            <h3 class="mb-0">{{ pacientes_data|length }}</h3>
+                            <p class="text-muted mb-1">Listos para Asignar</p>
+                            <h3 class="mb-0 text-success">
+                                {{ pacientes_data|length }}
+                            </h3>
                         </div>
-                        <div class="text-info">
-                            <i class="bi bi-person-plus fs-1"></i>
+                        <div class="text-success">
+                            <i class="bi bi-check-circle fs-1"></i>
                         </div>
                     </div>
                 </div>
@@ -39,7 +41,7 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <!-- Información del Paciente -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="d-flex align-items-center">
                             {% if item.paciente.foto %}
                             <img src="{{ item.paciente.foto.url }}" class="rounded-circle me-3" width="60" height="60" alt="Foto">
@@ -52,74 +54,115 @@
                                 <h5 class="mb-1">{{ item.paciente.nombre_completo }}</h5>
                                 <p class="mb-0 text-muted small">
                                     <strong>N° Admisión:</strong> {{ item.paciente.numero_admision }}<br>
-                                    <strong>Edad:</strong> {{ item.paciente.edad }} años
+                                    <strong>Edad:</strong> {{ item.paciente.edad_actual|floatformat:0 }} años
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Información de la Valoración -->
+                    <!-- Información de Valoraciones Profesionales -->
                     <div class="col-md-4">
                         <h6 class="text-primary mb-2">
-                            <i class="bi bi-clipboard2-check me-1"></i>Valoración Inicial
+                            <i class="bi bi-clipboard2-check me-1"></i>Valoraciones Profesionales
                         </h6>
-                        <p class="mb-1 small">
-                            <strong>Fecha:</strong> {{ item.valoracion.fecha_valoracion|date:"d/m/Y" }}<br>
-                            <strong>Profesional:</strong> {{ item.valoracion.profesional.get_full_name }}
-                        </p>
                         
-                        {% if item.cantidad_problemas > 0 %}
-                        <p class="mb-1 small">
-                            <strong>Problemas detectados:</strong> {{ item.cantidad_problemas }}
-                        </p>
-                        <div class="mb-2">
-                            {% for area in item.areas_afectadas %}
-                            <span class="badge bg-warning text-dark me-1">{{ area }}</span>
-                            {% endfor %}
-                        </div>
+                        {% if item.valoraciones %}
+                            <p class="mb-1 small">
+                                <strong>Total:</strong> {{ item.total_valoraciones }} valoración(es) completada(s)
+                            </p>
+                            
+                            <!-- Lista de valoraciones -->
+                            <div class="mb-2">
+                                {% for val in item.valoraciones %}
+                                <div class="border-start border-primary border-3 ps-2 mb-2">
+                                    <small>
+                                        <strong>{{ val.terapia.nombre }}</strong><br>
+                                        <span class="text-muted">
+                                            {{ val.terapeuta.get_full_name }}<br>
+                                            {{ val.fecha_valoracion|date:"d/m/Y" }}
+                                        </span>
+                                    </small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted small">Sin valoraciones</p>
                         {% endif %}
                     </div>
 
-                    <!-- Terapias Recomendadas -->
-                    <div class="col-md-3">
+                    <!-- Terapias y Admisiones -->
+                    <div class="col-md-4">
                         <h6 class="text-success mb-2">
-                            <i class="bi bi-heart-pulse me-1"></i>Terapias Recomendadas
+                            <i class="bi bi-heart-pulse me-1"></i>Terapias y Admisiones
                         </h6>
+                        
                         {% if item.terapias_recomendadas %}
-                        <ul class="list-unstyled small mb-0">
-                            {% for terapia in item.terapias_recomendadas %}
-                            <li><i class="bi bi-check-circle text-success me-1"></i>{{ terapia.nombre }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% if item.valoracion.numero_sesiones_recomendado %}
-                        <p class="mb-0 small text-muted mt-2">
-                            <strong>Sesiones:</strong> {{ item.valoracion.numero_sesiones_recomendado }}
-                        </p>
-                        {% endif %}
+                            <ul class="list-unstyled small mb-0">
+                                {% for terapia in item.terapias_recomendadas %}
+                                <li class="mb-1">
+                                    <i class="bi bi-check-circle text-success me-1"></i>
+                                    {{ terapia.nombre }}
+                                    
+                                    <!-- Verificar si tiene admisión -->
+                                    {% if terapia in item.falta_admision %}
+                                    <span class="badge bg-warning text-dark ms-1" 
+                                          title="Falta admisión para esta terapia">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-success ms-1" title="Tiene admisión vigente">
+                                        <i class="bi bi-check"></i>
+                                    </span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <!-- Mensaje si faltan admisiones -->
+                            {% if item.falta_admision %}
+                            <div class="alert alert-warning p-2 mt-2 mb-0">
+                                <small>
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Faltan admisiones para asignar a grupos
+                                </small>
+                            </div>
+                            {% endif %}
                         {% else %}
-                        <p class="text-muted small">No especificadas</p>
+                            <p class="text-muted small">No especificadas</p>
                         {% endif %}
                     </div>
 
                     <!-- Acciones -->
                     <div class="col-md-1 text-end">
                         <div class="btn-group-vertical" role="group">
-                            <a href="{% url 'procedimientos:ver_valoracion_inicial' item.paciente.pk %}" 
+                            <!-- Ver valoraciones -->
+                            <a href="{% url 'procedimientos:valoraciones_paciente' item.paciente.pk %}" 
                                class="btn btn-sm btn-outline-info mb-1" 
-                               title="Ver Valoración">
-                                <i class="bi bi-eye"></i>
+                               title="Ver Valoraciones">
+                                <i class="bi bi-clipboard2-check"></i>
                             </a>
+                            
+                            <!-- Ver paciente -->
                             <a href="{% url 'procedimientos:paciente_detail' item.paciente.pk %}" 
                                class="btn btn-sm btn-outline-primary mb-1" 
                                title="Ver Paciente">
                                 <i class="bi bi-person"></i>
                             </a>
-                            <!-- Este botón se activará en Sprint 2 -->
-                            <button class="btn btn-sm btn-success" 
-                                    title="Asignar a Grupos" 
+                            
+                            <!-- Asignar a grupo -->
+                            {% if item.tiene_todas_admisiones %}
+                            <a href="{% url 'grupos:recomendar_grupos_paciente' paciente_id=item.paciente.pk %}"
+                               class="btn btn-sm btn-success" 
+                               title="Recomendar Grupos">
+                                <i class="bi bi-people"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-secondary" 
+                                    title="Faltan admisiones de terapia" 
                                     disabled>
                                 <i class="bi bi-people"></i>
                             </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -128,8 +171,45 @@
                 <div class="row mt-3">
                     <div class="col-12">
                         <div class="alert alert-light mb-0">
-                            <strong><i class="bi bi-clipboard2-heart me-2"></i>Diagnóstico:</strong>
-                            {{ item.valoracion.diagnostico_profesional|truncatewords:30 }}
+                            <div class="row">
+                                <!-- Diagnóstico principal del paciente -->
+                                <div class="col-md-6">
+                                    <strong>
+                                        <i class="bi bi-clipboard2-heart me-2"></i>
+                                        Diagnóstico Principal:
+                                    </strong>
+                                    <p class="mb-0">
+                                        {{ item.paciente.diagnostico_principal }}
+                                        {% if item.paciente.codigo_enfermedad %}
+                                        <span class="badge bg-info ms-2">
+                                            {{ item.paciente.codigo_enfermedad.codigo }}
+                                        </span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                
+                                <!-- Diagnósticos por valoración -->
+                                <div class="col-md-6">
+                                    <strong>
+                                        <i class="bi bi-file-medical me-2"></i>
+                                        Diagnósticos por Terapia:
+                                    </strong>
+                                    {% if item.valoraciones %}
+                                        {% for val in item.valoraciones %}
+                                            {% if val.codigo_cie10 %}
+                                            <div class="small">
+                                                <span class="badge bg-secondary me-1">
+                                                    {{ val.terapia.nombre }}
+                                                </span>
+                                                {{ val.codigo_cie10.codigo }} - {{ val.codigo_cie10.descripcion|truncatewords:8 }}
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="mb-0 small text-muted">Sin diagnósticos específicos por terapia</p>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,85 @@
+# ✅ CORRECCIÓN 1: Estado inicial ADMITIDO
+
+## Archivo: apps/procedimientos/models.py
+
+## Línea ~292 - Cambiar default del campo estado
+
+### ❌ ACTUAL:
+```python
+# Estado
+estado = models.CharField(
+    max_length=30,
+    choices=Estado.choices,
+    default=Estado.ACTIVO,  # ❌ MAL
+    verbose_name='Estado'
+)
+```
+
+### ✅ CORREGIDO:
+```python
+# Estado
+estado = models.CharField(
+    max_length=30,
+    choices=Estado.choices,
+    default=Estado.ADMITIDO,  # ✅ CORRECTO - Inicia como ADMITIDO
+    verbose_name='Estado'
+)
+```
+
+---
+
+## EXPLICACIÓN
+
+**Antes:**
+- Paciente se registra → Estado = ACTIVO
+- `pacientes_pendientes_valoracion` busca estado ADMITIDO
+- Resultado: Lista vacía ❌
+
+**Después:**
+- Paciente se registra → Estado = ADMITIDO  
+- `pacientes_pendientes_valoracion` busca estado ADMITIDO
+- Resultado: Aparece en lista ✅
+
+---
+
+## ⚠️ MIGRACIÓN NECESARIA
+
+Después de hacer el cambio, ejecutar:
+
+```bash
+python manage.py makemigrations procedimientos
+python manage.py migrate
+```
+
+---
+
+## 🔄 ACTUALIZAR PACIENTES EXISTENTES
+
+Si ya tienes pacientes sin valoración con estado ACTIVO, ejecutar:
+
+```python
+# En shell de Django
+from apps.procedimientos.models import Paciente
+
+# Cambiar pacientes sin valoración a ADMITIDO
+pacientes_sin_valoracion = Paciente.objects.filter(
+    valoracion_inicial__isnull=True,
+    estado='ACTIVO'
+)
+
+pacientes_sin_valoracion.update(estado='ADMITIDO')
+
+print(f'{pacientes_sin_valoracion.count()} pacientes actualizados')
+```
+
+O desde admin/shell:
+
+```sql
+UPDATE procedimientos_paciente 
+SET estado = 'ADMITIDO' 
+WHERE id NOT IN (
+    SELECT paciente_id 
+    FROM procedimientos_valoracioninicial
+) 
+AND estado = 'ACTIVO';
+```

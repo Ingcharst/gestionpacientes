@@ -1,0 +1,105 @@
+# ⚡ SOLUCIÓN EXPRESS (5 minutos)
+
+## 🔴 PROBLEMA
+
+Paciente con 5/5 valoraciones completadas sigue en "Pendientes de Valoración"
+
+---
+
+## ✅ SOLUCIÓN (3 pasos)
+
+### PASO 1: Agregar vistas (2 min)
+
+**Archivo:** `apps/procedimientos/views.py`
+
+**Copiar al final:** Contenido de `vista_completar_valoraciones.py`
+
+---
+
+### PASO 2: Agregar URLs (1 min)
+
+**Archivo:** `apps/procedimientos/urls.py`
+
+**Agregar en urlpatterns:**
+
+```python
+path('pacientes/<int:paciente_id>/valoraciones/completar/', 
+     views.completar_todas_valoraciones, 
+     name='completar_todas_valoraciones'),
+
+path('pacientes/<int:paciente_id>/valoraciones/verificar/', 
+     views.verificar_estado_valoraciones, 
+     name='verificar_estado_valoraciones'),
+```
+
+---
+
+### PASO 3: Agregar botón (2 min)
+
+**Archivo:** `templates/procedimientos/pacientes_pendientes_valoracion.html`
+
+**En columna "Acciones" de la tabla, agregar:**
+
+```html
+<button type="button" 
+        class="btn btn-sm btn-success ms-2" 
+        onclick="completar({{ paciente.id }})">
+    <i class="bi bi-check-circle me-1"></i>Completar
+</button>
+```
+
+**Al final del template, antes de {% endblock %}:**
+
+```html
+<script>
+function completar(id) {
+    if(confirm('¿Marcar valoraciones como completadas?')) {
+        window.location.href = `/procedimientos/pacientes/${id}/valoraciones/completar/`;
+    }
+}
+</script>
+```
+
+---
+
+## 🎯 RESULTADO
+
+✅ Botón "Completar" visible  
+✅ Clic → Confirmación  
+✅ Confirmar → Estado cambia  
+✅ Paciente sale de lista  
+✅ Listo para asignación
+
+---
+
+## ⏱️ TIEMPO: 5 MINUTOS
+
+```
+Vistas:   2 min
+URLs:     1 min
+Template: 2 min
+─────────────────
+TOTAL:    5 min ⚡
+```
+
+---
+
+## 🔄 FLUJO
+
+```
+Paciente con valoraciones completas
+  ↓
+Asesor clic "Completar"
+  ↓
+Confirmación
+  ↓
+Estado: PENDIENTE_ASIGNACION
+  ↓
+Sale de lista pendientes
+  ↓
+Listo para grupos ✅
+```
+
+---
+
+**¡Solución lista!** 🚀

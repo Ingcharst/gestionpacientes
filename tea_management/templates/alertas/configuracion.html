@@ -1,0 +1,26 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header"><h4>Configuración de Alertas</h4></div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label>Días para alerta:</label>
+                    <input type="number" name="dias_alerta" value="{{ config.dias_inasistencia_alerta }}" class="form-control" min="1">
+                </div>
+                <div class="mb-3">
+                    <label>Teléfono IPS:</label>
+                    <input type="text" name="telefono_ips" value="{{ config.telefono_ips }}" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label>Mensaje SMS:</label>
+                    <textarea name="mensaje_template" class="form-control" rows="3">{{ config.mensaje_sms_template }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

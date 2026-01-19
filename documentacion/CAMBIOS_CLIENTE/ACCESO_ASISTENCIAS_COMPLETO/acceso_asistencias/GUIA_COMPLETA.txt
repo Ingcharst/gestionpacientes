@@ -1,0 +1,332 @@
+# 📋 GUÍA COMPLETA: Sistema de Asistencias con Accesos
+
+## 🎯 OBJETIVO
+
+Crear accesos para que los terapeutas puedan **tomar asistencia diaria** de sus grupos, mostrando solo pacientes con **admisiones vigentes**.
+
+---
+
+## 📦 COMPONENTES
+
+### 1. Modelo AsistenciaPaciente
+- Registro diario de asistencias
+- Relación con paciente, grupo, asignación
+- Campos: asistió, justificada, observaciones, horarios
+
+### 2. Vista control_asistencia_grupo
+- Muestra pacientes con admisión vigente
+- Formulario para marcar asistencia
+- Actualiza contador en admisión
+
+### 3. Vista lista_grupos_terapeuta
+- "Mis Grupos" del terapeuta
+- Acceso rápido a tomar asistencia
+
+### 4. Vista historial_asistencia_paciente
+- Historial completo del paciente
+- Estadísticas de cumplimiento
+
+### 5. URLs
+- `/grupos/<id>/asistencia/` - Tomar asistencia
+- `/mis-grupos/` - Grupos del terapeuta
+- `/pacientes/<id>/historial-asistencia/` - Historial
+
+### 6. Accesos UI
+- Botón en detalle del grupo
+- Menú "Mis Grupos" en navbar
+- Dashboard terapeuta
+- Tabla de pacientes
+
+---
+
+## ⚡ IMPLEMENTACIÓN RÁPIDA (10 minutos)
+
+### PASO 1: Agregar modelo (2 min)
+
+**Archivo:** `apps/grupos/models.py`
+
+**Copiar:** Contenido de `modelo_asistencia.py` al final del archivo
+
+**Ejecutar:**
+```bash
+python manage.py makemigrations grupos
+python manage.py migrate
+```
+
+---
+
+### PASO 2: Agregar vistas (3 min)
+
+**Archivo:** `apps/grupos/views.py`
+
+**Copiar:** Contenido de `vistas_asistencia.py` al final del archivo
+
+**Imports necesarios:**
+```python
+from datetime import date
+from django.db import models
+```
+
+---
+
+### PASO 3: Agregar URLs (2 min)
+
+**Archivo:** `apps/grupos/urls.py`
+
+**Agregar estas 3 URLs:**
+```python
+path('grupos/<int:grupo_id>/asistencia/', 
+     views.control_asistencia_grupo, 
+     name='control_asistencia_grupo'),
+
+path('mis-grupos/', 
+     views.lista_grupos_terapeuta, 
+     name='mis_grupos'),
+
+path('pacientes/<int:paciente_id>/historial-asistencia/', 
+     views.historial_asistencia_paciente, 
+     name='historial_asistencia_paciente'),
+```
+
+---
+
+### PASO 4: Agregar template "Mis Grupos" (2 min)
+
+**Crear:** `apps/grupos/templates/grupos/mis_grupos.html`
+
+**Copiar:** Sección correspondiente de `accesos_ui.txt`
+
+---
+
+### PASO 5: Agregar accesos en UI (1 min)
+
+**Editar:** Templates existentes
+
+**Agregar botones:**
+- En `detalle_grupo.html` → Botón "Tomar Asistencia"
+- En `navbar.html` → Enlace "Mis Grupos"
+
+Ver código exacto en `accesos_ui.txt`
+
+---
+
+## 🔄 FLUJO COMPLETO
+
+```
+1. Terapeuta inicia sesión
+   └─ Ve dashboard
+
+2. Clic en "Mis Grupos"
+   └─ Lista de grupos donde es responsable
+
+3. Clic en "Tomar Asistencia"
+   └─ Muestra formulario
+
+4. Formulario muestra:
+   ├─ Solo pacientes con admisión vigente
+   ├─ Nombre, documento, admisión
+   ├─ Checkboxes: Asistió / Justificada
+   └─ Campo observaciones
+
+5. Terapeuta marca asistencias
+   └─ Clic "Guardar"
+
+6. Sistema registra:
+   ├─ Crea AsistenciaPaciente
+   ├─ Actualiza contador en AdmisionTerapia
+   └─ Muestra mensaje éxito
+
+7. Terapeuta regresa al grupo
+   └─ Puede ver historial
+```
+
+---
+
+## 🎨 ACCESOS DISPONIBLES
+
+### 1. Navbar - "Mis Grupos"
+```html
+Ubicación: Menú principal
+Acceso: Todos los terapeutas
+URL: /mis-grupos/
+```
+
+### 2. Detalle Grupo - Botón principal
+```html
+Ubicación: Página del grupo
+Acceso: Botón destacado
+URL: /grupos/{id}/asistencia/
+```
+
+### 3. Dashboard - Card rápido
+```html
+Ubicación: Página inicio terapeuta
+Acceso: Card verde grande
+URL: /mis-grupos/
+```
+
+### 4. Tabla Pacientes - Historial individual
+```html
+Ubicación: Detalle grupo o lista pacientes
+Acceso: Ícono calendario
+URL: /pacientes/{id}/historial-asistencia/
+```
+
+---
+
+## ✅ VALIDACIONES IMPLEMENTADAS
+
+### Admisión Vigente:
+```python
+# Solo muestra pacientes si:
+- admision_terapia existe
+- estado == 'VIGENTE'
+- fecha_inicio <= hoy <= fecha_fin
+```
+
+### Una asistencia por día:
+```python
+# unique_together en modelo
+unique_together = [['paciente', 'grupo', 'fecha']]
+```
+
+### Actualización automática:
+```python
+# Si asistió, incrementa contador
+if asistio:
+    admision.cantidad_realizada += 1
+    admision.save()
+```
+
+---
+
+## 📊 TEMPLATE CONTROL ASISTENCIA
+
+### Estructura:
+```html
+Encabezado:
+├─ Nombre del grupo
+├─ Fecha actual
+└─ Total pacientes
+
+Formulario:
+├─ Hora inicio / fin (opcional)
+├─ Tabla pacientes:
+│   ├─ Nombre y documento
+│   ├─ Admisión (número y progreso)
+│   ├─ Switch: Asistió
+│   ├─ Switch: Justificada
+│   └─ Input: Observaciones
+└─ Botones: Guardar / Volver
+
+Footer:
+└─ Total: X pacientes con admisión vigente
+```
+
+### Ya existe:
+El template `control_asistencia.html` ya fue creado previamente.
+Solo necesitas agregarlo si no lo tienes.
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+### Modelo no reconocido:
+```bash
+# Error: AsistenciaPaciente does not exist
+# Solución:
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Import error:
+```python
+# Error: cannot import name 'AsistenciaPaciente'
+# Solución: Verificar que el modelo esté en models.py
+```
+
+### No muestra pacientes:
+```python
+# Verificar que:
+1. Pacientes tienen asignación activa
+2. Asignación tiene admision_terapia
+3. Admisión está vigente (estado y fechas)
+```
+
+### URL no encontrada:
+```python
+# Verificar:
+1. URLs agregadas correctamente
+2. app_name = 'grupos' en urls.py
+3. Namespace correcto en templates
+```
+
+---
+
+## 📋 CHECKLIST IMPLEMENTACIÓN
+
+```
+☐ 1. Modelo AsistenciaPaciente agregado a models.py
+☐ 2. Migraciones ejecutadas
+☐ 3. Vistas agregadas a views.py
+☐ 4. URLs agregadas a urls.py
+☐ 5. Template mis_grupos.html creado
+☐ 6. Template control_asistencia.html verificado
+☐ 7. Botón en detalle_grupo.html
+☐ 8. Enlace en navbar.html
+☐ 9. Servidor reiniciado
+☐ 10. Probado flujo completo:
+  ☐ Acceso desde "Mis Grupos"
+  ☐ Lista de pacientes vigentes
+  ☐ Registro de asistencia
+  ☐ Actualización de contador
+  ☐ Historial visible
+```
+
+---
+
+## 🎯 CARACTERÍSTICAS FINALES
+
+✅ **Filtro automático** - Solo pacientes con admisión vigente
+✅ **Actualización automática** - Contador de sesiones
+✅ **Múltiples accesos** - Navbar, detalle, dashboard
+✅ **Historial completo** - Por paciente con estadísticas
+✅ **Validación única** - Una asistencia por día
+✅ **Observaciones** - Campo opcional por paciente
+✅ **Horarios** - Hora inicio/fin de sesión
+
+---
+
+## ⏱️ TIEMPO DE IMPLEMENTACIÓN
+
+- Modelo + migración: 3 minutos
+- Vistas: 2 minutos
+- URLs: 2 minutos
+- Templates: 3 minutos
+- **TOTAL: 10 minutos**
+
+---
+
+## 🚀 RESULTADO
+
+Después de implementar:
+
+**Terapeuta puede:**
+1. Ver "Mis Grupos" desde navbar
+2. Acceder rápido a tomar asistencia
+3. Ver solo pacientes con admisión vigente
+4. Registrar asistencia diaria
+5. Ver historial de cada paciente
+6. Sistema actualiza automáticamente contadores
+
+**Sistema automáticamente:**
+1. Filtra pacientes vigentes
+2. Actualiza contador en admisión
+3. Valida una asistencia por día
+4. Genera estadísticas
+
+---
+
+**Solución completa y funcional** ✅  
+**Implementación rápida** ⏱️  
+**Múltiples puntos de acceso** 🎯

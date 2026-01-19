@@ -1,0 +1,181 @@
+# vistas
+# asignar_paciente_grupo
+@login_required
+def asignar_paciente_grupo(request, paciente_id=None, grupo_id=None):
+    """Asignar paciente a un grupo"""
+    if request.method == 'POST':
+        form = AsignacionGrupoForm(request.POST)
+        if form.is_valid():
+            paciente = form.cleaned_data['paciente']
+            grupo = form.cleaned_data['grupo']
+            dias = form.cleaned_data['dias_asistencia']
+            num_terapias = form.cleaned_data['numero_terapias_semanales']
+            notas = form.cleaned_data.get('notas', '')
+            
+            asignacion, exito, mensaje = asignar_paciente_a_grupo(
+                paciente=paciente,
+                grupo=grupo,
+                dias_asistencia=dias,
+                numero_terapias=num_terapias,
+                notas=notas
+            )
+            
+            if exito:
+                if paciente.estado in ['ADMITIDO', 'PENDIENTE_VALORACION', 'PENDIENTE_ASIGNACION']:
+                    paciente.estado = Paciente.Estado.ACTIVO
+                    paciente.save(update_fields=['estado'])
+
+                messages.success(request, mensaje)
+                return redirect('grupos:grupo_detail', pk=grupo.pk)
+            else:
+                messages.error(request, mensaje)
+    else:
+        initial = {}
+        if paciente_id:
+            initial['paciente'] = paciente_id
+        if grupo_id:
+            initial['grupo'] = grupo_id
+        form = AsignacionGrupoForm(initial=initial)
+    
+    context = {
+        'form': form,
+        'titulo': 'Asignar Paciente a Grupo'
+    }
+    return render(request, 'grupos/asignacion_form.html', context)
+
+
+# agregar_grupo_paciente
+
+@login_required
+def agregar_grupo_paciente(request, paciente_id):
+    """Agregar un grupo adicional al paciente."""
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    
+    if request.method == 'POST':
+        grupo_id = request.POST.get('grupo')
+        grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+        
+        # Verificar que no esté ya asignado
+        if AsignacionGrupo.objects.filter(
+            paciente=paciente, 
+            grupo=grupo, 
+            estado='ACTIVA'
+        ).exists():
+            messages.warning(request, 'El paciente ya está asignado a este grupo')
+            return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+        
+        # Crear asignación usando la función de utilidad
+        dias = request.POST.getlist('dias_asistencia')
+        num_terapias = int(request.POST.get('numero_terapias_asignadas', 10))
+        
+        asignacion, exito, mensaje = asignar_paciente_a_grupo(
+            paciente=paciente,
+            grupo=grupo,
+            dias_asistencia=dias,
+            numero_terapias=num_terapias,
+            notas=''
+        )
+        
+        if exito:
+            # Asegurar que esté ACTIVO
+            if paciente.estado != 'ACTIVO':
+                paciente.estado = Paciente.Estado.ACTIVO
+                paciente.save(update_fields=['estado'])
+            
+            messages.success(request, f'Grupo {grupo.nombre} agregado exitosamente')
+        else:
+            messages.error(request, mensaje)
+        
+        return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+    
+    return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
+
+# asignar_desde_recomendacion
+
+@login_required
+def asignar_desde_recomendacion(request, paciente_id, grupo_id):
+    """
+    Asigna un paciente a un grupo desde la página de recomendaciones
+    
+    ✅ CORREGIDO: Redirige correctamente después de asignar
+    """
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    grupo = get_object_or_404(GrupoTerapeutico, pk=grupo_id)
+    fecha_hoy = date.today()
+    
+    try:
+        with transaction.atomic():
+            # ✅ PASO 1: Verificar que el paciente tenga admisión vigente para esta terapia
+            admision = AdmisionTerapia.objects.filter(
+                paciente=paciente,
+                terapia=grupo.terapia,
+                estado='VIGENTE',
+                fecha_inicio__lte=fecha_hoy,
+                fecha_fin__gte=fecha_hoy
+            ).first()
+            
+            if not admision:
+                messages.error(
+                    request,
+                    f'❌ {paciente.nombre_completo} no tiene una admisión vigente '
+                    f'para {grupo.terapia.nombre}. '
+                    f'Debe crear una admisión antes de asignar al grupo.'
+                )
+                return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+            
+            # ✅ PASO 2: Verificar que el grupo tenga cupo disponible
+            asignaciones_activas = AsignacionGrupo.objects.filter(
+                paciente=paciente,
+                grupo=grupo,
+                estado='ACTIVA'
+            ).count()
+            
+            if asignaciones_activas >= grupo.capacidad_maxima:
+                messages.warning(
+                    request,
+                    f'⚠️ El grupo {grupo.nombre} está lleno. '
+                    f'Capacidad: {asignaciones_activas}/{grupo.capacidad_maxima}'
+                )
+                return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)
+            
+            # ✅ PASO 3: Verificar que no esté ya asignado a este grupo
+            asignacion_existente = AsignacionGrupo.objects.filter(
+                paciente=paciente,
+                grupo=grupo,
+                estado='ACTIVA'
+            ).exists()
+            
+            if asignacion_existente:
+                messages.info(
+                    request,
+                    f'ℹ️ {paciente.nombre_completo} ya está asignado a {grupo.nombre}'
+                )
+                return redirect('grupos:detalle_grupo', pk=grupo_id)
+            
+            # ✅ PASO 4: Crear la asignación
+            asignacion = AsignacionGrupo.objects.create(
+                paciente=paciente,
+                grupo=grupo,
+                admision_terapia=admision,
+                dias_asistencia=grupo.dias_disponibles,  # Asigna todos los días del grupo
+                numero_terapias_semanales=len(grupo.dias_disponibles),  # Una terapia por día
+                estado='ACTIVA',
+                fecha_inicio_asignacion=fecha_hoy
+            )
+            
+            # ✅ PASO 5: Mensaje de éxito
+            messages.success(
+                request,
+                f'✅ {paciente.nombre_completo} asignado exitosamente a {grupo.nombre}. '
+                f'Días: {", ".join(grupo.dias_disponibles)}'
+            )
+            
+            # ✅ PASO 6: Redirigir al detalle del grupo (CORRECCIÓN DEL ERROR)
+            return redirect('grupos:detalle_grupo', pk=grupo_id)
+            
+    except Exception as e:
+        messages.error(
+            request,
+            f'❌ Error al asignar el paciente: {str(e)}'
+        )
+        return redirect('grupos:recomendar_grupos', paciente_id=paciente_id)

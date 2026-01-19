@@ -1,6 +1,3 @@
-"""
-Modelos para gestión de usuarios y roles del sistema.
-"""
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
@@ -86,6 +83,13 @@ class Usuario(AbstractUser):
         blank=True,
         verbose_name='Notas',
         help_text='Observaciones adicionales sobre el usuario'
+    )
+
+    firma = models.ImageField(
+        upload_to='firmas/',
+        null=True,
+        blank=True,
+        help_text='Firma digital del terapeuta'
     )
     
     class Meta:

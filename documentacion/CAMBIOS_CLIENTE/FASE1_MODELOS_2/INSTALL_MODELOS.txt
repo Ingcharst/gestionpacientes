@@ -1,0 +1,72 @@
+# INSTALACIÓN MODELOS NUEVOS
+
+## 1. CREAR APP ALERTAS
+mkdir apps/alertas
+touch apps/alertas/__init__.py
+cp models_alertas.py apps/alertas/models.py
+touch apps/alertas/admin.py apps/alertas/apps.py
+
+## 2. MODIFICAR CodigoCIE10 EXISTENTE
+
+### En apps/procedimientos/models.py:
+# Agregar campo 'nombre' si no existe:
+"""
+nombre = models.CharField(max_length=200, blank=True)
+"""
+
+## 3. AGREGAR CAMPOS A MODELOS EXISTENTES
+
+### Usuario (apps/usuarios/models.py):
+# Agregar campo firma según models_modificaciones_grupos.py
+
+### Paciente (apps/procedimientos/models.py):
+# Agregar: codigo_enfermedad (FK a CodigoCIE10)
+# Deprecar: numero_historia_clinica (null=True, blank=True)
+
+### AsignacionGrupo (apps/grupos/models.py):
+# Agregar campos según models_modificaciones_grupos.py
+
+## 4. AGREGAR MODELOS NUEVOS
+
+### En apps/procedimientos/models.py:
+- ValoracionProfesional  
+- AdmisionTerapia
+- AsistenciaSesion
+
+### En apps/grupos/models.py:
+- AlertaCupo
+
+### En apps/alertas/models.py:
+- AlertaInasistencia
+- ConfiguracionAlerta
+
+## 5. SETTINGS.PY
+INSTALLED_APPS = [
+    ...
+    'apps.alertas',
+]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+## 6. URLS.PY (principal)
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    ...
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+## 7. MIGRACIONES
+python manage.py makemigrations
+python manage.py migrate
+
+## 8. CARGAR CIE-10 (actualizar campo nombre)
+mkdir -p apps/procedimientos/management/commands
+touch apps/procedimientos/management/__init__.py
+touch apps/procedimientos/management/commands/__init__.py
+cp comando_cargar_cie10.py apps/procedimientos/management/commands/cargar_cie10.py
+python manage.py cargar_cie10
+
+## 9. ADMIN (opcional)
+# Copiar configuración de admin_config.py

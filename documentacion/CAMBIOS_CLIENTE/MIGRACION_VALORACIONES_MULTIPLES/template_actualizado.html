@@ -1,0 +1,226 @@
+# ✅ TEMPLATE ACTUALIZADO: pacientes_pendientes_asignacion.html
+# Actualizar secciones relevantes
+
+<!-- SECCIÓN: Información de Valoraciones (REEMPLAZAR) -->
+
+<!-- Columna de Valoraciones -->
+<div class="col-md-4">
+    <h6 class="text-primary mb-2">
+        <i class="bi bi-clipboard2-check me-1"></i>Valoraciones Profesionales
+    </h6>
+    
+    {% if item.valoraciones %}
+        <p class="mb-1 small">
+            <strong>Total:</strong> {{ item.total_valoraciones }} valoración(es) completada(s)
+        </p>
+        
+        <!-- Lista de valoraciones -->
+        <div class="mb-2">
+            {% for val in item.valoraciones %}
+            <div class="border-start border-primary border-3 ps-2 mb-2">
+                <small>
+                    <strong>{{ val.terapia.nombre }}</strong><br>
+                    <span class="text-muted">
+                        {{ val.terapeuta.get_full_name }}<br>
+                        {{ val.fecha_valoracion|date:"d/m/Y" }}
+                    </span>
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted small">Sin valoraciones</p>
+    {% endif %}
+</div>
+
+<!-- Columna de Terapias y Admisiones -->
+<div class="col-md-3">
+    <h6 class="text-success mb-2">
+        <i class="bi bi-heart-pulse me-1"></i>Terapias y Admisiones
+    </h6>
+    
+    {% if item.terapias_recomendadas %}
+        <ul class="list-unstyled small mb-0">
+            {% for terapia in item.terapias_recomendadas %}
+            <li class="mb-1">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                {{ terapia.nombre }}
+                
+                <!-- Verificar si tiene admisión -->
+                {% if terapia in item.falta_admision %}
+                <span class="badge bg-warning text-dark ms-1" 
+                      title="Falta admisión para esta terapia">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </span>
+                {% else %}
+                <span class="badge bg-success ms-1" title="Tiene admisión vigente">
+                    <i class="bi bi-check"></i>
+                </span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <!-- Mensaje si faltan admisiones -->
+        {% if item.falta_admision %}
+        <div class="alert alert-warning p-2 mt-2 mb-0">
+            <small>
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Faltan admisiones para asignar a grupos
+            </small>
+        </div>
+        {% endif %}
+    {% else %}
+        <p class="text-muted small">No especificadas</p>
+    {% endif %}
+</div>
+
+<!-- Columna de Acciones (ACTUALIZAR) -->
+<div class="col-md-1 text-end">
+    <div class="btn-group-vertical" role="group">
+        <!-- Ver valoraciones -->
+        <a href="{% url 'procedimientos:valoraciones_paciente' item.paciente.pk %}" 
+           class="btn btn-sm btn-outline-info mb-1" 
+           title="Ver Valoraciones">
+            <i class="bi bi-clipboard2-check"></i>
+        </a>
+        
+        <!-- Ver paciente -->
+        <a href="{% url 'procedimientos:paciente_detail' item.paciente.pk %}" 
+           class="btn btn-sm btn-outline-primary mb-1" 
+           title="Ver Paciente">
+            <i class="bi bi-person"></i>
+        </a>
+        
+        <!-- Asignar a grupo -->
+        {% if item.tiene_todas_admisiones %}
+        <a href="{% url 'grupos:recomendar_grupos_paciente' paciente_id=item.paciente.pk %}"
+           class="btn btn-sm btn-success" 
+           title="Recomendar Grupos">
+            <i class="bi bi-people"></i>
+        </a>
+        {% else %}
+        <button class="btn btn-sm btn-secondary" 
+                title="Faltan admisiones de terapia" 
+                disabled>
+            <i class="bi bi-people"></i>
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- SECCIÓN: Diagnóstico (ACTUALIZAR para mostrar CIE-10 de valoraciones) -->
+<!-- ========================================================================= -->
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="alert alert-light mb-0">
+            <div class="row">
+                <!-- Diagnóstico principal del paciente -->
+                <div class="col-md-6">
+                    <strong>
+                        <i class="bi bi-clipboard2-heart me-2"></i>
+                        Diagnóstico Principal:
+                    </strong>
+                    <p class="mb-0">
+                        {{ item.paciente.diagnostico_principal }}
+                        {% if item.paciente.codigo_enfermedad %}
+                        <span class="badge bg-info ms-2">
+                            {{ item.paciente.codigo_enfermedad.codigo }}
+                        </span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <!-- Diagnósticos por valoración -->
+                <div class="col-md-6">
+                    <strong>
+                        <i class="bi bi-file-medical me-2"></i>
+                        Diagnósticos por Terapia:
+                    </strong>
+                    {% for val in item.valoraciones %}
+                        {% if val.codigo_cie10 %}
+                        <div class="small">
+                            <span class="badge bg-secondary me-1">
+                                {{ val.terapia.nombre }}
+                            </span>
+                            {{ val.codigo_cie10.codigo }} - {{ val.codigo_cie10.descripcion|truncatewords:8 }}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- SECCIÓN: Estadísticas (ACTUALIZAR en la parte superior) -->
+<!-- ========================================================================= -->
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Listos para Asignar</p>
+                        <h3 class="mb-0 text-success">
+                            {{ pacientes_data|length }}
+                        </h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Faltan Admisiones</p>
+                        <h3 class="mb-0 text-warning">
+                            {% widthratio pacientes_data|length 1 1 as total %}
+                            {{ total|add:"-1"|default:"0" }}
+                        </h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- NOTAS DE IMPLEMENTACIÓN -->
+<!-- ========================================================================= -->
+
+<!--
+CAMBIOS CLAVE:
+
+1. item.valoraciones (lista) en vez de item.valoracion (objeto único)
+2. item.total_valoraciones para mostrar cantidad
+3. item.terapias_recomendadas (lista de terapias únicas)
+4. item.falta_admision (terapias sin admisión)
+5. item.tiene_todas_admisiones (booleano para habilitar asignación)
+
+URLS A VERIFICAR:
+- procedimientos:valoraciones_paciente → debe existir para ver todas las valoraciones
+- grupos:recomendar_grupos_paciente → para recomendar grupos basados en terapias
+
+FLUJO:
+1. Paciente con múltiples valoraciones completadas
+2. Se muestran todas las terapias valoradas
+3. Se indica cuáles tienen/faltan admisión
+4. Solo puede asignar a grupos si tiene todas las admisiones
+-->
