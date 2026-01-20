@@ -1,11 +1,13 @@
 """
 Vistas para el módulo de reportes.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from calendar import monthrange
 from decimal import Decimal
 from pyexpat.errors import messages
-
+import io
+from docx import Document
+from docx.shared import Inches
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponse
@@ -19,7 +21,7 @@ from apps.procedimientos.models import (
 from apps.grupos.models import GrupoTerapeutico, AsignacionGrupo
 from apps.reportes.models import InformeEvolucion, PlantillaInforme
 from apps.terapias.models import Terapia
-from apps.usuarios.models import Usuario
+from apps.usuarios.models import Perfil, Usuario
 
 from .utils import (
     ReportePDFGenerator, ReporteExcelGenerator,
@@ -27,6 +29,13 @@ from .utils import (
     formato_moneda, obtener_nombre_mes, generar_pdf_informe
 )
 
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from reportlab.pdfgen import canvas
 
 
 @login_required
@@ -34,7 +43,7 @@ def reportes_dashboard(request):
     """Dashboard principal de reportes."""
     context = {
         'total_pacientes': Paciente.objects.filter(estado='ACTIVO').count(),
-        'total_terapeutas': Usuario.objects.filter(rol='TERAPEUTA').count(),
+        'total_terapeutas': Usuario.objects.filter(rol__in=['TERAPEUTA', 'PSICOLOGO', 'MEDICO']).count(),
         'total_grupos': GrupoTerapeutico.objects.filter(activo=True).count(),
     }
     return render(request, 'reportes/dashboard.html', context)
@@ -798,5 +807,354 @@ def lista_informes_paciente(request, paciente_id):
     }
     
     return render(request, 'reportes/lista_informes_paciente.html', context)
+
+
+
+def informe_mensual_paciente_pdf(request, paciente_id):
+    from PIL import Image as PILImage
+    """Generar informe mensual en PDF"""
+    
+    paciente = get_object_or_404(Paciente, pk=paciente_id)
+    terapia_id = request.GET.get('terapia')
+    profesional_id = request.GET.get('profesional')
+    mes = int(request.GET.get('mes', timezone.now().month))
+    anio = int(request.GET.get('anio', timezone.now().year))
+    
+    if not terapia_id or not profesional_id:
+        return HttpResponse("Falta terapia o profesional", status=400)
+    
+    terapia = get_object_or_404(Terapia, pk=terapia_id)
+    profesional = get_object_or_404(Usuario, pk=profesional_id)
+    perfil = get_object_or_404(Perfil, usuario=profesional_id) 
+    
+    # Calcular edad
+    edad = calcular_edad(paciente.fecha_nacimiento)
+    rango = '3-6' if edad <= 6 else '7-11' if edad <= 11 else '12-16'
+    
+    # Buscar plantilla
+    try:
+        plantilla = PlantillaInforme.objects.get(
+            terapia=terapia,
+            rango_edad=rango,
+            activo=True
+        )
+    except PlantillaInforme.DoesNotExist:
+        return HttpResponse(f"No existe plantilla para {terapia.nombre} - {rango} años", status=404)
+    
+    # Crear PDF
+    buffer = io.BytesIO()
+
+    # Función para convertir logo
+    def convertir_logo(logo_path):
+        """Convierte PNG con transparencia a RGB para PDF"""
+        try:
+            # Abrir imagen
+            img = PILImage.open(logo_path)
+            
+            # Convertir a RGB (sin transparencia)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                # Crear fondo blanco
+                background = PILImage.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+            
+            # Guardar temporal
+            temp_path = 'static/img/logo_temp.jpg'
+            img.save(temp_path, 'JPEG', quality=95)
+            return temp_path
+        except Exception as e:
+            print(f"Error convirtiendo logo: {e}")
+            return None
+    
+    # Función para header/footer
+    def agregar_encabezado_pie(canvas, doc):
+        canvas.saveState()
+        
+        # ENCABEZADO
+        try:
+            logo_path = 'static/img/logo.png'
+            logo_convertido = convertir_logo(logo_path)
+            
+            if logo_convertido:
+                canvas.drawImage(
+                    logo_convertido, 
+                    2.5*inch, 10*inch, 
+                    width=2*inch, 
+                    height=0.6*inch, 
+                    preserveAspectRatio=True,
+                    mask='auto'
+                )
+        except Exception as e:
+            print(f"Error cargando logo: {e}")
+            canvas.setFont('Helvetica-Bold', 12)
+            canvas.drawCentredString(4.25*inch, 10.2*inch, 'VIDAMED SALUD INTEGRAL')
+        
+        # PIE DE PÁGINA
+        canvas.setFont('Helvetica', 9)
+        canvas.setFillColorRGB(0.5, 0.5, 0.5)
+        canvas.drawCentredString(
+            4.25*inch, 0.5*inch,
+            'Dirección: Calle 22 # 18A - 48 Teléfono: 3207058980 e-mail: Info@ipsvidamed.com  sitio web: www.ipsvidamed.com'
+        )
+        
+        canvas.restoreState()
+    
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        topMargin=1.2*inch,
+        bottomMargin=0.8*inch,
+        leftMargin=inch,
+        rightMargin=inch
+    )
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    
+    style_titulo = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        textColor=colors.black,
+        alignment=TA_CENTER,
+        spaceAfter=20
+    )
+    
+    style_normal = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=11,
+        alignment=TA_JUSTIFY,
+        spaceAfter=10
+    )
+    
+    style_bold = ParagraphStyle(
+        'CustomBold',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=11,
+        spaceAfter=10
+    )
+    
+    style_firma = ParagraphStyle(
+        'CustomFirma',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=10,
+        alignment=TA_CENTER,
+        spaceAfter=4
+    )
+    
+    # Contenido
+    story = []
+    
+    # 1. TÍTULO
+    story.append(Paragraph(f'INFORME DE TERAPIA {terapia.nombre.upper()}', style_titulo))
+    story.append(Spacer(1, 0.3*inch))
+    
+    # Función auxiliar para valores seguros
+    def safe_str(valor, default='N/A'):
+        """Convierte cualquier valor a string seguro"""
+        if valor is None or valor == '':
+            return default
+        return str(valor)
+    
+    # 2. TABLA DE INFORMACIÓN
+    # Preparar datos en formato 2x2 (etiqueta-valor por celda)
+    datos_raw = [
+        ('Nombres y Apellidos:', safe_str(paciente.nombre_completo), 
+        'Documento de identidad:', safe_str(paciente.numero_documento)),
+        ('Edad:', f'{edad} años', 
+        'Fecha de Nacimiento:', safe_str(paciente.fecha_nacimiento.strftime('%d/%m/%Y') if paciente.fecha_nacimiento else None)),
+        ('Admisión:', safe_str(getattr(paciente, 'numero_admision', None)), 
+        'Número de Intervenciones:', 'N/A'),
+        ('Escolaridad:', safe_str(getattr(paciente, 'nivel_escolar', None)), 
+        'Acudiente:', safe_str(getattr(paciente, 'nombre_responsable', None))),
+        ('Diagnóstico:', safe_str(getattr(paciente, 'diagnostico_principal', None)), 
+        'Profesional:', safe_str(profesional.get_full_name())),
+        ('EPS:', safe_str(getattr(paciente, 'eps', None)), 
+        'Autorización:', 'N/A'),
+    ]
+   # Estilo para etiquetas
+    style_etiqueta = ParagraphStyle(
+        'Etiqueta',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=10,
+        textColor=colors.black,
+        spaceAfter=2
+    )
+
+    # Estilo para valores
+    style_valor = ParagraphStyle(
+        'Valor',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=11,
+        textColor=colors.black
+    )
+
+    # Construir tabla
+    tabla_datos = []
+    for etiq1, val1, etiq2, val2 in datos_raw:
+        celda1 = [
+            Paragraph(str(etiq1), style_etiqueta),
+            Paragraph(str(val1), style_valor)
+        ]
+        
+        celda2 = [
+            Paragraph(str(etiq2), style_etiqueta),
+            Paragraph(str(val2), style_valor)
+        ]
+        
+        tabla_datos.append([celda1, celda2])
+    
+    tabla = Table(tabla_datos, colWidths=[3.25*inch, 3.25*inch])
+    tabla.setStyle(TableStyle([
+        # Bordes
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        # Padding
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        
+        # Alineación vertical superior
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    story.append(Paragraph("IDENTIFICACIÓN:", style_bold))
+    story.append(Spacer(1, 0.1*inch))    
+    story.append(tabla)
+    story.append(Spacer(1, 0.3*inch))
+    
+    # 3. CONTENIDO DEL INFORME
+    contenido = plantilla.contenido_principal
+    contenido = contenido.replace('{nombre_paciente}', paciente.nombre_completo)
+    contenido = contenido.replace('{edad}', str(edad))
+    
+    for parrafo in contenido.split('\n\n'):
+        if parrafo.strip():
+            story.append(Paragraph(parrafo.strip(), style_normal))
+    
+    # 4. RECOMENDACIONES
+    if plantilla.recomendaciones_familia:
+        story.append(Spacer(1, 0.2*inch))
+        story.append(Paragraph('<b>Familia:</b>', style_bold))
+        story.append(Paragraph(plantilla.recomendaciones_familia, style_normal))
+    
+    if plantilla.recomendaciones_escuela:
+        story.append(Spacer(1, 0.2*inch))
+        story.append(Paragraph('<b>Escolaridad:</b>', style_bold))
+        story.append(Paragraph(plantilla.recomendaciones_escuela, style_normal))
+    
+    story.append(Spacer(1, 0.4*inch))
+    
+    # 5. FIRMA
+    if hasattr(profesional, 'firma') and profesional.firma:
+        try:
+            img_firma = Image(profesional.firma.path, width=2*inch, height=1*inch)
+            img_firma.hAlign = 'CENTER'
+            story.append(img_firma)
+        except:
+            pass
+    
+    # 6. PIE DE FIRMA
+    story.append(Spacer(1, 0.1*inch))
+
+    # Obtener datos de forma segura
+    try:
+        # Campos directos de Usuario
+        tipo_id = profesional.tipo_identificacion or 'CC'
+        numero_id = profesional.numero_identificacion or 'N/A'
+        cedula_prof = profesional.cedula_profesional or 'N/A'
+        
+        # Campos del Perfil (relación OneToOne)
+        if hasattr(profesional, 'perfil'):
+            universidad = profesional.perfil.universidad or 'UNIVERSIDAD'
+            especialidades = profesional.perfil.especialidades or terapia.nombre
+        else:
+            universidad = 'UNIVERSIDAD'
+            especialidades = terapia.nombre
+            
+    except Exception as e:
+        print(f"Error obteniendo datos del perfil: {e}")
+        tipo_id = 'CC'
+        numero_id = 'N/A'
+        cedula_prof = 'N/A'
+        universidad = 'UNIVERSIDAD'
+        especialidades = terapia.nombre
+
+    firma_info = [
+        f'<b>{profesional.get_full_name().upper()}</b>',
+        f"{tipo_id} {numero_id}",
+        universidad.upper(),
+        especialidades.upper(),
+        f"T.P. {cedula_prof}"
+    ]
+
+    for linea in firma_info:
+        story.append(Paragraph(linea, style_firma))
+        
+    # firma_info = [
+    #     f'<b>{profesional.get_full_name().upper()}</b>',
+    #     f"{getattr(profesional, 'tipo_identificacion', 'CC')} {getattr(profesional, 'numero_identificacion', 'N/A')}",
+    #     getattr(perfil, 'universidad', 'UNIVERSIDAD').upper(),
+    #     getattr(perfil, 'especialidades', terapia.nombre).upper(),
+    #     f"T.P. {getattr(profesional, 'cedula_profesional', 'N/A')}"
+    # ]
+    
+    # Generar PDF
+    doc.build(story, onFirstPage=agregar_encabezado_pie, onLaterPages=agregar_encabezado_pie)
+    
+    buffer.seek(0)
+    
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="Informe_{paciente.nombre_completo}_{mes}_{anio}.pdf"'
+    
+    return response
+
+
+def calcular_edad(fecha_nacimiento):
+    """Calcula edad en años"""
+    hoy = date.today()
+    return hoy.year - fecha_nacimiento.year - ((hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day))
+
+
+def informe_mensual_form(request):
+    """Formulario para informe mensual"""
+    
+    # Debug: imprimir valores
+    terapias = Terapia.objects.filter(activo=True)
+    profesionales = Usuario.objects.filter(
+        rol__in=['TERAPEUTA', 'PSICOLOGO', 'MEDICO'],
+        is_active=True
+    )
+    
+    print(f"Terapias encontradas: {terapias.count()}")
+    print(f"Profesionales encontrados: {profesionales.count()}")
+    
+    context = {
+        'pacientes': Paciente.objects.filter(estado = 'ACTIVO'),
+        'terapias': terapias,
+        'profesionales': profesionales,
+        'meses': [
+            (1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), 
+            (4, 'Abril'), (5, 'Mayo'), (6, 'Junio'),
+            (7, 'Julio'), (8, 'Agosto'), (9, 'Septiembre'), 
+            (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre')
+        ],
+        'anios': range(2020, timezone.now().year + 2),
+        'mes_actual': timezone.now().month,
+        'anio_actual': timezone.now().year,
+    }
+    
+    return render(request, 'reportes/informe_mensual_paciente_form.html', context)
+
+
+
 
 

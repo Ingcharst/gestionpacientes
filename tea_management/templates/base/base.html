@@ -144,7 +144,7 @@
             </li>
 
 
-            <li class="nav-item">
+            {% comment %} <li class="nav-item">
                 <a class="nav-link" href="{% url 'procedimientos:mis_evoluciones' %}">
                     <i class="bi bi-file-medical"></i>
                     <span>Mis Evoluciones</span>
@@ -155,7 +155,7 @@
                 href="{% url 'procedimientos:admision_paciente' %}">
                     <i class="bi bi-person-plus-fill me-2"></i>Admitir Paciente
                 </a>
-            </li>
+            </li> {% endcomment %}
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'alertas:dashboard_alertas' %}">
@@ -246,13 +246,60 @@
                     <i class="bi bi-people-fill me-2"></i> Grupos Terapéuticos
                 </a>
             </li>
-            <li class="nav-item">
+            {% comment %} <li class="nav-item">
                 <a class="nav-link {% if 'reportes' in request.path %}active{% endif %}" 
                     href="{% url 'reportes:dashboard' %}">
                     <i class="bi bi-clipboard-data me-2"></i> Reportes
                 </a>
-            </li>
-            
+            </li> {% endcomment %}
+            <!-- MENÚ REPORTES -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarReportes" 
+                role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-file-earmark-text me-1"></i>Reportes
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarReportes">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'reportes:dashboard' %}">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- Obligatorios -->
+                    <li><h6 class="dropdown-header">Obligatorios</h6></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'reportes:informe_mensual_form' %}">
+                            <i class="bi bi-file-pdf me-2"></i>Informe Mensual
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'reportes:informe_trimestral_form' %}">
+                            <i class="bi bi-graph-up me-2"></i>Informe Trimestral
+                        </a>
+                    </li>
+                    
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- Adicionales -->
+                    <li><h6 class="dropdown-header">Adicionales</h6></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'reportes:asistencia_form' %}">
+                            <i class="bi bi-calendar-check me-2"></i>Asistencia
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'reportes:terapeutas_form' %}">
+                            <i class="bi bi-person-badge me-2"></i>Terapeutas
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'reportes:grupos' %}">
+                            <i class="bi bi-people-fill me-2"></i>Grupos
+                        </a>
+                    </li>
+                </ul>
+            </li>            
             <hr class="my-3" style="border-color: rgba(255,255,255,.2)">
             
             {% if user.es_admin %}

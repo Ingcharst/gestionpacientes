@@ -13,11 +13,11 @@
             </div>
             <div class="card-body">
                 <p class="text-muted">
-                    Este informe incluye todas las terapias y procedimientos realizados por el paciente en el mes seleccionado.
-                    Es útil para la generación de facturas y cobros.
+                    Seleccione paciente, terapia y profesional para generar el informe.
                 </p>
                 
                 <form method="GET" id="reporteForm">
+                    <!-- Paciente -->
                     <div class="mb-3">
                         <label for="paciente" class="form-label">Paciente *</label>
                         <select class="form-select" id="paciente" name="paciente" required>
@@ -30,6 +30,31 @@
                         </select>
                     </div>
                     
+                    <!-- Terapia -->
+                    <div class="mb-3">
+                        <label for="terapia" class="form-label">Terapia *</label>
+                        <select class="form-select" id="terapia" name="terapia" required>
+                            <option value="">Seleccione terapia...</option>
+                            {% for terapia in terapias %}
+                            <option value="{{ terapia.id }}">{{ terapia.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Profesional -->
+                    <div class="mb-3">
+                        <label for="profesional" class="form-label">Profesional *</label>
+                        <select class="form-select" id="profesional" name="profesional" required>
+                            <option value="">Seleccione profesional...</option>
+                            {% for prof in profesionales %}
+                            <option value="{{ prof.id }}">
+                                {{ prof.get_full_name }} - {{ prof.get_rol_display }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Mes y Año -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="mes" class="form-label">Mes *</label>
@@ -55,11 +80,8 @@
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-primary" onclick="generarPDF()">
-                            <i class="bi bi-file-pdf me-1"></i>Generar PDF
-                        </button>
-                        <button type="button" class="btn btn-success" onclick="generarExcel()">
-                            <i class="bi bi-file-excel me-1"></i>Generar Excel
+                        <button type="button" class="btn btn-primary" onclick="generarInforme()">
+                            <i class="bi bi-file-pdf me-1"></i>Generar Informe
                         </button>
                         <a href="{% url 'reportes:dashboard' %}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left me-1"></i>Volver
@@ -72,32 +94,20 @@
 </div>
 
 <script>
-function generarPDF() {
+function generarInforme() {
     const pacienteId = document.getElementById('paciente').value;
+    const terapiaId = document.getElementById('terapia').value;
+    const profesionalId = document.getElementById('profesional').value;
     const mes = document.getElementById('mes').value;
     const anio = document.getElementById('anio').value;
     
-    if (!pacienteId) {
-        alert('Por favor seleccione un paciente');
+    if (!pacienteId || !terapiaId || !profesionalId) {
+        alert('Por favor complete todos los campos requeridos');
         return;
     }
     
-    const url = `/reportes/informe-mensual-paciente/${pacienteId}/pdf/?mes=${mes}&anio=${anio}`;
+    const url = `/reportes/informe-mensual-paciente/${pacienteId}/pdf/?terapia=${terapiaId}&profesional=${profesionalId}&mes=${mes}&anio=${anio}`;
     window.open(url, '_blank');
-}
-
-function generarExcel() {
-    const pacienteId = document.getElementById('paciente').value;
-    const mes = document.getElementById('mes').value;
-    const anio = document.getElementById('anio').value;
-    
-    if (!pacienteId) {
-        alert('Por favor seleccione un paciente');
-        return;
-    }
-    
-    const url = `/reportes/informe-mensual-paciente/${pacienteId}/excel/?mes=${mes}&anio=${anio}`;
-    window.location.href = url;
 }
 </script>
 {% endblock %}

@@ -36,7 +36,10 @@ ALLOWED_HOSTS = (
     '.ngrok-free.app',  # Permite todos los subdominios de ngrok
     '.ngrok.io',        # Versión antigua
     #default='localhost,127.0.0.1'
-    )#.split(',')
+    'ipsvidamed.com',
+    'www.ipsvidamed.com',
+    '68.65.123.79',
+    )
 
 
 # Application definition

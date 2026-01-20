@@ -32263,3 +32263,1025 @@ Watching for file changes with StatReloader
 "GET /alertas/configuracion/ HTTP/1.1" 200 12695
 "GET /alertas/ HTTP/1.1" 200 13611
 "GET /alertas/ HTTP/1.1" 200 13611
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/ HTTP/1.1" 200 14634
+"GET /reportes/ HTTP/1.1" 200 14634
+"GET /reportes/ HTTP/1.1" 200 14634
+"GET /reportes/ HTTP/1.1" 200 14634
+"GET /admin/consultorios/asignacionconsultorio/ HTTP/1.1" 200 35915
+"GET /admin/consultorios/asignacionconsultorio/ HTTP/1.1" 200 35915
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /reportes/ HTTP/1.1" 200 16719
+"GET /reportes/ HTTP/1.1" 200 16719
+"GET /terapias/ HTTP/1.1" 200 26597
+"GET /terapias/ HTTP/1.1" 200 26597
+"GET /reportes/ HTTP/1.1" 200 16719
+"GET /reportes/ HTTP/1.1" 200 16719
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19879
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19879
+"GET /reportes/informe-trimestral-avance/ HTTP/1.1" 200 17999
+"GET /reportes/informe-trimestral-avance/ HTTP/1.1" 200 17999
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19879
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19879
+"GET /reportes/informe-mensual-paciente/17/pdf/?mes=1&anio=2026 HTTP/1.1" 200 1843
+"GET /reportes/informe-mensual-paciente/17/pdf/?mes=1&anio=2026 HTTP/1.1" 200 1843
+"GET /procedimientos/mis-evoluciones/ HTTP/1.1" 200 16673
+"GET /procedimientos/mis-evoluciones/ HTTP/1.1" 200 16673
+"GET /procedimientos/mis-evoluciones/ HTTP/1.1" 200 16179
+"GET /procedimientos/mis-evoluciones/ HTTP/1.1" 200 16179
+"GET /reportes/terapeutas/ HTTP/1.1" 200 17420
+"GET /reportes/terapeutas/ HTTP/1.1" 200 17420
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19385
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19385
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 21060
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 21060
+"GET /reportes/informe-mensual-paciente/17/pdf/?mes=1&anio=2026 HTTP/1.1" 200 1843
+"GET /reportes/informe-mensual-paciente/17/pdf/?mes=1&anio=2026 HTTP/1.1" 200 1843
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 21060
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 21060
+"GET /reportes/informe-trimestral-avance/ HTTP/1.1" 200 17505
+"GET /reportes/informe-trimestral-avance/ HTTP/1.1" 200 17505
+"GET /terapias/ HTTP/1.1" 200 26103
+"GET /terapias/ HTTP/1.1" 200 26103
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 21060
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 21060
+E:\TEA_Center\tea_management\config\settings.py changed, reloading.
+E:\TEA_Center\tea_management\config\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\config\settings.py changed, reloading.
+E:\TEA_Center\tea_management\config\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /procedimientos/pacientes/ HTTP/1.1" 200 37761
+"GET /procedimientos/pacientes/ HTTP/1.1" 200 37761
+"GET /procedimientos/pacientes/17/ HTTP/1.1" 200 22057
+"GET /procedimientos/pacientes/17/ HTTP/1.1" 200 22057
+"GET /procedimientos/pacientes/17/valoraciones/ HTTP/1.1" 200 29575
+"GET /procedimientos/pacientes/17/valoraciones/ HTTP/1.1" 200 29575
+"GET /procedimientos/pacientes/17/valoracion/7/crear/ HTTP/1.1" 200 32409
+"GET /procedimientos/pacientes/17/valoracion/7/crear/ HTTP/1.1" 200 32409
+"POST /procedimientos/pacientes/17/valoracion/7/crear/ HTTP/1.1" 302 0
+"POST /procedimientos/pacientes/17/valoracion/7/crear/ HTTP/1.1" 302 0
+"GET /procedimientos/pacientes/17/valoraciones/ HTTP/1.1" 200 31443
+"GET /procedimientos/pacientes/17/valoraciones/ HTTP/1.1" 200 31443
+"GET /procedimientos/pacientes/17/admisiones/ HTTP/1.1" 200 13934
+"GET /procedimientos/pacientes/17/admisiones/ HTTP/1.1" 200 13934
+"GET /procedimientos/pacientes/17/admisiones/crear/ HTTP/1.1" 200 14931
+"GET /procedimientos/pacientes/17/admisiones/crear/ HTTP/1.1" 200 14931
+"POST /procedimientos/pacientes/17/admisiones/crear/ HTTP/1.1" 302 0
+"POST /procedimientos/pacientes/17/admisiones/crear/ HTTP/1.1" 302 0
+"GET /procedimientos/pacientes/17/admisiones/ HTTP/1.1" 200 15046
+"GET /procedimientos/pacientes/17/admisiones/ HTTP/1.1" 200 15046
+"GET /procedimientos/pacientes/pendientes-asignacion/ HTTP/1.1" 200 15053
+"GET /procedimientos/pacientes/pendientes-asignacion/ HTTP/1.1" 200 15053
+"GET /procedimientos/pacientes/pendientes-valoracion/ HTTP/1.1" 200 58825
+"GET /procedimientos/pacientes/pendientes-valoracion/ HTTP/1.1" 200 58825
+"GET /procedimientos/pacientes/ HTTP/1.1" 200 37761
+"GET /procedimientos/pacientes/ HTTP/1.1" 200 37761
+"GET /procedimientos/pacientes/17/ HTTP/1.1" 200 22058
+"GET /procedimientos/pacientes/17/ HTTP/1.1" 200 22058
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 34749
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 34749
+"POST /grupos/paciente/17/agregar-grupo/ HTTP/1.1" 302 0
+"POST /grupos/paciente/17/agregar-grupo/ HTTP/1.1" 302 0
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 35424
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 35424
+"GET /grupos/ HTTP/1.1" 200 49843
+"GET /grupos/ HTTP/1.1" 200 49843
+"GET /grupos/crear/ HTTP/1.1" 200 27603
+"GET /grupos/crear/ HTTP/1.1" 200 27603
+"GET /grupos/ HTTP/1.1" 200 49843
+"GET /grupos/ HTTP/1.1" 200 49843
+"GET /grupos/crear/ HTTP/1.1" 200 27603
+"GET /grupos/crear/ HTTP/1.1" 200 27603
+"POST /grupos/crear/ HTTP/1.1" 302 0
+"POST /grupos/crear/ HTTP/1.1" 302 0
+"GET /grupos/8/ HTTP/1.1" 200 17711
+"GET /grupos/8/ HTTP/1.1" 200 17711
+"GET /grupos/ HTTP/1.1" 200 54499
+"GET /grupos/ HTTP/1.1" 200 54499
+"GET /grupos/crear/ HTTP/1.1" 200 27603
+"GET /grupos/crear/ HTTP/1.1" 200 27603
+"POST /grupos/crear/ HTTP/1.1" 302 0
+"POST /grupos/crear/ HTTP/1.1" 302 0
+"GET /grupos/9/ HTTP/1.1" 200 17711
+"GET /grupos/9/ HTTP/1.1" 200 17711
+"GET /procedimientos/pacientes/pendientes-asignacion/ HTTP/1.1" 200 15053
+"GET /procedimientos/pacientes/pendientes-asignacion/ HTTP/1.1" 200 15053
+"GET /procedimientos/pacientes/pendientes-valoracion/ HTTP/1.1" 200 58825
+"GET /procedimientos/pacientes/pendientes-valoracion/ HTTP/1.1" 200 58825
+"GET /procedimientos/pacientes/ HTTP/1.1" 200 37761
+"GET /procedimientos/pacientes/ HTTP/1.1" 200 37761
+"GET /procedimientos/pacientes/17/ HTTP/1.1" 200 22058
+"GET /procedimientos/pacientes/17/ HTTP/1.1" 200 22058
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 36297
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 36297
+"POST /grupos/paciente/17/agregar-grupo/ HTTP/1.1" 302 0
+"POST /grupos/paciente/17/agregar-grupo/ HTTP/1.1" 302 0
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 44203
+"GET /grupos/paciente/17/grupos/ HTTP/1.1" 200 44203
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 19839
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\urls.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\urls.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/ HTTP/1.1" 200 16225
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 44701
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 44701
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+Internal Server Error: /reportes/informe-mensual-paciente/17/pdf/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 698, in getFont
+    return _fonts[fontName]
+KeyError: 'Calibri'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 165, in apply
+    getattr(doc,arn)(*args)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1298, in handle_pageBegin
+    self._handle_pageBegin()
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 621, in handle_pageBegin
+    self.pageTemplate.onPage(self.canv,self)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 859, in agregar_encabezado_pie
+    canvas.setFont('Calibri', 9)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfgen\canvas.py", line 1737, in setFont
+    font = pdfmetrics.getFont(self._fontname)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 700, in getFont
+    return findFontAndRegister(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 682, in findFontAndRegister
+    face = getTypeFace(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 639, in getTypeFace
+    return _typefaces[faceName]
+KeyError: 'Calibri'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 1001, in informe_mensual_paciente_pdf
+    doc.build(story, onFirstPage=agregar_encabezado_pie, onLaterPages=agregar_encabezado_pie)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1322, in build
+    BaseDocTemplate.build(self,flowables, canvasmaker=canvasmaker)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1080, in build
+    self.clean_hanging()
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 592, in clean_hanging
+    self.handle_flowable(self._hanging)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 926, in handle_flowable
+    f.apply(self)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 172, in apply
+    annotateException("\nhandle_%s args=%s"%(action,ascii(args)))
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\lib\utils.py", line 1176, in annotateException
+    rl_reraise(t,t(sep.join((_ for _ in (msg,str(v),postMsg) if _))),b)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\lib\utils.py", line 138, in rl_reraise
+    raise v.with_traceback(b)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 165, in apply
+    getattr(doc,arn)(*args)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1298, in handle_pageBegin
+    self._handle_pageBegin()
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 621, in handle_pageBegin
+    self.pageTemplate.onPage(self.canv,self)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 859, in agregar_encabezado_pie
+    canvas.setFont('Calibri', 9)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfgen\canvas.py", line 1737, in setFont
+    font = pdfmetrics.getFont(self._fontname)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 700, in getFont
+    return findFontAndRegister(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 682, in findFontAndRegister
+    face = getTypeFace(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 639, in getTypeFace
+    return _typefaces[faceName]
+KeyError: "\nhandle_pageBegin args=() 'Calibri'"
+Internal Server Error: /reportes/informe-mensual-paciente/17/pdf/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 698, in getFont
+    return _fonts[fontName]
+KeyError: 'Calibri'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 165, in apply
+    getattr(doc,arn)(*args)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1298, in handle_pageBegin
+    self._handle_pageBegin()
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 621, in handle_pageBegin
+    self.pageTemplate.onPage(self.canv,self)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 859, in agregar_encabezado_pie
+    canvas.setFont('Calibri', 9)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfgen\canvas.py", line 1737, in setFont
+    font = pdfmetrics.getFont(self._fontname)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 700, in getFont
+    return findFontAndRegister(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 682, in findFontAndRegister
+    face = getTypeFace(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 639, in getTypeFace
+    return _typefaces[faceName]
+KeyError: 'Calibri'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 1001, in informe_mensual_paciente_pdf
+    doc.build(story, onFirstPage=agregar_encabezado_pie, onLaterPages=agregar_encabezado_pie)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1322, in build
+    BaseDocTemplate.build(self,flowables, canvasmaker=canvasmaker)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1080, in build
+    self.clean_hanging()
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 592, in clean_hanging
+    self.handle_flowable(self._hanging)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 926, in handle_flowable
+    f.apply(self)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 172, in apply
+    annotateException("\nhandle_%s args=%s"%(action,ascii(args)))
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\lib\utils.py", line 1176, in annotateException
+    rl_reraise(t,t(sep.join((_ for _ in (msg,str(v),postMsg) if _))),b)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\lib\utils.py", line 138, in rl_reraise
+    raise v.with_traceback(b)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 165, in apply
+    getattr(doc,arn)(*args)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 1298, in handle_pageBegin
+    self._handle_pageBegin()
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\doctemplate.py", line 621, in handle_pageBegin
+    self.pageTemplate.onPage(self.canv,self)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 859, in agregar_encabezado_pie
+    canvas.setFont('Calibri', 9)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfgen\canvas.py", line 1737, in setFont
+    font = pdfmetrics.getFont(self._fontname)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 700, in getFont
+    return findFontAndRegister(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 682, in findFontAndRegister
+    face = getTypeFace(fontName)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\pdfbase\pdfmetrics.py", line 639, in getTypeFace
+    return _typefaces[faceName]
+KeyError: "\nhandle_pageBegin args=() 'Calibri'"
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 500 198615
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 500 198615
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 32980
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 32980
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 32980
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 32980
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 33147
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 33147
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 33147
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 33147
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22252
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42752
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42752
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42752
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42752
+"GET /terapias/ HTTP/1.1" 200 26103
+"GET /terapias/ HTTP/1.1" 200 26103
+"GET /terapias/2/ HTTP/1.1" 200 15545
+"GET /terapias/2/ HTTP/1.1" 200 15545
+"GET /terapias/2/editar/ HTTP/1.1" 200 30551
+"GET /terapias/2/editar/ HTTP/1.1" 200 30551
+"POST /terapias/2/editar/ HTTP/1.1" 302 0
+"POST /terapias/2/editar/ HTTP/1.1" 302 0
+"GET /terapias/2/ HTTP/1.1" 200 15884
+"GET /terapias/2/ HTTP/1.1" 200 15884
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /reportes/informe-mensual-paciente/17/pdf/
+Not Found: /reportes/informe-mensual-paciente/17/pdf/
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=6&profesional=11&mes=1&anio=2026 HTTP/1.1" 404 44
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=6&profesional=11&mes=1&anio=2026 HTTP/1.1" 404 44
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42754
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42754
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42754
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42754
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+Internal Server Error: /reportes/informe-mensual-paciente/17/pdf/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 1001, in informe_mensual_paciente_pdf
+    Paragraph(val1, style_valor)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 1859, in __init__
+    self._setup(text, style, bulletText or getattr(style,'bulletText',None), frags, cleanBlockQuotedText)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 1877, in _setup
+    text = cleaner(text)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 139, in cleanBlockQuotedText
+    L=list(filter(truth,list(map(_lineClean, split(text, '\n')))))
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 96, in split
+    return [uword for uword in (_wsc_re_split(text) if delim is None and '\xa0' in text else text.split(delim))]
+AttributeError: 'NoneType' object has no attribute 'split'
+Internal Server Error: /reportes/informe-mensual-paciente/17/pdf/
+Traceback (most recent call last):
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "E:\TEA_Center\venv\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "E:\TEA_Center\tea_management\apps\reportes\views.py", line 1001, in informe_mensual_paciente_pdf
+    Paragraph(val1, style_valor)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 1859, in __init__
+    self._setup(text, style, bulletText or getattr(style,'bulletText',None), frags, cleanBlockQuotedText)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 1877, in _setup
+    text = cleaner(text)
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 139, in cleanBlockQuotedText
+    L=list(filter(truth,list(map(_lineClean, split(text, '\n')))))
+  File "E:\TEA_Center\venv\lib\site-packages\reportlab\platypus\paragraph.py", line 96, in split
+    return [uword for uword in (_wsc_re_split(text) if delim is None and '\xa0' in text else text.split(delim))]
+AttributeError: 'NoneType' object has no attribute 'split'
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 500 105420
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 500 105420
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42844
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42897
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42897
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42897
+"GET /reportes/informe-mensual-paciente/17/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42897
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+"GET /reportes/informe-mensual-paciente/ HTTP/1.1" 200 22244
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42911
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42911
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42911
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42911
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+E:\TEA_Center\tea_management\apps\reportes\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42937
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42937
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42937
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=11&mes=1&anio=2026 HTTP/1.1" 200 42937
+"GET /admin/ HTTP/1.1" 200 61101
+"GET /admin/ HTTP/1.1" 200 61101
+"GET /admin/usuarios/usuario/ HTTP/1.1" 200 44180
+"GET /admin/usuarios/usuario/ HTTP/1.1" 200 44180
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/usuarios/usuario/?o=1.-10 HTTP/1.1" 200 44970
+"GET /admin/usuarios/usuario/?o=1.-10 HTTP/1.1" 200 44970
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/usuarios/usuario/?o=-1.-10 HTTP/1.1" 200 44981
+"GET /admin/usuarios/usuario/?o=-1.-10 HTTP/1.1" 200 44981
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/usuarios/usuario/11/change/?_changelist_filters=o%3D-1.-10 HTTP/1.1" 200 91236
+"GET /admin/usuarios/usuario/11/change/?_changelist_filters=o%3D-1.-10 HTTP/1.1" 200 91236
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"POST /admin/usuarios/usuario/11/change/?_changelist_filters=o%3D-1.-10 HTTP/1.1" 302 0
+"POST /admin/usuarios/usuario/11/change/?_changelist_filters=o%3D-1.-10 HTTP/1.1" 302 0
+"GET /admin/usuarios/usuario/?o=-1.-10 HTTP/1.1" 200 45580
+"GET /admin/usuarios/usuario/?o=-1.-10 HTTP/1.1" 200 45580
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/usuarios/usuario/11/change/?_changelist_filters=o%3D-1.-10 HTTP/1.1" 200 91262
+"GET /admin/usuarios/usuario/11/change/?_changelist_filters=o%3D-1.-10 HTTP/1.1" 200 91262
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/usuarios/usuario/ HTTP/1.1" 200 44180
+"GET /admin/usuarios/usuario/ HTTP/1.1" 200 44180
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/usuarios/usuario/2/change/ HTTP/1.1" 200 90670
+"GET /admin/usuarios/usuario/2/change/ HTTP/1.1" 200 90670
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"POST /admin/usuarios/usuario/2/change/ HTTP/1.1" 302 0
+"POST /admin/usuarios/usuario/2/change/ HTTP/1.1" 302 0
+"GET /admin/usuarios/usuario/ HTTP/1.1" 200 44762
+"GET /admin/usuarios/usuario/ HTTP/1.1" 200 44762
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /admin/jsi18n/ HTTP/1.1" 200 9110
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=2&mes=1&anio=2026 HTTP/1.1" 200 43860
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=2&mes=1&anio=2026 HTTP/1.1" 200 43860
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=2&mes=1&anio=2026 HTTP/1.1" 200 43860
+"GET /reportes/informe-mensual-paciente/16/pdf/?terapia=7&profesional=2&mes=1&anio=2026 HTTP/1.1" 200 43860

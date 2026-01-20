@@ -11,8 +11,8 @@ urlpatterns = [
     path('', views.reportes_dashboard, name='dashboard'),
     
     # Informe Mensual por Paciente (Facturación)
-    path('informe-mensual-paciente/', views.informe_mensual_paciente_form, name='informe_mensual_form'),
-    path('informe-mensual-paciente/<int:paciente_id>/pdf/', views.generar_informe_mensual_paciente_pdf, name='informe_mensual_pdf'),
+    # path('informe-mensual-paciente/', views.informe_mensual_paciente_form, name='informe_mensual_form'),
+    # path('informe-mensual-paciente/<int:paciente_id>/pdf/', views.generar_informe_mensual_paciente_pdf, name='informe_mensual_pdf'),
     path('informe-mensual-paciente/<int:paciente_id>/excel/', views.generar_informe_mensual_paciente_excel, name='informe_mensual_excel'),
     
     # Informe Trimestral de Avance
@@ -36,4 +36,8 @@ urlpatterns = [
     path('informe/<int:pk>/', views.informe_detail, name='informe_detail'),
     path('informe/<int:pk>/pdf/', views.descargar_pdf_informe, name='descargar_pdf'),
     path('paciente/<int:paciente_id>/informes/', views.lista_informes_paciente, name='lista_informes_paciente'),
+    
+    path('informe-mensual-paciente/', views.informe_mensual_form, name='informe_mensual_form'),
+    path('informe-mensual-paciente/<int:paciente_id>/pdf/', views.informe_mensual_paciente_pdf, name='informe_mensual_pdf'),
+
 ]
