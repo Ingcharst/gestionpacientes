@@ -1,17 +1,32 @@
 """
 Configuración del panel de administración para usuarios.
 """
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 from .models import Usuario, Perfil, RegistroAcceso
 
+class PerfilAdminForm(forms.ModelForm):
+    # Campo amigable para especialidades (Checkbox en lugar de JSON manual)
+    especialidades_secundarias = forms.MultipleChoiceField(
+        choices=Perfil.Especialidad.choices,
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    class Meta:
+        model = Perfil
+        fields = '__all__'
+
 
 class PerfilInline(admin.StackedInline):
     """Inline para mostrar perfil dentro de usuario."""
     model = Perfil
+    form = PerfilAdminForm
     can_delete = False
     verbose_name_plural = 'Perfil Profesional'
+    extra = 0
     fields = (
         'especialidades', 'especialidades_secundarias', 'universidad',
         'anios_experiencia', 'certificaciones', 'bio', 'disponible'
@@ -25,17 +40,18 @@ class UsuarioAdmin(UserAdmin):
     inlines = [PerfilInline]
     
     list_display = (
-        'username', 'email', 'get_full_name', 'rol',
+        'username', 'email', 'tipo_identificacion',
+        'numero_identificacion', 'get_full_name', 'rol',
         'estado', 'foto_perfil_thumbnail', 'is_active', 'date_joined'
     )
     
     list_filter = (
-        'rol', 'estado', 'is_active', 'is_staff',
+        'rol', 'tipo_identificacion', 'estado', 'is_active', 'is_staff',
         'date_joined', 'fecha_contratacion'
     )
     
     search_fields = (
-        'username', 'first_name', 'last_name',
+        'username', 'first_name', 'last_name', 'numero_identificacion',
         'email', 'cedula_profesional'
     )
     
@@ -47,7 +63,8 @@ class UsuarioAdmin(UserAdmin):
         }),
         ('Información Personal', {
             'fields': (
-                'first_name', 'last_name', 'email',
+                'first_name', 'last_name', 'tipo_identificacion',
+                'numero_identificacion', 'email',
                 'telefono', 'foto_perfil'
             )
         }),
@@ -56,6 +73,10 @@ class UsuarioAdmin(UserAdmin):
                 'rol', 'cedula_profesional',
                 'fecha_contratacion', 'estado', 'notas'
             )
+        }),
+        ('Firma Digital', {
+            'fields': ('firma',),
+            'description': 'Cargar imagen de la firma del usuario'
         }),
         ('Permisos', {
             'fields': (
@@ -71,12 +92,23 @@ class UsuarioAdmin(UserAdmin):
     )
     
     add_fieldsets = (
-        ('Información Básica', {
-            'classes': ('wide',),
+        ('Información de Acceso', {
+            'fields': ('username', 'password1', 'password2')
+        }),
+        ('Información Personal', {
             'fields': (
-                'username', 'password1', 'password2',
-                'email', 'first_name', 'last_name'
-            ),
+                'first_name',
+                'last_name',
+                'email',
+                'tipo_identificacion',
+                'numero_identificacion',
+            )
+        }),
+        ('Firma Digital', {
+            'fields': ('firma',),
+        }),
+        ('Permisos', {
+            'fields': ('is_active', 'is_staff'),
         }),
         ('Información Adicional', {
             'classes': ('wide',),
@@ -144,7 +176,6 @@ class PerfilAdmin(admin.ModelAdmin):
         }),
     )
 
-
 @admin.register(RegistroAcceso)
 class RegistroAccesoAdmin(admin.ModelAdmin):
     """Administración de registros de acceso."""
@@ -176,3 +207,5 @@ class RegistroAccesoAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         """Los registros de acceso no se modifican."""
         return False
+
+

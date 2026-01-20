@@ -34,6 +34,30 @@
 
                 <hr>
 
+                <div class="mb-4">
+                    <h6 class="text-primary">
+                        <i class="bi bi-heart-pulse me-2"></i>Terapia
+                    </h6>
+                    <div class="ps-4">
+                        {% if asignacion.terapia %}
+                            <p class="mb-1">
+                                <strong>Nombre:</strong> 
+                                <span class="badge bg-info">{{ asignacion.terapia.nombre }}</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Especialidad:</strong> 
+                                {{ asignacion.terapia.get_especialidad_display }}
+                            </p>
+                            <a href="{% url 'terapias:terapia_detail' asignacion.terapia.pk %}" 
+                            class="btn btn-sm btn-outline-info mt-2">
+                                <i class="bi bi-eye me-1"></i>Ver Terapia
+                            </a>
+                        {% else %}
+                            <p class="text-muted">No especificada</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <h6 class="text-muted">Día</h6>
@@ -57,11 +81,11 @@
                 {% endif %}
 
                 <div class="d-flex justify-content-between">
-                    <a href="{% url 'asignacion_list' %}" class="btn btn-secondary">
+                    <a href="{% url 'consultorios:asignacion_list' %}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>
                     {% if user.es_admin or user.puede_gestionar_terapias %}
-                    <a href="{% url 'asignacion_update' asignacion.pk %}" class="btn btn-primary">
+                    <a href="{% url 'consultorios:asignacion_update' asignacion.pk %}" class="btn btn-primary">
                         <i class="bi bi-pencil me-1"></i>Editar
                     </a>
                     {% endif %}

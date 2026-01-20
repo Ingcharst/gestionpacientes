@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.forms import ValidationError
 from django.utils.translation import gettext_lazy as _
 from apps.usuarios.models import Usuario
+from apps.terapias.models import Terapia
 
 
 class Consultorio(models.Model):
@@ -24,6 +25,8 @@ class Consultorio(models.Model):
         LUDOTECA = 'LUDOTECA', _('Ludoteca/Sala de Juegos')
         EVALUACION = 'EVALUACION', _('Sala de Evaluación')
         MUSICOTERAPIA = 'MUSICOTERAPIA', _('Sala de Musicoterapia')
+        PSICOLOGIA = 'PSICOLOGIA', _('Terapia Psicológica')
+        COGNITIVA = 'COGNITIVA', _('Terapia Cognitiva')
     
     class EstadoConsultorio(models.TextChoices):
         DISPONIBLE = 'DISPONIBLE', _('Disponible')
@@ -262,7 +265,7 @@ class Sala(models.Model):
 class AsignacionConsultorio(models.Model):
     """
     Modelo para asignar terapeutas a consultorios.
-    Gestiona qué terapeuta utiliza qué consultorio y en qué horarios.
+    Gestiona qué terapeuta utiliza qué consultorio, para qué terapia y en qué horarios.
     """
     
     class TipoAsignacion(models.TextChoices):
@@ -285,6 +288,17 @@ class AsignacionConsultorio(models.Model):
         related_name='consultorios_asignados',
         limit_choices_to={'rol__in': ['TERAPEUTA', 'PSICOLOGO', 'MEDICO']},
         verbose_name='Terapeuta'
+    )
+    
+    # ✅ NUEVO CAMPO AGREGADO
+    terapia = models.ForeignKey(
+        Terapia,
+        on_delete=models.PROTECT,
+        related_name='asignaciones_consultorio',
+        verbose_name='Terapia',
+        help_text='Tipo de terapia que se realizará en este consultorio',
+        null=True,  # Permitir null temporalmente para migración
+        blank=True
     )
     
     tipo_asignacion = models.CharField(
@@ -351,21 +365,22 @@ class AsignacionConsultorio(models.Model):
         verbose_name_plural = 'Asignaciones de Consultorios'
         ordering = ['-fecha_inicio', '-prioridad']
         indexes = [
-            #models.Index(fields=['nombre']),
             models.Index(fields=['consultorio', 'terapeuta']),
             models.Index(fields=['fecha_inicio', 'fecha_fin']),
             models.Index(fields=['activo']),
+            models.Index(fields=['terapia']),  # ✅ NUEVO ÍNDICE
         ]
     
     def __str__(self):
-        return f"{self.terapeuta.get_full_name()} - {self.consultorio.nombre}"
+        terapia_nombre = f" - {self.terapia.nombre}" if self.terapia else ""
+        return f"{self.terapeuta.get_full_name()} - {self.consultorio.nombre}{terapia_nombre}"
     
     def clean(self):
         """Validaciones personalizadas."""
         from django.core.exceptions import ValidationError
         
         # Validar que el usuario sea terapeuta
-        if not self.terapeuta.es_terapeuta:
+        if self.terapeuta and not self.terapeuta.es_terapeuta:
             raise ValidationError({
                 'terapeuta': 'Solo se pueden asignar terapeutas a consultorios.'
             })
@@ -393,18 +408,12 @@ class AsignacionConsultorio(models.Model):
     @property
     def es_permanente(self):
         """Verifica si es asignación permanente."""
-        return self.tipo_asignacion == self.TipoAsignacion.PERMANENTE
+        return self.tipo_asignacion == self.TipoAsignacion.PERMANENTE or not self.fecha_fin
     
-    def agregar_dia(self, dia, hora_inicio, hora_fin):
-        """Agrega un día al horario de la asignación."""
-        if dia not in self.dias_semana:
-            self.dias_semana.append(dia)
-        
-        self.horario[dia] = {
-            'hora_inicio': hora_inicio,
-            'hora_fin': hora_fin
-        }
-        self.save()
+    def save(self, *args, **kwargs):
+        """Validar antes de guardar."""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class DisponibilidadConsultorio(models.Model):

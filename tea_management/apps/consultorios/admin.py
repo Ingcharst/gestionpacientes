@@ -193,9 +193,9 @@ class AsignacionConsultorioAdmin(admin.ModelAdmin):
     """Administración de asignaciones de consultorios."""
     
     list_display = (
-        'consultorio', 'terapeuta_nombre', 'tipo_asignacion',
-        'fecha_inicio', 'fecha_fin', 'vigente_badge',
-        'prioridad_stars', 'activo'
+        'consultorio', 'terapeuta_nombre', 'terapia',
+        'tipo_asignacion', 'fecha_inicio', 'fecha_fin', 
+        'vigente_badge', 'prioridad_stars', 'activo'
     )
     
     list_filter = (

@@ -23,6 +23,7 @@ class GrupoTerapeuticoForm(forms.ModelForm):
         fields = [
             'nombre',
             'descripcion',
+            'terapia',
             'hora_inicio',
             'hora_fin',
             'dias_disponibles',

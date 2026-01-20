@@ -34,14 +34,14 @@ def categoria_create(request):
     """Crear nueva categoría."""
     if not (request.user.es_admin or request.user.puede_gestionar_terapias):
         messages.error(request, 'No tienes permiso para crear categorías.')
-        return redirect('categoria_list')
+        return redirect('terapias:categoria_list')
     
     if request.method == 'POST':
         form = CategoriaTerapiaForm(request.POST)
         if form.is_valid():
             categoria = form.save()
             messages.success(request, f'Categoría {categoria.nombre} creada exitosamente.')
-            return redirect('categoria_list')
+            return redirect('terapias:categoria_list')
         else:
             # Mostrar errores de validación
             for field, errors in form.errors.items():
@@ -63,14 +63,14 @@ def categoria_update(request, pk):
     
     if not (request.user.es_admin or request.user.puede_gestionar_terapias):
         messages.error(request, 'No tienes permiso para editar categorías.')
-        return redirect('categoria_list')
+        return redirect('terapias:categoria_list')
     
     if request.method == 'POST':
         form = CategoriaTerapiaForm(request.POST, instance=categoria)
         if form.is_valid():
             categoria = form.save()
             messages.success(request, 'Categoría actualizada exitosamente.')
-            return redirect('categoria_list')
+            return redirect('terapias:categoria_list')
     else:
         form = CategoriaTerapiaForm(instance=categoria)
     
@@ -146,14 +146,14 @@ def terapia_create(request):
     """Crear nueva terapia."""
     if not (request.user.es_admin or request.user.puede_gestionar_terapias):
         messages.error(request, 'No tienes permiso para crear terapias.')
-        return redirect('terapia_list')
+        return redirect('terapias:terapia_list')
     
     if request.method == 'POST':
         form = TerapiaForm(request.POST, request.FILES)
         if form.is_valid():
             terapia = form.save()
             messages.success(request, f'Terapia {terapia.nombre} creada exitosamente.')
-            return redirect('terapia_detail', pk=terapia.pk)
+            return redirect('terapias:terapia_detail', pk=terapia.pk)
     else:
         form = TerapiaForm()
     
@@ -170,14 +170,14 @@ def terapia_update(request, pk):
     
     if not (request.user.es_admin or request.user.puede_gestionar_terapias):
         messages.error(request, 'No tienes permiso para editar terapias.')
-        return redirect('terapia_detail', pk=pk)
+        return redirect('terapias:terapia_detail', pk=pk)
     
     if request.method == 'POST':
         form = TerapiaForm(request.POST, request.FILES, instance=terapia)
         if form.is_valid():
             terapia = form.save()
             messages.success(request, 'Terapia actualizada exitosamente.')
-            return redirect('terapia_detail', pk=terapia.pk)
+            return redirect('terapias:terapia_detail', pk=terapia.pk)
     else:
         form = TerapiaForm(instance=terapia)
     

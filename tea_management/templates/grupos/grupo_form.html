@@ -95,6 +95,22 @@
                                 </div>
                                 {% endif %}
                             </div>
+                            <!-- Terapia -->
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.terapia.id_for_label }}" class="form-label fw-semibold">
+                                    Terapia <span class="text-danger">*</span>
+                                </label>
+                                {{ form.terapia }}
+                                {% if form.terapia.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.terapia.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Tipo de terapia que ofrece este grupo
+                                </small>
+                            </div>
+
                         </div>
                     </div>
                 </div>

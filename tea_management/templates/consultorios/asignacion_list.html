@@ -8,7 +8,7 @@
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Asignaciones de Consultorios</h5>
         {% if user.es_admin or user.puede_gestionar_terapias %}
-        <a href="{% url 'asignacion_create' %}" class="btn btn-primary">
+        <a href="{% url 'consultorios:asignacion_create' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Nueva Asignación
         </a>
         {% endif %}
@@ -21,6 +21,7 @@
                     <tr>
                         <th>Consultorio</th>
                         <th>Terapeuta</th>
+                        <th>Terapia</th>
                         <th>Día</th>
                         <th>Hora Inicio</th>
                         <th>Hora Fin</th>
@@ -36,6 +37,20 @@
                             <small class="text-muted">{{ asignacion.consultorio.tipo }}</small>
                         </td>
                         <td>{{ asignacion.terapeuta.get_full_name }}</td>
+                        <td>
+                            {% if asignacion.terapia %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-heart-pulse me-1"></i>
+                                    {{ asignacion.terapia.nombre }}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    {{ asignacion.terapia.get_especialidad_display }}
+                                </small>
+                            {% else %}
+                                <span class="text-muted">No especificada</span>
+                            {% endif %}
+                        </td>
                         <td>{{ asignacion.get_dia_semana_display }}</td>
                         <td>{{ asignacion.hora_inicio }}</td>
                         <td>{{ asignacion.hora_fin }}</td>
@@ -48,13 +63,13 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{% url 'asignacion_detail' asignacion.pk %}" 
-                                   class="btn btn-outline-info" title="Ver">
+                                <a href="{% url 'consultorios:asignacion_detail' asignacion.pk %}" 
+                                    class="btn btn-outline-info" title="Ver">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 {% if user.es_admin or user.puede_gestionar_terapias %}
-                                <a href="{% url 'asignacion_update' asignacion.pk %}" 
-                                   class="btn btn-outline-primary" title="Editar">
+                                <a href="{% url 'consultorios:asignacion_update' asignacion.pk %}" 
+                                    class="btn btn-outline-primary" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 {% endif %}

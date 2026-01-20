@@ -45,3 +45,7 @@ whitenoise==6.6.0
 
 # Documentación API
 drf-spectacular==0.27.0
+python-docx
+
+# Envío SMS
+twilio

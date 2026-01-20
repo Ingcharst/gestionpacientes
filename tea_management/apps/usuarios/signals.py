@@ -12,7 +12,9 @@ def crear_perfil_usuario(sender, instance, created, **kwargs):
     Crea automáticamente un perfil cuando se crea un nuevo usuario.
     """
     if created:
-        Perfil.objects.create(usuario=instance)
+        # Esto intenta buscar el perfil primero; si no existe, lo crea.
+        Perfil.objects.get_or_create(usuario=instance)
+        #Perfil.objects.create(usuario=instance)
 
 
 @receiver(post_save, sender=Usuario)

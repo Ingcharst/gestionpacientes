@@ -188,13 +188,17 @@ class GrupoTerapeutico(models.Model):
     def puede_asignar_dias(self, dias_solicitados):
         """
         Verifica si los días solicitados están disponibles en el grupo.
-        
         Args:
-            dias_solicitados: Lista de días (ej: ['L', 'M', 'X'])
-        
+            dias_solicitados: Lista de días (ej: ['L', 'M', 'X'])        
         Returns:
             bool: True si todos los días están disponibles
         """
+        # ✅ AGREGAR DEBUG
+        print(f"DEBUG puede_asignar_dias:")
+        print(f"  Solicitados: {dias_solicitados} (tipo: {type(dias_solicitados)})")
+        print(f"  Disponibles: {self.dias_disponibles} (tipo: {type(self.dias_disponibles)})")
+        print(f"  Cada día: {[(dia, dia in self.dias_disponibles) for dia in dias_solicitados]}")
+
         if not isinstance(dias_solicitados, list):
             return False
         
@@ -252,7 +256,7 @@ class AsignacionGrupo(models.Model):
         verbose_name='Días de Asistencia',
         help_text='Días en que el paciente asiste. Ej: ["L","M","X"]'
     )
-
+    
     dias_inasistencias_consecutivas = models.IntegerField(default=0)
     fecha_ultima_asistencia = models.DateField(null=True, blank=True)
     alerta_inasistencia_enviada = models.BooleanField(default=False)

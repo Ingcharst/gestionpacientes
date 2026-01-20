@@ -49,10 +49,13 @@ def puede_asignar_paciente_a_grupo(paciente, grupo):
         tuple: (puede: bool, mensaje: str, admision: AdmisionTerapia|None)
     """
     
+    if not grupo.terapia:
+        return (False, f'El grupo {grupo.nombre} no tiene terapia asignada', None)
+    
     # 1. Verificar valoración para la terapia (comparar por ID)
     valoracion = ValoracionProfesional.objects.filter(
         paciente=paciente,
-        terapia_id=grupo.terapia_id,  # ✅ Comparar por ID
+        terapia=grupo.terapia_id,  # ✅ Comparar por ID
         estado='COMPLETADA'
     ).first()
 
@@ -64,9 +67,12 @@ def puede_asignar_paciente_a_grupo(paciente, grupo):
         )
     
     # 2. Verificar admisión vigente (comparar por ID)
+    if not grupo.terapia:
+        return (False, f'El grupo {grupo.nombre} no tiene terapia asignada', None)
+
     admision = AdmisionTerapia.objects.filter(
         paciente=paciente,
-        terapia_id=grupo.terapia_id,  # ✅ Comparar por ID
+        terapia=grupo.terapia_id,  # ✅ Comparar por ID
         estado='VIGENTE',
         fecha_inicio__lte=date.today() + timedelta(days=7),
         fecha_fin__gte=date.today()
@@ -503,9 +509,21 @@ def agregar_grupo_paciente(request, paciente_id):
                     return redirect('grupos:paciente_grupos', paciente_id=paciente_id)
                 
                 # Obtener datos del formulario
-                dias = request.POST.getlist('dias_asistencia')
+                # dias = request.POST.getlist('dias_asistencia')
+                dias_nombres = request.POST.getlist('dias_asistencia')
+                dias_map = {
+                    'Lunes': 'L',
+                    'Martes': 'M',
+                    'Miércoles': 'X',
+                    'Miércoles': 'X',
+                    'Jueves': 'J',
+                    'Viernes': 'V',
+                    'Sábado': 'S',
+                    'Domingo': 'D'
+                }
+                dias = [dias_map.get(dia, dia) for dia in dias_nombres]
                 num_terapias = int(request.POST.get('numero_terapias_semanales', len(dias)))
-                
+
                 # ✅ CREAR ASIGNACIÓN CON ADMISIÓN VINCULADA
                 asignacion = AsignacionGrupo.objects.create(
                     paciente=paciente,

@@ -41,7 +41,19 @@
                 <div class="row text-start">
                     <div class="col-6 mb-2"><strong>Tipo:</strong></div>
                     <div class="col-6 mb-2">{{ consultorio.get_tipo_display }}</div>
-                    
+
+                    <div class="col-6 mb-2"><strong>Terapia:</strong></div>
+                    <div class="col-6 mb-2">{{ asignacion.terapia.nombre }}</div>
+
+                    {% if asignacion.terapia %}
+                        <span class="badge bg-info">
+                            <i class="bi bi-heart-pulse me-1"></i>
+                            {{ asignacion.terapia.nombre }}
+                        </span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+
                     <div class="col-6 mb-2"><strong>Piso:</strong></div>
                     <div class="col-6 mb-2">{{ consultorio.piso }}</div>
                     
@@ -58,6 +70,12 @@
                 </div>
             </div>
         </div>
+        {% comment %} <div class="card shadow mt-3">
+            <div class="card-header">
+                <i class="bi bi-people-fill me-2"></i>Terapia Asignada
+            </div>
+        </div> {% endcomment %}
+
     </div>
     
     <div class="col-lg-8">

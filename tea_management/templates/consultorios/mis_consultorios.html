@@ -18,7 +18,23 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ asignacion.consultorio.nombre }}</h5>
                         <p class="text-muted">{{ asignacion.consultorio.get_tipo_display }}</p>
-                        
+
+                        <p class="mb-2">
+                            <strong>Terapia:</strong><br>
+                            {% if asignacion.terapia %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-heart-pulse me-1"></i>
+                                    {{ asignacion.terapia.nombre }}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    {{ asignacion.terapia.get_especialidad_display }}
+                                </small>
+                            {% else %}
+                                <span class="text-muted">No especificada</span>
+                            {% endif %}
+                        </p>
+
                         <hr>
                         
                         <p class="mb-2">

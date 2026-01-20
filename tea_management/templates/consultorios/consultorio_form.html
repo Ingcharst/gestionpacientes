@@ -148,7 +148,7 @@
                     </fieldset>
 
                     <div class="d-flex justify-content-between">
-                        <a href="{% if consultorio %}{% url 'consultorio_detail' consultorio.pk %}{% else %}{% url 'consultorio_list' %}{% endif %}" 
+                        <a href="{% if consultorio %}{% url 'consultorios:consultorio_detail' consultorio.pk %}{% else %}{% url 'consultorios:consultorio_list' %}{% endif %}" 
                            class="btn btn-secondary">
                             <i class="bi bi-x-circle me-1"></i>Cancelar
                         </a>

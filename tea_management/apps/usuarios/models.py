@@ -22,6 +22,30 @@ class Usuario(AbstractUser):
         ACTIVO = 'ACTIVO', _('Activo')
         INACTIVO = 'INACTIVO', _('Inactivo')
         SUSPENDIDO = 'SUSPENDIDO', _('Suspendido')
+
+    TIPO_DOCUMENTO = [
+        ('CC', 'Cédula de Ciudadanía'),
+        ('CE', 'Cédula de Extranjería'),
+        ('TI', 'Tarjeta de Identidad'),
+        ('PP', 'Pasaporte'),
+        ('RC', 'Registro Civil'),
+        ('NIT', 'NIT'),
+    ]
+    
+    tipo_identificacion = models.CharField(
+        max_length=3,
+        choices=TIPO_DOCUMENTO,
+        default='CC',
+        verbose_name='Tipo de Identificación'
+    )
+    
+    numero_identificacion = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name='Número de Identificación',
+        help_text='Documento de identidad del usuario'
+    )
+
     
     # Campos adicionales
     rol = models.CharField(
@@ -91,7 +115,8 @@ class Usuario(AbstractUser):
         blank=True,
         help_text='Firma digital del terapeuta'
     )
-    
+
+ 
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'

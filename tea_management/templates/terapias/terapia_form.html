@@ -44,7 +44,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-12 mb-3">
                                 <label for="{{ form.categoria.id_for_label }}" class="form-label">
                                     Categoría <span class="text-danger">*</span>
                                 </label>
@@ -53,6 +53,37 @@
                                 <div class="invalid-feedback d-block">{{ form.categoria.errors }}</div>
                                 {% endif %}
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                                Descripción <span class="text-danger">*</span>
+                            </label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">{{ form.descripcion.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion_corta.id_for_label }}" class="form-label">
+                                Descripción Corta
+                            </label>
+                            {{ form.descripcion_corta }}
+                            {% if form.descripcion_corta.errors %}
+                            <div class="invalid-feedback d-block">{{ form.descripcion_corta.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Máximo 200 caracteres</small>
+                        </div>
+                    </fieldset>
+
+                    <!-- Clasificación -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-tags me-1"></i>Clasificación
+                        </legend>
+                        
+                        <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="{{ form.modalidad.id_for_label }}" class="form-label">Modalidad</label>
                                 {{ form.modalidad }}
@@ -67,82 +98,22 @@
                                 <div class="invalid-feedback d-block">{{ form.especialidad.errors }}</div>
                                 {% endif %}
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.descripcion_corta.id_for_label }}" class="form-label">
-                                Descripción Corta
-                            </label>
-                            {{ form.descripcion_corta }}
-                            {% if form.descripcion_corta.errors %}
-                            <div class="invalid-feedback d-block">{{ form.descripcion_corta.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">Máximo 200 caracteres</small>
-                        </div>
-
-                        {% if form.imagen %}
-                        <div class="mb-3">
-                            <label for="{{ form.imagen.id_for_label }}" class="form-label">Imagen</label>
-                            {{ form.imagen }}
-                            {% if form.imagen.errors %}
-                            <div class="invalid-feedback d-block">{{ form.imagen.errors }}</div>
-                            {% endif %}
-                            {% if terapia and terapia.imagen %}
-                            <div class="mt-2">
-                                <img src="{{ terapia.imagen.url }}" class="img-thumbnail" style="max-width: 200px;">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.nivel_intensidad.id_for_label }}" class="form-label">
+                                    Nivel de Intensidad
+                                </label>
+                                {{ form.nivel_intensidad }}
+                                {% if form.nivel_intensidad.errors %}
+                                <div class="invalid-feedback d-block">{{ form.nivel_intensidad.errors }}</div>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </fieldset>
-
-                    <!-- Descripción Detallada -->
-                    <fieldset class="border p-3 mb-4">
-                        <legend class="w-auto px-2 text-primary">
-                            <i class="bi bi-file-text me-1"></i>Descripción Detallada
-                        </legend>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.descripcion.id_for_label }}" class="form-label">
-                                Descripción <span class="text-danger">*</span>
-                            </label>
-                            {{ form.descripcion }}
-                            {% if form.descripcion.errors %}
-                            <div class="invalid-feedback d-block">{{ form.descripcion.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.objetivos.id_for_label }}" class="form-label">Objetivos</label>
-                            {{ form.objetivos }}
-                            {% if form.objetivos.errors %}
-                            <div class="invalid-feedback d-block">{{ form.objetivos.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.metodologia.id_for_label }}" class="form-label">Metodología</label>
-                            {{ form.metodologia }}
-                            {% if form.metodologia.errors %}
-                            <div class="invalid-feedback d-block">{{ form.metodologia.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.materiales_necesarios.id_for_label }}" class="form-label">
-                                Materiales Necesarios
-                            </label>
-                            {{ form.materiales_necesarios }}
-                            {% if form.materiales_necesarios.errors %}
-                            <div class="invalid-feedback d-block">{{ form.materiales_necesarios.errors }}</div>
-                            {% endif %}
                         </div>
                     </fieldset>
 
-                    <!-- Configuración -->
+                    <!-- Duración y Costo -->
                     <fieldset class="border p-3 mb-4">
                         <legend class="w-auto px-2 text-primary">
-                            <i class="bi bi-sliders me-1"></i>Configuración
+                            <i class="bi bi-clock me-1"></i>Duración y Costo
                         </legend>
                         
                         <div class="row">
@@ -156,59 +127,181 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="{{ form.precio_base.id_for_label }}" class="form-label">Precio Base</label>
-                                {{ form.precio_base }}
-                                {% if form.precio_base.errors %}
-                                <div class="invalid-feedback d-block">{{ form.precio_base.errors }}</div>
+                                <label for="{{ form.frecuencia_semanal_recomendada.id_for_label }}" class="form-label">
+                                    Frecuencia Semanal Recomendada
+                                </label>
+                                {{ form.frecuencia_semanal_recomendada }}
+                                {% if form.frecuencia_semanal_recomendada.errors %}
+                                <div class="invalid-feedback d-block">{{ form.frecuencia_semanal_recomendada.errors }}</div>
                                 {% endif %}
+                                <small class="text-muted">Sesiones por semana</small>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="{{ form.edad_minima.id_for_label }}" class="form-label">Edad Mínima</label>
+                                <label for="{{ form.costo_sesion.id_for_label }}" class="form-label">
+                                    Costo por Sesión
+                                </label>
+                                {{ form.costo_sesion }}
+                                {% if form.costo_sesion.errors %}
+                                <div class="invalid-feedback d-block">{{ form.costo_sesion.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.permite_descuento }}
+                            <label class="form-check-label" for="{{ form.permite_descuento.id_for_label }}">
+                                Permite Descuento
+                            </label>
+                            {% if form.permite_descuento.errors %}
+                            <div class="invalid-feedback d-block">{{ form.permite_descuento.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Requisitos de Edad -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-person-check me-1"></i>Requisitos de Edad
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.edad_minima.id_for_label }}" class="form-label">
+                                    Edad Mínima (años)
+                                </label>
                                 {{ form.edad_minima }}
                                 {% if form.edad_minima.errors %}
                                 <div class="invalid-feedback d-block">{{ form.edad_minima.errors }}</div>
                                 {% endif %}
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.edad_maxima.id_for_label }}" class="form-label">
+                                    Edad Máxima (años)
+                                </label>
+                                {{ form.edad_maxima }}
+                                {% if form.edad_maxima.errors %}
+                                <div class="invalid-feedback d-block">{{ form.edad_maxima.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.requisitos.id_for_label }}" class="form-label">Requisitos</label>
-                            {{ form.requisitos }}
-                            {% if form.requisitos.errors %}
-                            <div class="invalid-feedback d-block">{{ form.requisitos.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.contraindicaciones.id_for_label }}" class="form-label">
-                                Contraindicaciones
+                        <div class="mb-3 form-check">
+                            {{ form.requiere_evaluacion_previa }}
+                            <label class="form-check-label" for="{{ form.requiere_evaluacion_previa.id_for_label }}">
+                                Requiere Evaluación Previa
                             </label>
-                            {{ form.contraindicaciones }}
-                            {% if form.contraindicaciones.errors %}
-                            <div class="invalid-feedback d-block">{{ form.contraindicaciones.errors }}</div>
+                            {% if form.requiere_evaluacion_previa.errors %}
+                            <div class="invalid-feedback d-block">{{ form.requiere_evaluacion_previa.errors }}</div>
                             {% endif %}
                         </div>
 
-                        <div class="row">
-                            {% if form.destacado %}
-                            <div class="col-md-6 mb-3 form-check">
-                                {{ form.destacado }}
-                                <label class="form-check-label" for="{{ form.destacado.id_for_label }}">
-                                    Destacada
-                                </label>
-                            </div>
-                            {% endif %}
-                            {% if form.activo %}
-                            <div class="col-md-6 mb-3 form-check">
-                                {{ form.activo }}
-                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
-                                    Activo
-                                </label>
-                            </div>
+                        <div class="mb-3 form-check">
+                            {{ form.requiere_orden_medica }}
+                            <label class="form-check-label" for="{{ form.requiere_orden_medica.id_for_label }}">
+                                Requiere Orden Médica
+                            </label>
+                            {% if form.requiere_orden_medica.errors %}
+                            <div class="invalid-feedback d-block">{{ form.requiere_orden_medica.errors }}</div>
                             {% endif %}
                         </div>
                     </fieldset>
 
+                    <!-- Capacidad del Grupo -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-people me-1"></i>Capacidad del Grupo
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capacidad_minima.id_for_label }}" class="form-label">
+                                    Capacidad Mínima
+                                </label>
+                                {{ form.capacidad_minima }}
+                                {% if form.capacidad_minima.errors %}
+                                <div class="invalid-feedback d-block">{{ form.capacidad_minima.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">Número mínimo de pacientes</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capacidad_maxima.id_for_label }}" class="form-label">
+                                    Capacidad Máxima
+                                </label>
+                                {{ form.capacidad_maxima }}
+                                {% if form.capacidad_maxima.errors %}
+                                <div class="invalid-feedback d-block">{{ form.capacidad_maxima.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">Número máximo de pacientes</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.requiere_acompanante }}
+                            <label class="form-check-label" for="{{ form.requiere_acompanante.id_for_label }}">
+                                Requiere Acompañante
+                            </label>
+                            {% if form.requiere_acompanante.errors %}
+                            <div class="invalid-feedback d-block">{{ form.requiere_acompanante.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Disponibilidad -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-geo-alt me-1"></i>Disponibilidad
+                        </legend>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.disponible_online }}
+                            <label class="form-check-label" for="{{ form.disponible_online.id_for_label }}">
+                                Disponible Online
+                            </label>
+                            {% if form.disponible_online.errors %}
+                            <div class="invalid-feedback d-block">{{ form.disponible_online.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.disponible_domicilio }}
+                            <label class="form-check-label" for="{{ form.disponible_domicilio.id_for_label }}">
+                                Disponible a Domicilio
+                            </label>
+                            {% if form.disponible_domicilio.errors %}
+                            <div class="invalid-feedback d-block">{{ form.disponible_domicilio.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </fieldset>
+
+                    <!-- Estado -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="w-auto px-2 text-primary">
+                            <i class="bi bi-toggle-on me-1"></i>Estado
+                        </legend>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    Terapia Activa
+                                </label>
+                                {% if form.activo.errors %}
+                                <div class="invalid-feedback d-block">{{ form.activo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3 form-check">
+                                {{ form.destacado }}
+                                <label class="form-check-label" for="{{ form.destacado.id_for_label }}">
+                                    Terapia Destacada
+                                </label>
+                                {% if form.destacado.errors %}
+                                <div class="invalid-feedback d-block">{{ form.destacado.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Botones de acción -->
                     <div class="d-flex justify-content-between">
                         <a href="{% if terapia %}{% url 'terapias:terapia_detail' terapia.pk %}{% else %}{% url 'terapias:terapia_list' %}{% endif %}" 
                            class="btn btn-secondary">
@@ -228,13 +321,28 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Asegurar que todos los campos tengan las clases correctas de Bootstrap
     document.querySelectorAll('input[type="text"], input[type="number"], select, textarea').forEach(el => {
-        if (el.tagName === 'SELECT') el.classList.add('form-select');
-        else if (el.tagName === 'TEXTAREA') el.classList.add('form-control');
-        else if (!el.classList.contains('form-control')) el.classList.add('form-control');
+        if (el.tagName === 'SELECT' && !el.classList.contains('form-select')) {
+            el.classList.add('form-select');
+        } else if (el.tagName === 'TEXTAREA' && !el.classList.contains('form-control')) {
+            el.classList.add('form-control');
+        } else if (!el.classList.contains('form-control') && !el.classList.contains('form-select')) {
+            el.classList.add('form-control');
+        }
     });
-    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.classList.add('form-check-input'));
-    document.querySelectorAll('input[type="file"]').forEach(el => el.classList.add('form-control'));
+    
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+        if (!el.classList.contains('form-check-input')) {
+            el.classList.add('form-check-input');
+        }
+    });
+    
+    document.querySelectorAll('input[type="file"]').forEach(el => {
+        if (!el.classList.contains('form-control')) {
+            el.classList.add('form-control');
+        }
+    });
 });
 </script>
 {% endblock %}
